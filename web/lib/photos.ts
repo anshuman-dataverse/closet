@@ -76,13 +76,22 @@ export async function preparePhoto(file: Blob): Promise<PreparedPhoto> {
 export const BUCKET = "wardrobe";
 
 /** Uploads to {uid}/items/{itemId}/{uuid}.jpg and _thumb.jpg. */
-export async function uploadItemPhoto(
+export function uploadItemPhoto(
   db: Db,
   uid: string,
   itemId: string,
   p: PreparedPhoto,
 ): Promise<{ photo_path: string; thumb_path: string }> {
-  const base = `${uid}/items/${itemId}/${crypto.randomUUID()}`;
+  return uploadPhotoTo(db, `${uid}/items/${itemId}`, p);
+}
+
+/** Uploads to {folder}/{uuid}.jpg and _thumb.jpg (wishlist: {uid}/wishlist/{id}). */
+export async function uploadPhotoTo(
+  db: Db,
+  folder: string,
+  p: PreparedPhoto,
+): Promise<{ photo_path: string; thumb_path: string }> {
+  const base = `${folder}/${crypto.randomUUID()}`;
   const photo_path = `${base}.jpg`;
   const thumb_path = `${base}_thumb.jpg`;
   const opts = { contentType: "image/jpeg", upsert: false, cacheControl: "31536000" };

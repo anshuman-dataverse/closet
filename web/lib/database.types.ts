@@ -892,6 +892,18 @@ export type Database = {
         };
         Returns: Json;
       };
+      nearest_items: {
+        Args: {
+          p_category?: Database["public"]["Enums"]["item_category"];
+          p_embedding: string;
+          p_k?: number;
+          p_owner: string;
+        };
+        Returns: {
+          item_id: string;
+          similarity: number;
+        }[];
+      };
       requeue_stale_jobs: { Args: Record<PropertyKey, never>; Returns: number };
       save_outfit: {
         Args: {

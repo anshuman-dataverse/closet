@@ -1,1 +1,1 @@
-"""Built in a later phase (see SPEC.md section 12)."""
+"""Outfit recommender (SPEC 5.4): candidates, rule score, diverse picks. No models."""

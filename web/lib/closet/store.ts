@@ -4,8 +4,16 @@
 // RLS scopes every query; nothing here can see another user's rows.
 
 import { useMemo, useSyncExternalStore } from "react";
-import type { Item, ItemStatus, Outfit, Profile, WearLog } from "@/lib/closet/types";
-import type { Database } from "@/lib/database.types";
+import {
+  type Item,
+  type ItemStatus,
+  type Outfit,
+  type Profile,
+  type WearLog,
+  type Wish,
+  WISH_COLUMNS,
+} from "@/lib/closet/types";
+import type { Database, Json } from "@/lib/database.types";
 import { todayIn } from "@/lib/domain/dates";
 import { wearStats, type WearStats } from "@/lib/domain/wear";
 import type { Occasion } from "@/lib/occasions";
@@ -22,9 +30,18 @@ export type ClosetState = {
   items: Item[];
   outfits: Outfit[];
   logs: WearLog[];
+  wishes: Wish[];
 };
 
-const EMPTY: ClosetState = { status: "idle", userId: null, profile: null, items: [], outfits: [], logs: [] };
+const EMPTY: ClosetState = {
+  status: "idle",
+  userId: null,
+  profile: null,
+  items: [],
+  outfits: [],
+  logs: [],
+  wishes: [],
+};
 let state: ClosetState = EMPTY;
 const listeners = new Set<() => void>();
 
@@ -50,15 +67,20 @@ export function loadCloset(): Promise<void> {
         data: { user },
       } = await db.auth.getUser();
       if (!user) throw new Error("signed out");
-      const [p, i, o, oi, w, wi] = await Promise.all([
+      const [p, i, o, oi, w, wi, wl] = await Promise.all([
         db.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
         db.from("items").select("*").order("created_at", { ascending: false }),
         db.from("outfits").select("*").order("created_at", { ascending: true }),
         db.from("outfit_items").select("outfit_id,item_id,position"),
         db.from("wear_logs").select("*").order("worn_on", { ascending: false }),
         db.from("wear_log_items").select("wear_log_id,item_id"),
+        db
+          .from("wishlist_items")
+          .select(WISH_COLUMNS)
+          .neq("status", "removed")
+          .order("created_at", { ascending: false }),
       ]);
-      const err = [p, i, o, oi, w, wi].find((r) => r.error)?.error;
+      const err = [p, i, o, oi, w, wi, wl].find((r) => r.error)?.error;
       if (err) throw err;
 
       const pieces = new Map<string, { item_id: string; position: number }[]>();
@@ -78,6 +100,7 @@ export function loadCloset(): Promise<void> {
           itemIds: (pieces.get(x.id) ?? []).sort((a, b) => a.position - b.position).map((r) => r.item_id),
         })),
         logs: (w.data ?? []).map((x) => ({ ...x, itemIds: worn.get(x.id) ?? [] })),
+        wishes: (wl.data ?? []) as unknown as Wish[],
       });
     } catch {
       set({ status: state.status === "ready" ? "ready" : "error", error: LOAD_ERROR });
@@ -290,4 +313,75 @@ export async function requestTagging(itemId: string, photoPath?: string, timeout
     return done;
   }
   return null;
+}
+
+// ---------------------------------------------------------------- wishlist (SPEC 4.4)
+
+export type WishInput = Omit<Database["public"]["Tables"]["wishlist_items"]["Insert"], "user_id" | "embedding">;
+
+export async function saveWish(w: WishInput & { id: string }): Promise<Wish> {
+  const db = supabase();
+  const exists = state.wishes.some((x) => x.id === w.id);
+  const q = exists ? db.from("wishlist_items").update(w).eq("id", w.id) : db.from("wishlist_items").insert(w);
+  const { data, error } = await q.select(WISH_COLUMNS).single();
+  if (error || !data) fail(error, "Couldn’t save that to your wishlist. Try again.");
+  const wish = data as unknown as Wish;
+  set({ wishes: exists ? state.wishes.map((x) => (x.id === wish.id ? wish : x)) : [wish, ...state.wishes] });
+  if (!exists) void enqueueJob(db, "embed_wish", { wish_id: wish.id }).catch(() => {});
+  return wish;
+}
+
+export async function setWishStatus(id: string, status: "wanted" | "bought" | "removed"): Promise<void> {
+  const { data, error } = await supabase()
+    .from("wishlist_items")
+    .update({ status })
+    .eq("id", id)
+    .select(WISH_COLUMNS)
+    .single();
+  if (error || !data) fail(error, "Couldn’t update that. Try again.");
+  const wish = data as unknown as Wish;
+  const others = state.wishes.filter((x) => x.id !== id);
+  set({
+    wishes: status === "removed" ? others : [wish, ...others].sort((a, b) => b.created_at.localeCompare(a.created_at)),
+  });
+}
+
+export async function refreshWish(id: string): Promise<void> {
+  const { data } = await supabase().from("wishlist_items").select(WISH_COLUMNS).eq("id", id).maybeSingle();
+  if (data) set({ wishes: state.wishes.map((x) => (x.id === id ? (data as unknown as Wish) : x)) });
+}
+
+/** "Do I need this?" (SPEC 5.6). Resolves when the Mac answers, or null after the wait. */
+export async function checkWish(id: string, today: string, timeoutMs = 30_000): Promise<JobRow | null> {
+  const db = supabase();
+  const job = await enqueueJob(db, "check_wish", { wish_id: id, date: today }, 4);
+  if (timeoutMs <= 0) return null;
+  const done = await waitForJob(db, job.id, { timeoutMs });
+  if (done?.status === "done") await refreshWish(id);
+  return done && (done.status === "done" || done.status === "failed") ? done : null;
+}
+
+// ---------------------------------------------------------------- suggestion events (Phase 6 training data)
+
+export type SuggestionAction = "shown" | "worn" | "saved" | "skipped" | "liked" | "disliked";
+
+export async function logSuggestionEvent(e: {
+  occasion: Occasion;
+  itemIds: string[];
+  action: SuggestionAction;
+  context?: Record<string, unknown>;
+  score?: number | null;
+  modelVersion?: string | null;
+}): Promise<void> {
+  const { error } = await supabase()
+    .from("suggestion_events")
+    .insert({
+      occasion: e.occasion,
+      item_ids: e.itemIds,
+      action: e.action,
+      context: (e.context ?? {}) as { [key: string]: Json | undefined },
+      score: e.score ?? null,
+      model_version: e.modelVersion ?? null,
+    });
+  if (error) fail(error, "Couldn’t save that. Try again.");
 }

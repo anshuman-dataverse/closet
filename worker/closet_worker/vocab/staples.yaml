@@ -1,0 +1,327 @@
+# Staple pieces for “What’s missing” (SPEC 5.7): type, category, default formality and warmth,
+# a typical US price range, and the colors to try (your palette replaces these in Phase 4).
+
+- type: oxford shirt
+  category: Tops
+  formality: 3
+  warmth: light
+  price: [30, 70]
+  colors: [white, light blue, grey]
+- type: dress shirt
+  category: Tops
+  formality: 4
+  warmth: light
+  price: [40, 90]
+  colors: [white, light blue, grey]
+- type: polo shirt
+  category: Tops
+  formality: 2
+  warmth: light
+  price: [25, 60]
+  colors: [navy, white, grey]
+- type: t-shirt
+  category: Tops
+  formality: 1
+  warmth: light
+  price: [10, 30]
+  colors: [white, black, grey]
+- type: henley
+  category: Tops
+  formality: 2
+  warmth: light
+  price: [20, 50]
+  colors: [grey, navy, black]
+- type: flannel shirt
+  category: Tops
+  formality: 2
+  warmth: medium
+  price: [30, 70]
+  colors: [red, green, grey]
+- type: linen shirt
+  category: Tops
+  formality: 2
+  warmth: light
+  price: [30, 70]
+  colors: [white, beige, grey]
+- type: knit polo
+  category: Tops
+  formality: 3
+  warmth: light
+  price: [35, 80]
+  colors: [navy, brown, grey]
+- type: turtleneck
+  category: Tops
+  formality: 3
+  warmth: warm
+  price: [30, 80]
+  colors: [black, charcoal, grey]
+- type: long-sleeve t-shirt
+  category: Tops
+  formality: 1
+  warmth: medium
+  price: [15, 35]
+  colors: [grey, navy, black]
+- type: striped shirt
+  category: Tops
+  formality: 3
+  warmth: light
+  price: [30, 70]
+  colors: [navy, white, grey]
+- type: denim shirt
+  category: Tops
+  formality: 2
+  warmth: medium
+  price: [35, 80]
+  colors: [denim, indigo, grey]
+- type: overshirt
+  category: Layers
+  formality: 2
+  warmth: medium
+  price: [40, 100]
+  colors: [olive, navy, black]
+- type: crew neck sweater
+  category: Layers
+  formality: 3
+  warmth: warm
+  price: [40, 100]
+  colors: [navy, grey, black]
+- type: v-neck sweater
+  category: Layers
+  formality: 3
+  warmth: warm
+  price: [40, 90]
+  colors: [charcoal, navy, black]
+- type: cardigan
+  category: Layers
+  formality: 3
+  warmth: medium
+  price: [40, 100]
+  colors: [grey, camel, black]
+- type: hoodie
+  category: Layers
+  formality: 1
+  warmth: medium
+  price: [30, 70]
+  colors: [grey, black, navy]
+- type: quarter-zip sweater
+  category: Layers
+  formality: 2
+  warmth: medium
+  price: [40, 90]
+  colors: [navy, grey, black]
+- type: blazer
+  category: Layers
+  formality: 4
+  warmth: medium
+  price: [80, 250]
+  colors: [navy, charcoal, black]
+- type: bomber jacket
+  category: Layers
+  formality: 2
+  warmth: medium
+  price: [60, 150]
+  colors: [black, olive, grey]
+- type: denim jacket
+  category: Layers
+  formality: 2
+  warmth: medium
+  price: [50, 120]
+  colors: [denim, black, grey]
+- type: wool overcoat
+  category: Layers
+  formality: 4
+  warmth: warm
+  price: [120, 350]
+  colors: [camel, charcoal, black]
+- type: trench coat
+  category: Layers
+  formality: 4
+  warmth: medium
+  price: [100, 300]
+  colors: [beige, navy, black]
+- type: rain jacket
+  category: Layers
+  formality: 1
+  warmth: medium
+  price: [50, 150]
+  colors: [navy, olive, black]
+- type: puffer jacket
+  category: Layers
+  formality: 1
+  warmth: warm
+  price: [70, 200]
+  colors: [black, navy, grey]
+- type: nehru jacket
+  category: Layers
+  formality: 4
+  warmth: medium
+  price: [50, 150]
+  colors: [navy, black, grey]
+- type: chinos
+  category: Bottoms
+  formality: 3
+  warmth: medium
+  price: [35, 80]
+  colors: [khaki, navy, grey]
+- type: dress trousers
+  category: Bottoms
+  formality: 4
+  warmth: medium
+  price: [50, 120]
+  colors: [charcoal, navy, grey]
+- type: dark wash jeans
+  category: Bottoms
+  formality: 2
+  warmth: medium
+  price: [40, 100]
+  colors: [indigo, black, grey]
+- type: light wash jeans
+  category: Bottoms
+  formality: 2
+  warmth: medium
+  price: [40, 90]
+  colors: [light blue, grey]
+- type: joggers
+  category: Bottoms
+  formality: 1
+  warmth: medium
+  price: [25, 60]
+  colors: [grey, black, navy]
+- type: shorts
+  category: Bottoms
+  formality: 1
+  warmth: light
+  price: [20, 50]
+  colors: [khaki, navy, grey]
+- type: cargo trousers
+  category: Bottoms
+  formality: 2
+  warmth: medium
+  price: [40, 90]
+  colors: [olive, beige, grey]
+- type: linen trousers
+  category: Bottoms
+  formality: 2
+  warmth: light
+  price: [35, 80]
+  colors: [beige, white, grey]
+- type: corduroy trousers
+  category: Bottoms
+  formality: 3
+  warmth: warm
+  price: [45, 100]
+  colors: [brown, olive, grey]
+- type: white sneakers
+  category: Shoes
+  formality: 2
+  warmth: medium
+  price: [50, 120]
+  colors: [white]
+- type: sneakers
+  category: Shoes
+  formality: 1
+  warmth: medium
+  price: [50, 120]
+  colors: [black, grey]
+- type: loafers
+  category: Shoes
+  formality: 4
+  warmth: medium
+  price: [70, 180]
+  colors: [brown, black]
+- type: oxford shoes
+  category: Shoes
+  formality: 5
+  warmth: medium
+  price: [90, 220]
+  colors: [black, brown]
+- type: derby shoes
+  category: Shoes
+  formality: 4
+  warmth: medium
+  price: [80, 200]
+  colors: [brown, black]
+- type: chelsea boots
+  category: Shoes
+  formality: 3
+  warmth: warm
+  price: [90, 220]
+  colors: [brown, black]
+- type: running shoes
+  category: Shoes
+  formality: 1
+  warmth: medium
+  price: [60, 140]
+  colors: [black, navy]
+- type: sandals
+  category: Shoes
+  formality: 1
+  warmth: light
+  price: [25, 70]
+  colors: [brown, black]
+- type: suede shoes
+  category: Shoes
+  formality: 3
+  warmth: medium
+  price: [70, 160]
+  colors: [tan, brown]
+- type: belt
+  category: Accessories
+  formality: 3
+  warmth: light
+  price: [20, 60]
+  colors: [brown, black]
+- type: watch
+  category: Accessories
+  formality: 3
+  warmth: light
+  price: [50, 250]
+  colors: [silver, black]
+- type: scarf
+  category: Accessories
+  formality: 3
+  warmth: warm
+  price: [20, 60]
+  colors: [grey, camel]
+- type: tie
+  category: Accessories
+  formality: 5
+  warmth: light
+  price: [20, 60]
+  colors: [navy, burgundy]
+- type: cap
+  category: Accessories
+  formality: 1
+  warmth: light
+  price: [15, 35]
+  colors: [navy, black]
+- type: beanie
+  category: Accessories
+  formality: 1
+  warmth: warm
+  price: [15, 35]
+  colors: [grey, black]
+- type: kurta
+  category: "Sets & suits"
+  formality: 3
+  warmth: light
+  price: [30, 90]
+  colors: [white, navy]
+- type: kurta pajama set
+  category: "Sets & suits"
+  formality: 4
+  warmth: light
+  price: [50, 150]
+  colors: [white, cream]
+- type: suit
+  category: "Sets & suits"
+  formality: 5
+  warmth: medium
+  price: [200, 600]
+  colors: [navy, charcoal]
+- type: tracksuit
+  category: "Sets & suits"
+  formality: 1
+  warmth: medium
+  price: [50, 120]
+  colors: [black, navy]

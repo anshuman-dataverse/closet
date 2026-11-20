@@ -1,0 +1,10 @@
+{
+  "verdict": "wait",
+  "reasons": ["You own something very similar: Navy oxford shirt.", "It adds 2 new office outfits with what you own."],
+  "duplicates": [],
+  "unlocks": 2,
+  "month_spend_cents": 0,
+  "over_budget_cents": 0,
+  "embedding_kind": "text",
+  "model": "fake"
+}

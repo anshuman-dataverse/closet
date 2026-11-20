@@ -105,18 +105,33 @@ type Draft = {
   cutout: { photo: string; path: string } | null; // cutout made for a new, unsaved photo
 };
 
-const fresh = (item: Item | null): Draft => ({
+export type Prefill = { form: Partial<Form>; photo?: { photo_path: string; thumb_path: string | null } };
+
+const fresh = (item: Item | null, prefill?: Prefill): Draft => ({
   mode: item ? "edit" : "add",
   id: item ? item.id : crypto.randomUUID(),
-  form: item ? fromItem(item) : blank(),
-  touched: [],
+  form: item ? fromItem(item) : { ...blank(), ...prefill?.form },
+  // Details you typed on the wishlist count as touched: photo suggestions never overwrite them.
+  touched: item ? [] : (Object.keys(prefill?.form ?? {}).filter((k) => k !== "price") as SuggestableKey[]),
   saved: "none",
   merged: false,
   sugHex: null,
   cutout: null,
 });
 
-export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: string | null; onClose: () => void }) {
+export function ItemSheet({
+  open,
+  itemId,
+  onClose,
+  prefill,
+  onSaved,
+}: {
+  open: boolean;
+  itemId: string | null;
+  onClose: () => void;
+  prefill?: Prefill;
+  onSaved?: (item: Item) => void;
+}) {
   const s = useCloset();
   const d = useDerived(s);
   const toast = useToast();
@@ -143,7 +158,7 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
   if (key !== openedFor) {
     setOpenedFor(key);
     if (open) {
-      setDr(fresh(item));
+      setDr(fresh(item, prefill));
       setUpload(null);
       setHint("");
       setErr("");
@@ -229,6 +244,39 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
     }
   };
 
+  // "I bought it": copy the wishlist photo into this piece's folder, save the draft, then read it.
+  const adopted = useRef<string | null>(null);
+  useEffect(() => {
+    const photo = prefill?.photo;
+    if (!open || dr.mode !== "add" || dr.saved !== "none" || !photo || !s.userId || adopted.current === dr.id) return;
+    adopted.current = dr.id;
+    const mine = session.current;
+    const base = `${s.userId}/items/${dr.id}/${crypto.randomUUID()}`;
+    const bucket = supabase().storage.from("wardrobe");
+    void (async () => {
+      try {
+        const copies = await Promise.all([
+          bucket.copy(photo.photo_path, `${base}.jpg`),
+          bucket.copy(photo.thumb_path ?? photo.photo_path, `${base}_thumb.jpg`),
+        ]);
+        if (copies.some((c) => c.error) || session.current !== mine) return;
+        await saveItem({
+          id: dr.id,
+          name: dr.form.name.trim() || "New piece",
+          category: dr.form.category,
+          occasions: dr.form.occasions,
+          photo_path: `${base}.jpg`,
+          thumb_path: `${base}_thumb.jpg`,
+        });
+        setDr((x) => (x.id === dr.id && x.saved === "none" ? { ...x, saved: "draft" } : x));
+        await readPhoto(dr.id, undefined, mine);
+      } catch {
+        /* keep going without the photo; you can add one */
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once per opened draft
+  }, [open, dr.mode, dr.saved, dr.id, prefill, s.userId]);
+
   const pickPhoto = async (file: File | undefined) => {
     if (!file || !s.userId) return;
     const mine = session.current;
@@ -311,7 +359,7 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
         ...(dr.merged ? { suggestions: null } : {}),
       };
       const replaced = dr.mode === "edit" && photo && item ? [item.photo_path, item.thumb_path, item.cutout_path] : [];
-      await saveItem(input, replaced);
+      const saved = await saveItem(input, replaced);
       setUpload(null);
       if (again) {
         toast("Added to your closet");
@@ -323,6 +371,7 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
       } else {
         setDr((x) => ({ ...x, saved: "done" }));
         toast(editing ? "Saved" : "Added to your closet");
+        onSaved?.(saved);
         onClose();
       }
     } catch (e) {
@@ -461,7 +510,7 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
             <img src={preview} alt="New photo" />
           ) : item && (item.photo_path || swatch) ? (
             <PieceCell item={item} large prefer={view} />
-          ) : draftRow?.cutout_path ? (
+          ) : draftRow?.photo_path ? (
             <PieceCell item={draftRow} large />
           ) : (
             <span className="muted">No photo yet</span>

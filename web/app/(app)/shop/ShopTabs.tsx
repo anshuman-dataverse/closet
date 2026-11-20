@@ -3,6 +3,8 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useRef } from "react";
 import { EmptyState } from "@/components/EmptyState";
+import { GapsPanel } from "./GapsPanel";
+import { WishlistPanel } from "./WishlistPanel";
 
 const TABS = [
   { id: "wishlist", label: "Wishlist" },
@@ -58,22 +60,13 @@ export function ShopTabs() {
         ))}
       </div>
       <div id="shop-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-        {tab === "wishlist" && (
-          <EmptyState title="Your wishlist is empty">
-            Add something you’ve seen online or in a store, with the price and link. “Do I need this?” then tells you
-            whether it earns a place in your closet.
-          </EmptyState>
-        )}
+        {tab === "wishlist" && <WishlistPanel />}
         {tab === "hunts" && (
           <EmptyState title="No hunts yet">
             Try something like “white oxford shirt for the office, $25 to $60”.
           </EmptyState>
         )}
-        {tab === "missing" && (
-          <EmptyState title="Nothing to compare yet">
-            Once your closet has a few pieces, this finds the gaps worth filling for each occasion.
-          </EmptyState>
-        )}
+        {tab === "missing" && <GapsPanel />}
       </div>
     </>
   );

@@ -1683,3 +1683,13 @@ img.cut {
   object-fit: contain !important;
   background: var(--cut-bg) !important;
 }
+
+/* Idea cards: stack the flat-lay above the text on phones so pieces and buttons have room. */
+@media (max-width: 560px) {
+  .combo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .combo .flatlay {
+    max-width: 260px;
+  }
+}

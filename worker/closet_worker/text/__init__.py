@@ -1,1 +1,1 @@
-"""Built in a later phase (see SPEC.md section 12)."""
+"""Reason text: templates by default; optional Ollama phrasing in Phase 6 (SPEC 5.10)."""

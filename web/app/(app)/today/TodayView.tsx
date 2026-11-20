@@ -5,6 +5,7 @@ import { useState, useSyncExternalStore } from "react";
 import { EmptyState } from "@/components/EmptyState";
 import { HangTag } from "@/components/HangTag";
 import { LoadGate } from "@/components/Loading";
+import { MoreIdeas } from "@/components/MoreIdeas";
 import { OccasionPicker } from "@/components/OccasionPicker";
 import { OutfitBuilderSheet, OutfitDetailSheet } from "@/components/OutfitSheets";
 import { Flatlay } from "@/components/Piece";
@@ -18,6 +19,8 @@ import { NO_WEAR, sortLogsNewest } from "@/lib/domain/wear";
 import { type Occasion, OCCASIONS } from "@/lib/occasions";
 import { useOccasion } from "@/lib/use-occasion";
 import { useSheetParam } from "@/lib/use-sheet-param";
+import { useWeather } from "@/lib/use-weather";
+import { weatherLine } from "@/lib/weather";
 
 const OCC_LABEL = Object.fromEntries(OCCASIONS.map((o) => [o.id, o.label])) as Record<Occasion, string>;
 const noSubscribe = () => () => {};
@@ -32,6 +35,7 @@ export function TodayView() {
   const [pick, setPick] = useState({ occ, index: 0, showPicks: false });
   if (pick.occ !== occ) setPick({ occ, index: 0, showPicks: false }); // reset when the occasion changes
   const dateLine = useSyncExternalStore(noSubscribe, dateLineNow, () => "");
+  const weather = useWeather(s.profile, d.today);
 
   const logName = (l: WearLog) => {
     const o = l.outfit_id ? s.outfits.find((x) => x.id === l.outfit_id) : undefined;
@@ -143,6 +147,7 @@ export function TodayView() {
     main = (
       <>
         {card}
+        <MoreIdeas occasion={occ} weather={weather} />
         {recent.length > 0 && (
           <section className="block" aria-labelledby="recent-h">
             <div className="block-head">
@@ -175,6 +180,11 @@ export function TodayView() {
       <section className="hero">
         <h1 className="sr">Today</h1>
         <p className="dateline">{dateLine || " "}</p>
+        {weather && (
+          <p className="dateline" data-testid="weather-line">
+            {weatherLine(weather)}
+          </p>
+        )}
         <OccasionPicker />
       </section>
       <div className="today-main">{main}</div>

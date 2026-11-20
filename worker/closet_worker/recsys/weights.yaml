@@ -1,0 +1,11 @@
+# Rule-score weights (SPEC 5.4 step 3). total = Σ weight × term, each term in about [-1, 1] (freshness can go lower).
+harmony: 1.0
+palette: 0.0      # needs the style profile (Phase 4)
+formality: 1.0
+weather: 0.8
+freshness: 1.2
+# An outfit counts as "good" (for unlocks and What's missing) at or above this total.
+good_threshold: 1.2
+# Near-duplicate cosine thresholds for "Do I need this?" (SPEC 5.6). Calibrate against your eval.
+tau_image: 0.90
+tau_text: 0.30

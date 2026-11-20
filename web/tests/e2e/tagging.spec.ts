@@ -4,6 +4,7 @@ import { admin } from "./admin";
 import { ownerFiles, resetOwnerData } from "./data";
 import { OWNER } from "./env";
 import { expect, type Page, test } from "./fixtures";
+import { waitForHeartbeat } from "./helpers-worker";
 import { startFakeWorker, stopWorker } from "./worker-process";
 
 const FIXTURE = path.join(__dirname, "fixtures", "shirt.jpg");
@@ -11,15 +12,6 @@ let worker: ChildProcess | undefined;
 
 test.beforeEach(resetOwnerData);
 test.afterEach(async () => stopWorker(worker));
-
-/** Waits for the fake worker's first heartbeat (the pill is also hidden while status loads, so check the DB). */
-async function waitForHeartbeat() {
-  await expect
-    .poll(async () => (await admin.from("workers").select("id").eq("user_id", OWNER.id)).data?.length ?? 0, {
-      timeout: 30_000,
-    })
-    .toBeGreaterThan(0);
-}
 
 async function macOnline(page: Page) {
   await expect(page.getByRole("button", { name: "Mac offline" })).toBeHidden();

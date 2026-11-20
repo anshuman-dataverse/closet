@@ -21,7 +21,19 @@ export const ownerFiles = () => listFiles(OWNER.id);
 export async function resetOwnerData() {
   const files = await ownerFiles();
   if (files.length) await admin.storage.from("wardrobe").remove(files);
-  for (const t of ["wear_logs", "outfits", "items", "jobs", "workers"] as const) {
+  for (const t of [
+    "wear_logs",
+    "outfits",
+    "items",
+    "jobs",
+    "workers",
+    "wishlist_items",
+    "suggestion_events",
+    "hunts",
+    "style_photos",
+    "model_versions",
+    "paid_usage",
+  ] as const) {
     await admin.from(t).delete().eq("user_id", OWNER.id);
   }
   await admin

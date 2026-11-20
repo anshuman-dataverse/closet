@@ -2,7 +2,7 @@
 
 The spec is **SPEC.md** (read it before planning). The look, copy and interactions are in `design-reference/closet-demo.html`.
 Work phase by phase (SPEC 12). Plan each phase and get an OK first. Ask before adding paid services or deps that need accounts.
-Done: Phases 0–1. Phase 2 (vision) is built; it counts as done once your Colab eval meets ≥90% category and ≥70% type.
+Done: Phases 0–1 and 3. Phase 2 (vision) counts as done once the Colab eval meets ≥90% category / ≥70% type. Next: Phase 4.
 
 ## Run
 - Local Supabase: `supabase start` (repo root; ports 554xx because another project uses 543xx). Studio :55423, Mailpit :55424.
@@ -59,6 +59,14 @@ Done: Phases 0–1. Phase 2 (vision) is built; it counts as done once your Colab
 - Web flow: picking a photo in Add clothes saves a draft row ("New piece"), queues `tag_item`, and waits 20 s. The draft is
   deleted on cancel. Suggestions fill only untouched fields (`lib/domain/suggestions.ts`). Saved pieces show `SuggestionBox`.
 - Keep sheets at a stable spot in the tree (one return with `{body}{sheet}`), or switching branches remounts them.
+
+## Recommender (worker `recsys/`, no ML)
+- `candidates.py` (structure rules), `scoring.py` (harmony, palette=0 until Phase 4, formality, weather, freshness),
+  `select.py` (diversity), `engine.py`. Weights and thresholds are in `recsys/weights.yaml`. Menswear neutrals count by name.
+- `suggest_outfits` logs `shown` suggestion_events; the web logs worn/saved/skipped/liked/disliked. That's Phase 6's training data.
+- Unlock counts (check_wish, find_gaps) ignore wear history on purpose. Fake mode runs the real
+  suggest_outfits and find_gaps; check_wish and tag_item use fixtures.
+- Duplicate search: `nearest_items` RPC (pgvector, service role). Wishlist in web: `app/(app)/shop/*`, store `saveWish`/`checkWish`.
 
 ## Colab
 Training and eval only (see `colab/README.md`). The Mac runs all live inference.
