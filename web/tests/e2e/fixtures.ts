@@ -11,6 +11,9 @@ export const test = base.extend<{ consoleErrors: string[]; signIn: (next?: strin
         if (m.type() === "error") errors.push(m.text());
       });
       page.on("pageerror", (e) => errors.push(e.message));
+      page.on("response", (r) => {
+        if (r.status() >= 400) errors.push(`HTTP ${r.status()} ${r.request().method()} ${r.url()}`);
+      });
       await use(errors);
       expect(errors, "console errors").toEqual([]);
     },

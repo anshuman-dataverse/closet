@@ -83,7 +83,7 @@ docker compose up -d                                               # http://127.
 ```sh
 supabase start                  # local stack on ports 554xx (Studio :55423, Mailpit :55424)
 cd web && cp .env.example .env.local   # or keep the committed local defaults
-pnpm install && pnpm dev:user && pnpm dev
+pnpm install && pnpm dev:user && pnpm seed && pnpm dev   # seed = sample closet
 ```
 
 Sign-in emails go to Mailpit at http://127.0.0.1:55424.

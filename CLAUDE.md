@@ -2,11 +2,12 @@
 
 The spec is **SPEC.md** (read it before planning). The look, copy and interactions are in `design-reference/closet-demo.html`.
 Work phase by phase (SPEC 12). Plan each phase and get an OK first. Ask before adding paid services or deps that need accounts.
-Phase 0 (foundation) is done.
+Done: Phase 0 (foundation) and Phase 1 (core wardrobe). Next: Phase 2 (vision).
 
 ## Run
 - Local Supabase: `supabase start` (repo root; ports 554xx because another project uses 543xx). Studio :55423, Mailpit :55424.
-- Web: `cd web && pnpm dev`. Run `pnpm dev:user` once to create ALLOWED_EMAIL locally. Sign-in mail goes to Mailpit.
+- Web: `cd web && pnpm dev`. Run `pnpm dev:user` once to create ALLOWED_EMAIL locally; `pnpm seed [--reset]` loads the sample closet.
+  Sign-in mail goes to Mailpit.
 - Worker: `cd worker && uv run closet-worker [--fake] [--once]`. Reads `worker/.env`. launchd: `worker/launchd/install.sh`.
 - SearXNG: `docker compose -f infra/searxng/docker-compose.yml up -d` → http://127.0.0.1:8888.
 
@@ -37,6 +38,16 @@ Phase 0 (foundation) is done.
 - Python: ruff (line 100), mypy strict, handlers idempotent. Raise `TransientError` for retryable failures.
 - Secrets: `worker/.env`, `infra/searxng/.env` and `web/.env.local` are gitignored.
   The committed local keys are the public Supabase demo keys.
+
+## Web data layer
+- `lib/closet/store.ts` is one client store (useSyncExternalStore). It loads everything once and refetches when the tab
+  becomes visible. Writes go through it so local state stays in sync. `useDerived` gives `today` (profile time zone), `byId`, `stats`.
+- Atomic writes are RPCs: `log_wear` (the duplicate guard returns 'already'), `save_outfit` (replaces pieces and orders
+  by category), `delete_all_my_data` (the client deletes Storage files first).
+- The rules are pure functions in `lib/domain/*` (dates, money, wear, rotation, outfit, spend, colors), each with tests.
+- Photos: `lib/photos.ts` (1600px + 480px JPEG, EXIF stripped, upload as soon as picked). `lib/signed-urls.ts` batches signed URLs.
+- Sheets are addressed by query params (`?item=`, `?add=1`, `?outfit=`, `?edit=`, `?new=1`) through `useSheetParam`.
+- e2e: `tests/e2e/data.ts` resets and seeds the owner. Bulk inserts need every key, or missing ones become null.
 
 ## Colab
 Training and eval only (see `colab/README.md`). The Mac runs all live inference.

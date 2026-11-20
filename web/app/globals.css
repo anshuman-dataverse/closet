@@ -1655,3 +1655,14 @@ input[type="email"] {
 .kv dd {
   margin: 0;
 }
+
+/* Buttons reset with `all: unset` lose border-box sizing, so padded swatches overflowed their flat-lays. */
+.tile,
+.ocard-main,
+.pick-tile {
+  box-sizing: border-box;
+}
+/* Swatch labels: dark text on light swatches in both themes (.dk handles dark swatches). */
+.ph.lt {
+  color: #1a2142;
+}

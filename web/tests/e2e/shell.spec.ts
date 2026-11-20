@@ -1,4 +1,7 @@
+import { resetOwnerData } from "./data";
 import { expect, test } from "./fixtures";
+
+test.beforeEach(resetOwnerData);
 
 const PAGES = [
   { path: "/today", heading: "Your closet is empty" },

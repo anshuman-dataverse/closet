@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { EmptyState } from "@/components/EmptyState";
 import { signOut } from "@/app/login/actions";
+import { SettingsPanel } from "./SettingsPanel";
 import { WorkerPanel } from "./WorkerPanel";
 
 export const metadata: Metadata = { title: "Style profile" };
@@ -23,6 +24,8 @@ export default function ProfilePage() {
           Your photos are analyzed on your Mac. Model training may run in your own Google Colab.
         </p>
       </section>
+
+      <SettingsPanel />
 
       <WorkerPanel />
 

@@ -49,5 +49,15 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon|apple-icon|manifest.webmanifest|icons/|robots.txt).*)"],
+  matcher: [
+    {
+      source: "/((?!_next/static|_next/image|favicon.ico|icon|apple-icon|manifest.webmanifest|icons/|robots.txt).*)",
+      // Router prefetches only fetch static shells (no user data: everything loads in the browser under RLS).
+      // Redirecting them to /login during sign-out produced 404s, so they skip the proxy.
+      missing: [
+        { type: "header", key: "next-router-prefetch" },
+        { type: "header", key: "purpose", value: "prefetch" },
+      ],
+    },
+  ],
 };

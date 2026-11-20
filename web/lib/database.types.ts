@@ -857,6 +857,7 @@ export type Database = {
       };
     };
     Functions: {
+      category_rank: { Args: { c: Database["public"]["Enums"]["item_category"] }; Returns: number };
       claim_job: {
         Args: { p_user?: string; p_worker: string };
         Returns: {
@@ -881,7 +882,27 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      delete_all_my_data: { Args: Record<PropertyKey, never>; Returns: undefined };
+      log_wear: {
+        Args: {
+          p_item_ids: string[];
+          p_occasion: Database["public"]["Enums"]["occasion"];
+          p_outfit_id: string;
+          p_worn_on: string;
+        };
+        Returns: Json;
+      };
       requeue_stale_jobs: { Args: Record<PropertyKey, never>; Returns: number };
+      save_outfit: {
+        Args: {
+          p_id: string;
+          p_item_ids: string[];
+          p_name: string;
+          p_occasions: Database["public"]["Enums"]["occasion"][];
+          p_source?: string;
+        };
+        Returns: string;
+      };
     };
     Enums: {
       item_category: "Tops" | "Bottoms" | "Layers" | "Shoes" | "Accessories" | "Sets & suits";

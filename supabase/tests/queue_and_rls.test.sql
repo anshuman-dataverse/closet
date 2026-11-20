@@ -7,7 +7,8 @@ insert into auth.users (id, email, instance_id, aud, role) values
   ('11111111-1111-1111-1111-111111111111', 'a@x.test', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated'),
   ('22222222-2222-2222-2222-222222222222', 'b@x.test', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated');
 
-select is((select count(*)::int from public.profiles), 2, 'a profile row is created per user');
+select is((select count(*)::int from public.profiles where user_id in
+  ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')), 2, 'a profile row is created per user');
 
 -- user A
 set local role authenticated;
@@ -28,15 +29,17 @@ select is((select count(*)::int from public.item_stats), 0, 'views respect RLS (
 -- worker (service role)
 reset role;
 select is((select attempts::int from public.claim_job('mac', '11111111-1111-1111-1111-111111111111')), 1, 'claim marks running and counts the attempt');
-select is((select count(*)::int from public.claim_job('mac')), 0, 'a running job is not claimed twice');
+select is((select count(*)::int from public.claim_job('mac', '11111111-1111-1111-1111-111111111111')), 0, 'a running job is not claimed twice');
 
-update public.jobs set started_at = now() - interval '11 minutes';
+update public.jobs set started_at = now() - interval '11 minutes'
+  where user_id = '11111111-1111-1111-1111-111111111111';
 select public.requeue_stale_jobs();
-select is((select status::text from public.jobs), 'queued', 'stale job under 3 attempts goes back to queued');
+select is((select status::text from public.jobs where user_id = '11111111-1111-1111-1111-111111111111'), 'queued', 'stale job under 3 attempts goes back to queued');
 
-update public.jobs set status = 'running', attempts = 3, started_at = now() - interval '11 minutes';
+update public.jobs set status = 'running', attempts = 3, started_at = now() - interval '11 minutes'
+  where user_id = '11111111-1111-1111-1111-111111111111';
 select public.requeue_stale_jobs();
-select is((select status::text from public.jobs), 'failed', 'stale job after 3 attempts fails');
+select is((select status::text from public.jobs where user_id = '11111111-1111-1111-1111-111111111111'), 'failed', 'stale job after 3 attempts fails');
 
 select * from finish();
 rollback;

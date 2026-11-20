@@ -1,3 +1,4 @@
+import { ClosetProvider } from "@/components/ClosetProvider";
 import { Shell } from "@/components/Shell";
 import { ToastProvider } from "@/components/Toast";
 import { WorkerStatusProvider } from "@/components/WorkerStatus";
@@ -8,7 +9,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <WorkerStatusProvider>
       <ToastProvider>
-        <Shell>{children}</Shell>
+        <ClosetProvider>
+          <Shell>{children}</Shell>
+        </ClosetProvider>
       </ToastProvider>
     </WorkerStatusProvider>
   );

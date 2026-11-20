@@ -15,7 +15,8 @@
     "icons": "node scripts/icons.mjs",
     "db:types": "supabase gen types typescript --local > lib/database.types.ts && prettier --write lib/database.types.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
-    "dev:user": "node scripts/dev-user.mjs"
+    "dev:user": "node scripts/dev-user.mjs",
+    "seed": "node scripts/seed.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
