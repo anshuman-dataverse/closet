@@ -253,10 +253,11 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Magic link + 6-digit code (the code works inside the installed iPhone app).
-[auth.email.template.magic_link]
-subject = "Your Closet sign-in code"
-content_path = "./supabase/templates/magic_link.html"
+# Magic link + 6-digit code (the code works inside the installed iPhone app). Local stack only:
+# Supabase's free tier rejects custom templates unless the project uses its own SMTP (see README).
+# [auth.email.template.magic_link]
+# subject = "Your Closet sign-in code"
+# content_path = "./supabase/templates/magic_link.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
@@ -433,3 +434,17 @@ enabled = true
 # formatted with uppercase keywords, indent 2, max width 180, trailing commas,
 # and column/key alignment. Set to "null" to emit raw, unformatted SQL.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":180,\"commaStyle\":\"trailing\"}"
+
+# ---------------------------------------------------------------- production (supabase config push)
+[remotes.production]
+project_id = "rmrjfznkvjdvsfjuegii"
+
+[remotes.production.auth]
+site_url = "https://closet-henna-eta.vercel.app"
+additional_redirect_urls = ["https://closet-henna-eta.vercel.app/auth/callback"]
+
+[remotes.production.auth.email]
+max_frequency = "1m0s"    # production keeps Supabase's 1-minute resend limit
+
+[remotes.production.storage.vector]
+enabled = false

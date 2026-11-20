@@ -38,6 +38,14 @@ The first model run (Phase 2) downloads about 1 GB.
 6. Note these down: the Project URL, the **publishable** key (for the web app), the **secret / service-role**
    key (worker only), and your user's id (Users list, for `OWNER_USER_ID`).
 
+**Free-tier email note:** Supabase's built-in email sender only delivers to your Supabase organization's team
+addresses, a few times per hour, and won't accept a custom template. Without the template, emails carry only the
+link, not the 6-digit code. To get the code (needed inside the installed iPhone app), add custom SMTP under
+**Authentication → Emails → SMTP**, uncomment `[auth.email.template.magic_link]` in `supabase/config.toml`,
+and run `supabase config push`.
+
+Production auth settings live under `[remotes.production]` in `supabase/config.toml` and are applied with `supabase config push`.
+
 ## 3. Web app on Vercel (Hobby)
 
 Import the GitHub repo in Vercel and set **Root Directory = `web`**. Add 3 environment variables:
