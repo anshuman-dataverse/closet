@@ -9,7 +9,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from . import check_wish, find_gaps, ping, suggest_outfits, tag_item
+from . import analyze_profile, check_wish, find_gaps, ping, suggest_outfits, tag_item
 from .context import JobContext
 
 Handler = Callable[[dict[str, Any], JobContext | None], dict[str, Any]]
@@ -41,7 +41,7 @@ REGISTRY: dict[str, Spec] = {
     "ping": Spec(handler=ping.run, timeout_s=10),
     "tag_item": Spec(handler=tag_item.run, timeout_s=180),
     "embed_wish": Spec(handler=check_wish.run_embed, timeout_s=120),
-    "analyze_profile": _todo("analyze_profile"),
+    "analyze_profile": Spec(handler=analyze_profile.run, timeout_s=180),
     "suggest_outfits": Spec(handler=suggest_outfits.run, timeout_s=60),
     "check_wish": Spec(handler=check_wish.run, timeout_s=180),
     "find_gaps": Spec(handler=find_gaps.run, timeout_s=120),

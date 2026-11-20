@@ -27,6 +27,8 @@ class ItemStore(Protocol):
     def nearest_items(
         self, vec: list[float], category: str | None, k: int
     ) -> list[dict[str, Any]]: ...
+    def list_style_photos(self) -> list[dict[str, Any]]: ...
+    def update_profile(self, fields: dict[str, Any]) -> None: ...
 
 
 class SupabaseItemStore:
@@ -152,3 +154,15 @@ class SupabaseItemStore:
             {"p_owner": self.owner, "p_embedding": vec, "p_category": category, "p_k": k},
         ).execute()
         return self._rows(res)
+
+    def list_style_photos(self) -> list[dict[str, Any]]:
+        q = (
+            self.db.table("style_photos")
+            .select("*")
+            .eq("user_id", self.owner)
+            .order("created_at", desc=True)
+        )
+        return self._rows(q.execute())
+
+    def update_profile(self, fields: dict[str, Any]) -> None:
+        self.db.table("profiles").update(fields).eq("user_id", self.owner).execute()

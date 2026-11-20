@@ -14,3 +14,5 @@ export type Wish = Omit<T["wishlist_items"]["Row"], "embedding">;
 export const WISH_COLUMNS =
   "id,user_id,name,category,color_name,occasion,price_cents,url,store,notes,photo_path,image_url,status," +
   "check_result,checked_at,watch,target_price_cents,last_seen_price_cents,last_price_check_at,created_at";
+
+export type StylePhoto = T["style_photos"]["Row"];

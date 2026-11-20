@@ -1,6 +1,6 @@
 # Rule-score weights (SPEC 5.4 step 3). total = Σ weight × term, each term in about [-1, 1] (freshness can go lower).
 harmony: 1.0
-palette: 0.0      # needs the style profile (Phase 4)
+palette: 0.6      # only counts once you have a style profile
 formality: 1.0
 weather: 0.8
 freshness: 1.2

@@ -9,6 +9,7 @@ import {
   type ItemStatus,
   type Outfit,
   type Profile,
+  type StylePhoto,
   type WearLog,
   type Wish,
   WISH_COLUMNS,
@@ -18,7 +19,7 @@ import { todayIn } from "@/lib/domain/dates";
 import { wearStats, type WearStats } from "@/lib/domain/wear";
 import type { Occasion } from "@/lib/occasions";
 import { enqueueJob, type JobRow, waitForJob } from "@/lib/jobs";
-import { listAllFiles, removePaths } from "@/lib/photos";
+import { listAllFiles, preparePhoto, removePaths, uploadPhotoTo } from "@/lib/photos";
 import { dropSignedUrls } from "@/lib/signed-urls";
 import { supabase } from "@/lib/supabase/client";
 
@@ -31,6 +32,7 @@ export type ClosetState = {
   outfits: Outfit[];
   logs: WearLog[];
   wishes: Wish[];
+  stylePhotos: StylePhoto[];
 };
 
 const EMPTY: ClosetState = {
@@ -41,6 +43,7 @@ const EMPTY: ClosetState = {
   outfits: [],
   logs: [],
   wishes: [],
+  stylePhotos: [],
 };
 let state: ClosetState = EMPTY;
 const listeners = new Set<() => void>();
@@ -67,7 +70,7 @@ export function loadCloset(): Promise<void> {
         data: { user },
       } = await db.auth.getUser();
       if (!user) throw new Error("signed out");
-      const [p, i, o, oi, w, wi, wl] = await Promise.all([
+      const [p, i, o, oi, w, wi, wl, sp] = await Promise.all([
         db.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
         db.from("items").select("*").order("created_at", { ascending: false }),
         db.from("outfits").select("*").order("created_at", { ascending: true }),
@@ -79,8 +82,9 @@ export function loadCloset(): Promise<void> {
           .select(WISH_COLUMNS)
           .neq("status", "removed")
           .order("created_at", { ascending: false }),
+        db.from("style_photos").select("*").order("created_at", { ascending: true }),
       ]);
-      const err = [p, i, o, oi, w, wi, wl].find((r) => r.error)?.error;
+      const err = [p, i, o, oi, w, wi, wl, sp].find((r) => r.error)?.error;
       if (err) throw err;
 
       const pieces = new Map<string, { item_id: string; position: number }[]>();
@@ -101,6 +105,7 @@ export function loadCloset(): Promise<void> {
         })),
         logs: (w.data ?? []).map((x) => ({ ...x, itemIds: worn.get(x.id) ?? [] })),
         wishes: (wl.data ?? []) as unknown as Wish[],
+        stylePhotos: sp.data ?? [],
       });
     } catch {
       set({ status: state.status === "ready" ? "ready" : "error", error: LOAD_ERROR });
@@ -384,4 +389,51 @@ export async function logSuggestionEvent(e: {
       model_version: e.modelVersion ?? null,
     });
   if (error) fail(error, "Couldn’t save that. Try again.");
+}
+
+// ---------------------------------------------------------------- style profile (SPEC 4.6, 5.2)
+
+export async function addStylePhoto(kind: string, file: Blob): Promise<StylePhoto> {
+  const db = supabase();
+  const uid = state.userId;
+  if (!uid) throw new Error("Sign in first.");
+  if (state.stylePhotos.length >= 6) throw new Error("You have 6 photos. Remove one to add another.");
+  const prepared = await preparePhoto(file);
+  const { photo_path, thumb_path } = await uploadPhotoTo(db, `${uid}/style`, prepared);
+  const { data, error } = await db.from("style_photos").insert({ photo_path, kind }).select("*").single();
+  if (error || !data) {
+    void removePaths(db, [photo_path, thumb_path]);
+    fail(error, "Couldn’t save that photo. Try again.");
+  }
+  set({ stylePhotos: [...state.stylePhotos, data!] });
+  return data!;
+}
+
+export async function removeStylePhoto(id: string): Promise<void> {
+  const db = supabase();
+  const p = state.stylePhotos.find((x) => x.id === id);
+  if (!p) return;
+  const { error } = await db.from("style_photos").delete().eq("id", id);
+  if (error) fail(error, "Couldn’t remove that photo. Try again.");
+  const files = [p.photo_path, p.photo_path.replace(/\.jpg$/, "_thumb.jpg")];
+  dropSignedUrls(files);
+  void removePaths(db, files);
+  set({ stylePhotos: state.stylePhotos.filter((x) => x.id !== id) });
+}
+
+async function refreshProfile(): Promise<void> {
+  const uid = state.userId;
+  if (!uid) return;
+  const { data } = await supabase().from("profiles").select("*").eq("user_id", uid).maybeSingle();
+  if (data) set({ profile: data });
+}
+
+/** Queue the style analysis (or a palette recompute after an override) and wait for it. */
+export async function requestAnalysis(recompute = false, timeoutMs = 90_000): Promise<JobRow | null> {
+  const db = supabase();
+  const job = await enqueueJob(db, "analyze_profile", recompute ? { recompute: true } : {}, 5);
+  if (timeoutMs <= 0) return null;
+  const done = await waitForJob(db, job.id, { timeoutMs });
+  if (done?.status === "done") await refreshProfile();
+  return done && (done.status === "done" || done.status === "failed") ? done : null;
 }

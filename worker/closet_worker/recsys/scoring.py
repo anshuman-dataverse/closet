@@ -9,7 +9,11 @@ from functools import cache
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import yaml
+from numpy.typing import NDArray
+
+from closet_worker.vision.color import delta_e, hex_to_rgb, srgb_to_lab
 
 from .candidates import FORMALITY_TARGET, Outfit, needs_layer
 from .model import WARMTH_LEVEL, Context, History, Piece
@@ -93,9 +97,49 @@ def harmony(o: Outfit) -> tuple[float, list[Reason]]:
     return -0.3, []
 
 
-def palette_fit(o: Outfit, profile: dict[str, Any] | None) -> tuple[float, list[Reason]]:
-    """Closeness to your best colors and neutrals (needs the style profile, Phase 4)."""
-    return 0.0, []
+PALETTE_NEAR = 40.0  # ΔE2000 at which closeness to your palette reaches 0
+CAREFUL_NEAR = 12.0  # tops and layers this close to a "use carefully" color are penalized
+BEST_MATCH = 10.0  # close enough to call it "one of your best colors"
+
+
+@cache
+def _labs(hexes: tuple[str, ...]) -> NDArray[np.float64]:
+    return srgb_to_lab(np.array([hex_to_rgb(h) for h in hexes]))
+
+
+def palette_fit(o: Outfit, analysis: dict[str, Any] | None) -> tuple[float, list[Reason]]:
+    """Closeness to your best colors and neutrals; careful colors near the face cost a little."""
+    if not analysis or not analysis.get("best"):
+        return 0.0, []
+    good = tuple(c["hex"] for c in [*analysis["best"], *analysis.get("neutrals", [])])
+    best_names = {c["hex"]: c["name"] for c in analysis["best"]}
+    careful = tuple(c["hex"] for c in analysis.get("careful", []))
+    vals: list[float] = []
+    reasons: list[Reason] = []
+    for p in o:
+        lab = p.lab
+        if lab is None:
+            continue
+        here = np.array([lab])
+        d = delta_e(np.repeat(here, len(good), axis=0), _labs(good))
+        vals.append(1.0 - min(float(d.min()), PALETTE_NEAR) / PALETTE_NEAR)
+        k = int(d.argmin())
+        if (
+            float(d[k]) <= BEST_MATCH
+            and good[k] in best_names
+            and p.category in ("Tops", "Layers")
+            and not reasons
+        ):
+            reasons.append(
+                {"kind": "palette", "color": best_names[good[k]].lower(), "piece": p.noun}
+            )
+        if careful and p.category in ("Tops", "Layers", "Sets & suits"):
+            dc = delta_e(np.repeat(here, len(careful), axis=0), _labs(careful))
+            if float(dc.min()) <= CAREFUL_NEAR:
+                vals.append(-0.6)
+    if not vals:
+        return 0.0, []
+    return max(-1.0, min(1.0, sum(vals) / len(vals))), reasons
 
 
 def formality(o: Outfit, ctx: Context, shift: int = 0) -> tuple[float, list[Reason]]:
@@ -184,7 +228,9 @@ def score(
     }
     terms = {k: round(v[0], 4) for k, v in parts.items()}
     total = sum(w.get(k, 0.0) * v for k, v in terms.items())
-    reasons = [r for k in ("harmony", "freshness", "weather", "formality") for r in parts[k][1]]
+    reasons = [
+        r for k in ("palette", "harmony", "freshness", "weather", "formality") for r in parts[k][1]
+    ]
     return Score(round(total, 4), terms, reasons)
 
 

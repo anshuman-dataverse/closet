@@ -2,7 +2,8 @@
 
 The spec is **SPEC.md** (read it before planning). The look, copy and interactions are in `design-reference/closet-demo.html`.
 Work phase by phase (SPEC 12). Plan each phase and get an OK first. Ask before adding paid services or deps that need accounts.
-Done: Phases 0–1 and 3. Phase 2 (vision) counts as done once the Colab eval meets ≥90% category / ≥70% type. Next: Phase 4.
+Done: Phases 0–1, 3–4. Phase 2 (vision) counts as done once the Colab eval meets ≥90% category / ≥70% type. Next: Phase 5.
+Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Vercel has no GPUs.
 
 ## Run
 - Local Supabase: `supabase start` (repo root; ports 554xx because another project uses 543xx). Studio :55423, Mailpit :55424.
@@ -68,6 +69,14 @@ Done: Phases 0–1 and 3. Phase 2 (vision) counts as done once the Colab eval me
   suggest_outfits and find_gaps; check_wish and tag_item use fixtures.
 - Duplicate search: `nearest_items` RPC (pgvector, service role). Wishlist in web: `app/(app)/shop/*`, store `saveWish`/`checkWish`.
 
+## Style profile (Phase 4)
+- `analyze_profile`: MediaPipe Face and Pose (`vision/landmarks.py`; models cached in ~/.cache/closet) → `skin.py`
+  (undertone, depth, contrast, lighting), `face_shape.py` (majority vote over face photos), `body.py` → `style.py`
+  builds `profiles.analysis`. `{recompute:true}` reruns only the palette and text with the overrides.
+- Tables: `vocab/style.yaml` (thresholds), `palettes.yaml` (36 combinations), `face_tips.yaml`.
+- `tests/test_style.py` bans body and looks words in all generated text. Keep it passing.
+- Palette fit (weight 0.6) and accessories (`engine.accessory_for`) are in the recommender.
+
 ## Colab
 Training and eval only (see `colab/README.md`). The Mac runs all live inference.
-Any data may go to Colab (the owner's decision), but the service-role key stays on the Mac.
+Clothing data may go to Colab (the owner's decision). Style photos (face and body) never leave the Mac, and neither does the service-role key.

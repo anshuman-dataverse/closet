@@ -1,0 +1,849 @@
+# Color palettes by undertone/depth/contrast (SPEC 5.2 step 5). Drafted from common seasonal color guidance:
+# a base per undertone, richer shades for deeper coloring, black and white for high contrast.
+# Names map to colors.yaml. Review and edit freely; tests check every combination stays well-formed.
+warm/light/low:
+  best:
+  - light blue
+  - mint
+  - rust
+  - mustard
+  - olive
+  - camel
+  - terracotta
+  - teal
+  neutrals:
+  - camel
+  - chocolate
+  - cream
+  - khaki
+  - navy
+  careful:
+  - name: lavender
+    why: Cool pastels can look washed out next to warm skin.
+  - name: silver
+    why: Icy greys can flatten warm coloring near the face.
+  - name: pink
+    why: Cool pinks can fight a warm undertone.
+  - name: black
+    why: Pure black can overpower low contrast; charcoal or navy is softer.
+warm/light/medium:
+  best:
+  - light blue
+  - mint
+  - rust
+  - mustard
+  - olive
+  - camel
+  - terracotta
+  - teal
+  neutrals:
+  - camel
+  - chocolate
+  - cream
+  - khaki
+  - navy
+  careful:
+  - name: lavender
+    why: Cool pastels can look washed out next to warm skin.
+  - name: silver
+    why: Icy greys can flatten warm coloring near the face.
+  - name: pink
+    why: Cool pinks can fight a warm undertone.
+warm/light/high:
+  best:
+  - light blue
+  - mint
+  - rust
+  - mustard
+  - olive
+  - camel
+  - terracotta
+  - teal
+  neutrals:
+  - camel
+  - chocolate
+  - cream
+  - khaki
+  - navy
+  careful:
+  - name: lavender
+    why: Cool pastels can look washed out next to warm skin.
+  - name: silver
+    why: Icy greys can flatten warm coloring near the face.
+  - name: pink
+    why: Cool pinks can fight a warm undertone.
+warm/medium/low:
+  best:
+  - rust
+  - mustard
+  - olive
+  - camel
+  - terracotta
+  - teal
+  - forest green
+  - cream
+  neutrals:
+  - camel
+  - chocolate
+  - cream
+  - khaki
+  - navy
+  careful:
+  - name: lavender
+    why: Cool pastels can look washed out next to warm skin.
+  - name: silver
+    why: Icy greys can flatten warm coloring near the face.
+  - name: pink
+    why: Cool pinks can fight a warm undertone.
+  - name: black
+    why: Pure black can overpower low contrast; charcoal or navy is softer.
+warm/medium/medium:
+  best:
+  - rust
+  - mustard
+  - olive
+  - camel
+  - terracotta
+  - teal
+  - forest green
+  - cream
+  neutrals:
+  - camel
+  - chocolate
+  - cream
+  - khaki
+  - navy
+  careful:
+  - name: lavender
+    why: Cool pastels can look washed out next to warm skin.
+  - name: silver
+    why: Icy greys can flatten warm coloring near the face.
+  - name: pink
+    why: Cool pinks can fight a warm undertone.
+warm/medium/high:
+  best:
+  - rust
+  - mustard
+  - olive
+  - camel
+  - terracotta
+  - teal
+  - forest green
+  - cream
+  neutrals:
+  - camel
+  - chocolate
+  - cream
+  - khaki
+  - navy
+  careful:
+  - name: lavender
+    why: Cool pastels can look washed out next to warm skin.
+  - name: silver
+    why: Icy greys can flatten warm coloring near the face.
+  - name: pink
+    why: Cool pinks can fight a warm undertone.
+warm/deep/low:
+  best:
+  - purple
+  - red
+  - white
+  - rust
+  - mustard
+  - olive
+  - camel
+  - terracotta
+  neutrals:
+  - camel
+  - chocolate
+  - cream
+  - khaki
+  - navy
+  careful:
+  - name: lavender
+    why: Cool pastels can look washed out next to warm skin.
+  - name: silver
+    why: Icy greys can flatten warm coloring near the face.
+  - name: pink
+    why: Cool pinks can fight a warm undertone.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+warm/deep/medium:
+  best:
+  - purple
+  - red
+  - white
+  - rust
+  - mustard
+  - olive
+  - camel
+  - terracotta
+  neutrals:
+  - camel
+  - chocolate
+  - cream
+  - khaki
+  - navy
+  careful:
+  - name: lavender
+    why: Cool pastels can look washed out next to warm skin.
+  - name: silver
+    why: Icy greys can flatten warm coloring near the face.
+  - name: pink
+    why: Cool pinks can fight a warm undertone.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+warm/deep/high:
+  best:
+  - purple
+  - red
+  - white
+  - rust
+  - mustard
+  - olive
+  - camel
+  - terracotta
+  neutrals:
+  - camel
+  - chocolate
+  - cream
+  - khaki
+  - navy
+  careful:
+  - name: lavender
+    why: Cool pastels can look washed out next to warm skin.
+  - name: silver
+    why: Icy greys can flatten warm coloring near the face.
+  - name: pink
+    why: Cool pinks can fight a warm undertone.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+cool/light/low:
+  best:
+  - light blue
+  - mint
+  - navy
+  - burgundy
+  - teal
+  - sky blue
+  - purple
+  - pink
+  neutrals:
+  - charcoal
+  - navy
+  - grey
+  - white
+  careful:
+  - name: orange
+    why: Warm oranges can clash with a cool undertone.
+  - name: mustard
+    why: Yellow-based shades can look muddy next to cool skin.
+  - name: camel
+    why: Warm beiges near the face can look flat; keep them on trousers.
+  - name: black
+    why: Pure black can overpower low contrast; charcoal or navy is softer.
+cool/light/medium:
+  best:
+  - light blue
+  - mint
+  - navy
+  - burgundy
+  - teal
+  - sky blue
+  - purple
+  - pink
+  neutrals:
+  - charcoal
+  - navy
+  - grey
+  - white
+  careful:
+  - name: orange
+    why: Warm oranges can clash with a cool undertone.
+  - name: mustard
+    why: Yellow-based shades can look muddy next to cool skin.
+  - name: camel
+    why: Warm beiges near the face can look flat; keep them on trousers.
+cool/light/high:
+  best:
+  - light blue
+  - mint
+  - navy
+  - burgundy
+  - teal
+  - sky blue
+  - purple
+  - pink
+  neutrals:
+  - charcoal
+  - navy
+  - grey
+  - white
+  - black
+  careful:
+  - name: orange
+    why: Warm oranges can clash with a cool undertone.
+  - name: mustard
+    why: Yellow-based shades can look muddy next to cool skin.
+  - name: camel
+    why: Warm beiges near the face can look flat; keep them on trousers.
+cool/medium/low:
+  best:
+  - navy
+  - burgundy
+  - teal
+  - sky blue
+  - purple
+  - pink
+  - charcoal
+  - white
+  neutrals:
+  - charcoal
+  - navy
+  - grey
+  - white
+  careful:
+  - name: orange
+    why: Warm oranges can clash with a cool undertone.
+  - name: mustard
+    why: Yellow-based shades can look muddy next to cool skin.
+  - name: camel
+    why: Warm beiges near the face can look flat; keep them on trousers.
+  - name: black
+    why: Pure black can overpower low contrast; charcoal or navy is softer.
+cool/medium/medium:
+  best:
+  - navy
+  - burgundy
+  - teal
+  - sky blue
+  - purple
+  - pink
+  - charcoal
+  - white
+  neutrals:
+  - charcoal
+  - navy
+  - grey
+  - white
+  careful:
+  - name: orange
+    why: Warm oranges can clash with a cool undertone.
+  - name: mustard
+    why: Yellow-based shades can look muddy next to cool skin.
+  - name: camel
+    why: Warm beiges near the face can look flat; keep them on trousers.
+cool/medium/high:
+  best:
+  - navy
+  - burgundy
+  - teal
+  - sky blue
+  - purple
+  - pink
+  - charcoal
+  - white
+  neutrals:
+  - charcoal
+  - navy
+  - grey
+  - white
+  - black
+  careful:
+  - name: orange
+    why: Warm oranges can clash with a cool undertone.
+  - name: mustard
+    why: Yellow-based shades can look muddy next to cool skin.
+  - name: camel
+    why: Warm beiges near the face can look flat; keep them on trousers.
+cool/deep/low:
+  best:
+  - purple
+  - red
+  - white
+  - navy
+  - burgundy
+  - teal
+  - sky blue
+  - pink
+  neutrals:
+  - charcoal
+  - navy
+  - grey
+  - white
+  careful:
+  - name: orange
+    why: Warm oranges can clash with a cool undertone.
+  - name: mustard
+    why: Yellow-based shades can look muddy next to cool skin.
+  - name: camel
+    why: Warm beiges near the face can look flat; keep them on trousers.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+cool/deep/medium:
+  best:
+  - purple
+  - red
+  - white
+  - navy
+  - burgundy
+  - teal
+  - sky blue
+  - pink
+  neutrals:
+  - charcoal
+  - navy
+  - grey
+  - white
+  careful:
+  - name: orange
+    why: Warm oranges can clash with a cool undertone.
+  - name: mustard
+    why: Yellow-based shades can look muddy next to cool skin.
+  - name: camel
+    why: Warm beiges near the face can look flat; keep them on trousers.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+cool/deep/high:
+  best:
+  - purple
+  - red
+  - white
+  - navy
+  - burgundy
+  - teal
+  - sky blue
+  - pink
+  neutrals:
+  - charcoal
+  - navy
+  - grey
+  - white
+  - black
+  careful:
+  - name: orange
+    why: Warm oranges can clash with a cool undertone.
+  - name: mustard
+    why: Yellow-based shades can look muddy next to cool skin.
+  - name: camel
+    why: Warm beiges near the face can look flat; keep them on trousers.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+neutral/light/low:
+  best:
+  - light blue
+  - mint
+  - navy
+  - teal
+  - dusty pink
+  - sage
+  - burgundy
+  - stone
+  neutrals:
+  - navy
+  - grey
+  - stone
+  - white
+  - camel
+  careful:
+  - name: yellow
+    why: Very bright yellow can overpower a balanced undertone.
+  - name: orange
+    why: Strong orange near the face can dominate; try rust instead.
+  - name: black
+    why: Pure black can overpower low contrast; charcoal or navy is softer.
+neutral/light/medium:
+  best:
+  - light blue
+  - mint
+  - navy
+  - teal
+  - dusty pink
+  - sage
+  - burgundy
+  - stone
+  neutrals:
+  - navy
+  - grey
+  - stone
+  - white
+  - camel
+  careful:
+  - name: yellow
+    why: Very bright yellow can overpower a balanced undertone.
+  - name: orange
+    why: Strong orange near the face can dominate; try rust instead.
+neutral/light/high:
+  best:
+  - light blue
+  - mint
+  - navy
+  - teal
+  - dusty pink
+  - sage
+  - burgundy
+  - stone
+  neutrals:
+  - navy
+  - grey
+  - stone
+  - white
+  - camel
+  careful:
+  - name: yellow
+    why: Very bright yellow can overpower a balanced undertone.
+  - name: orange
+    why: Strong orange near the face can dominate; try rust instead.
+neutral/medium/low:
+  best:
+  - navy
+  - teal
+  - dusty pink
+  - sage
+  - burgundy
+  - light blue
+  - stone
+  - denim
+  neutrals:
+  - navy
+  - grey
+  - stone
+  - white
+  - camel
+  careful:
+  - name: yellow
+    why: Very bright yellow can overpower a balanced undertone.
+  - name: orange
+    why: Strong orange near the face can dominate; try rust instead.
+  - name: black
+    why: Pure black can overpower low contrast; charcoal or navy is softer.
+neutral/medium/medium:
+  best:
+  - navy
+  - teal
+  - dusty pink
+  - sage
+  - burgundy
+  - light blue
+  - stone
+  - denim
+  neutrals:
+  - navy
+  - grey
+  - stone
+  - white
+  - camel
+  careful:
+  - name: yellow
+    why: Very bright yellow can overpower a balanced undertone.
+  - name: orange
+    why: Strong orange near the face can dominate; try rust instead.
+neutral/medium/high:
+  best:
+  - navy
+  - teal
+  - dusty pink
+  - sage
+  - burgundy
+  - light blue
+  - stone
+  - denim
+  neutrals:
+  - navy
+  - grey
+  - stone
+  - white
+  - camel
+  careful:
+  - name: yellow
+    why: Very bright yellow can overpower a balanced undertone.
+  - name: orange
+    why: Strong orange near the face can dominate; try rust instead.
+neutral/deep/low:
+  best:
+  - purple
+  - red
+  - white
+  - navy
+  - teal
+  - dusty pink
+  - sage
+  - burgundy
+  neutrals:
+  - navy
+  - grey
+  - stone
+  - white
+  - camel
+  careful:
+  - name: yellow
+    why: Very bright yellow can overpower a balanced undertone.
+  - name: orange
+    why: Strong orange near the face can dominate; try rust instead.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+  - name: black
+    why: Pure black can overpower low contrast; charcoal or navy is softer.
+neutral/deep/medium:
+  best:
+  - purple
+  - red
+  - white
+  - navy
+  - teal
+  - dusty pink
+  - sage
+  - burgundy
+  neutrals:
+  - navy
+  - grey
+  - stone
+  - white
+  - camel
+  careful:
+  - name: yellow
+    why: Very bright yellow can overpower a balanced undertone.
+  - name: orange
+    why: Strong orange near the face can dominate; try rust instead.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+neutral/deep/high:
+  best:
+  - purple
+  - red
+  - white
+  - navy
+  - teal
+  - dusty pink
+  - sage
+  - burgundy
+  neutrals:
+  - navy
+  - grey
+  - stone
+  - white
+  - camel
+  careful:
+  - name: yellow
+    why: Very bright yellow can overpower a balanced undertone.
+  - name: orange
+    why: Strong orange near the face can dominate; try rust instead.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+olive/light/low:
+  best:
+  - light blue
+  - mint
+  - olive
+  - forest green
+  - teal
+  - burgundy
+  - rust
+  - mustard
+  neutrals:
+  - khaki
+  - olive
+  - navy
+  - chocolate
+  - cream
+  careful:
+  - name: yellow
+    why: Bright yellow can echo the green in olive skin.
+  - name: light grey
+    why: Pale greys can look flat against olive skin.
+  - name: lavender
+    why: Pale cool pastels can look washed out.
+  - name: black
+    why: Pure black can overpower low contrast; charcoal or navy is softer.
+olive/light/medium:
+  best:
+  - light blue
+  - mint
+  - olive
+  - forest green
+  - teal
+  - burgundy
+  - rust
+  - mustard
+  neutrals:
+  - khaki
+  - olive
+  - navy
+  - chocolate
+  - cream
+  careful:
+  - name: yellow
+    why: Bright yellow can echo the green in olive skin.
+  - name: light grey
+    why: Pale greys can look flat against olive skin.
+  - name: lavender
+    why: Pale cool pastels can look washed out.
+olive/light/high:
+  best:
+  - light blue
+  - mint
+  - olive
+  - forest green
+  - teal
+  - burgundy
+  - rust
+  - mustard
+  neutrals:
+  - khaki
+  - olive
+  - navy
+  - chocolate
+  - cream
+  careful:
+  - name: yellow
+    why: Bright yellow can echo the green in olive skin.
+  - name: light grey
+    why: Pale greys can look flat against olive skin.
+  - name: lavender
+    why: Pale cool pastels can look washed out.
+olive/medium/low:
+  best:
+  - olive
+  - forest green
+  - teal
+  - burgundy
+  - rust
+  - mustard
+  - cream
+  - navy
+  neutrals:
+  - khaki
+  - olive
+  - navy
+  - chocolate
+  - cream
+  careful:
+  - name: yellow
+    why: Bright yellow can echo the green in olive skin.
+  - name: light grey
+    why: Pale greys can look flat against olive skin.
+  - name: lavender
+    why: Pale cool pastels can look washed out.
+  - name: black
+    why: Pure black can overpower low contrast; charcoal or navy is softer.
+olive/medium/medium:
+  best:
+  - olive
+  - forest green
+  - teal
+  - burgundy
+  - rust
+  - mustard
+  - cream
+  - navy
+  neutrals:
+  - khaki
+  - olive
+  - navy
+  - chocolate
+  - cream
+  careful:
+  - name: yellow
+    why: Bright yellow can echo the green in olive skin.
+  - name: light grey
+    why: Pale greys can look flat against olive skin.
+  - name: lavender
+    why: Pale cool pastels can look washed out.
+olive/medium/high:
+  best:
+  - olive
+  - forest green
+  - teal
+  - burgundy
+  - rust
+  - mustard
+  - cream
+  - navy
+  neutrals:
+  - khaki
+  - olive
+  - navy
+  - chocolate
+  - cream
+  careful:
+  - name: yellow
+    why: Bright yellow can echo the green in olive skin.
+  - name: light grey
+    why: Pale greys can look flat against olive skin.
+  - name: lavender
+    why: Pale cool pastels can look washed out.
+olive/deep/low:
+  best:
+  - purple
+  - red
+  - white
+  - olive
+  - forest green
+  - teal
+  - burgundy
+  - rust
+  neutrals:
+  - khaki
+  - olive
+  - navy
+  - chocolate
+  - cream
+  careful:
+  - name: yellow
+    why: Bright yellow can echo the green in olive skin.
+  - name: light grey
+    why: Pale greys can look flat against olive skin.
+  - name: lavender
+    why: Pale cool pastels can look washed out.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+olive/deep/medium:
+  best:
+  - purple
+  - red
+  - white
+  - olive
+  - forest green
+  - teal
+  - burgundy
+  - rust
+  neutrals:
+  - khaki
+  - olive
+  - navy
+  - chocolate
+  - cream
+  careful:
+  - name: yellow
+    why: Bright yellow can echo the green in olive skin.
+  - name: light grey
+    why: Pale greys can look flat against olive skin.
+  - name: lavender
+    why: Pale cool pastels can look washed out.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.
+olive/deep/high:
+  best:
+  - purple
+  - red
+  - white
+  - olive
+  - forest green
+  - teal
+  - burgundy
+  - rust
+  neutrals:
+  - khaki
+  - olive
+  - navy
+  - chocolate
+  - cream
+  careful:
+  - name: yellow
+    why: Bright yellow can echo the green in olive skin.
+  - name: light grey
+    why: Pale greys can look flat against olive skin.
+  - name: lavender
+    why: Pale cool pastels can look washed out.
+  - name: beige
+    why: Very pale beige near the face can look ashy; go deeper or brighter.

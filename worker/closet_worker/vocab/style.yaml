@@ -1,0 +1,35 @@
+# Style-profile thresholds (SPEC 5.2). Tune on a few reference photos; every analysis records the values it used.
+undertone:
+  warm_min_hue: 58      # skin hue angle h = atan2(b*, a*) in degrees: yellower → warm
+  cool_max_hue: 45      # pinker → cool; in between → neutral
+  olive_max_a: 9        # low redness …
+  olive_b: [12, 22]     # … with moderate yellowness → olive
+depth:                  # ITA° = atan((L* − 50) / b*)
+  light_min_ita: 41
+  deep_max_ita: 10
+contrast:               # |hair L* − skin L*|
+  low_below: 25
+  high_above: 45
+lighting:
+  dark_face_L: 35
+  cast_a: 8             # gray-world mean a* or b* beyond these reads as a color cast
+  warm_cast_b: 15
+  cool_cast_b: -10
+  blown_share: 0.05     # share of face pixels with a channel ≥ 250
+face_shape:             # ratios from Face Mesh landmarks (the mesh top sits below the hairline)
+  oblong_min_length: 1.45
+  round_max_length: 1.18
+  square_max_length: 1.30
+  wide_jaw: 0.88        # jaw / cheekbone width
+  round_jaw: 0.80
+  narrow_jaw: 0.78
+  wide_forehead: 0.92   # forehead / cheekbone width
+  narrow_forehead: 0.82
+  max_yaw: 0.12         # nose offset from the face midline / face width
+body:                   # Pose "hips" are hip joints (narrower than the visible hips), so ratios run high.
+  broad_shoulders: 2.0  # shoulder / hip-joint width
+  narrow_shoulders: 1.4
+  long_legs: 1.70       # leg / torso length (depends on camera height: keep the notes mild)
+  short_legs: 1.25
+  min_visibility: 0.5
+borderline: 3           # within this many degrees (hue) or points (contrast) of a cutoff → say so

@@ -6,7 +6,7 @@ from typing import Any
 
 from .candidates import Outfit, apply_note, candidates, candidates_with
 from .model import Context, History, Piece
-from .scoring import Score, score, weights
+from .scoring import Score, harmony, score, weights
 from .select import pick_diverse
 
 CATEGORY_ORDER = ("Tops", "Sets & suits", "Layers", "Bottoms", "Shoes", "Accessories")
@@ -26,7 +26,49 @@ def ideas(
     ctx2, shift = apply_note(ctx)
     ranked = [(o, score(o, ctx2, h, shift, profile)) for o in candidates(pieces, ctx2)]
     ranked.sort(key=lambda x: x[1].total, reverse=True)
-    return [(ordered(o), s) for o, s in pick_diverse(ranked, k)]
+    out = []
+    for o, s in pick_diverse(ranked, k):
+        acc = accessory_for(o, pieces, ctx2, h)
+        if acc is not None:
+            o = (*o, acc)
+            s.reasons.append({"kind": "accessory", "piece": acc.noun})
+        out.append((ordered(o), s))
+    return out
+
+
+def _wants(p: Piece, o: Outfit, ctx: Context) -> bool:
+    """Accessory rules (added feature): watch, belt, sunglasses or cap, when they make sense."""
+    t = f"{p.type} {p.name.lower()}"
+    if "watch" in t:
+        return ctx.occasion in ("office", "party")
+    if "belt" in t:
+        return any(
+            q.category == "Bottoms" and any(w in q.type for w in ("trousers", "chinos", "jeans"))
+            for q in o
+        )
+    if "sunglass" in t:
+        return ctx.code is not None and ctx.code <= 2 and ctx.occasion != "office"
+    if "cap" in t:
+        return ctx.occasion in ("college", "home")
+    return False
+
+
+def accessory_for(o: Outfit, pieces: list[Piece], ctx: Context, h: History) -> Piece | None:
+    """At most one finishing touch; picked by color harmony, then by how long since it was worn."""
+    options = [
+        p
+        for p in pieces
+        if p.category == "Accessories" and p.status == "active" and _wants(p, o, ctx)
+    ]
+    if not options:
+        return None
+
+    def rank(p: Piece) -> tuple[float, int]:
+        last = h.piece_last.get(p.id)
+        return harmony((*o, p))[0], -1 if last is None else -(ctx.day - last).days
+
+    best = max(options, key=rank)
+    return best if harmony((*o, best))[0] > -1.0 else None
 
 
 def good_outfits_with(

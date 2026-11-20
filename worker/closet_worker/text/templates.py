@@ -15,12 +15,17 @@ FRESH = (
     "the {piece} hasn’t been out in {days} days",
     "it’s been {days} days since the {piece}",
 )
+PALETTE = (
+    "{color} is one of your best colors",
+    "the {piece} is in one of your best colors, {color}",
+)
 NEW = ("none of these pieces has been worn yet", "it’s a first outing for all of these")
 WEATHER = (
     "The {piece} handles {temp}.",
     "The {piece} covers {temp}.",
     "Bring the {piece} for {temp}.",
 )
+ACCESSORY = ("Finish with the {piece}.", "Add the {piece} to finish it.")
 RAIN = ("Nothing here minds the rain.", "Rain-safe shoes and all.")
 FORMAL = ("Sharp enough for the meeting.", "Dressed up a notch for today.")
 
@@ -36,7 +41,9 @@ def render(reasons: list[dict[str, Any]], seed: int = 0) -> str:
     extra: list[str] = []
     for r in reasons:
         k = r.get("kind")
-        if k == "pair" and len(clauses) < 2:
+        if k == "palette" and len(clauses) < 2:
+            clauses.append(rng.choice(PALETTE).format(color=r["color"], piece=r["piece"]))
+        elif k == "pair" and len(clauses) < 2:
             clauses.append(rng.choice(PAIR).format(A=_cap(str(r["a"])), b=str(r["b"])))
         elif k == "fresh" and len(clauses) < 2:
             clauses.append(rng.choice(FRESH).format(piece=r["piece"], days=r["days"]))
@@ -48,6 +55,8 @@ def render(reasons: list[dict[str, Any]], seed: int = 0) -> str:
             extra.append(rng.choice(RAIN))
         elif k == "formal_up" and not extra:
             extra.append(rng.choice(FORMAL))
+        elif k == "accessory" and len(extra) < 2:
+            extra.append(rng.choice(ACCESSORY).format(piece=r["piece"]))
     if not clauses and not extra:
         return "A fresh mix from your closet."
     first = _cap(", and ".join(clauses)) + "." if clauses else ""

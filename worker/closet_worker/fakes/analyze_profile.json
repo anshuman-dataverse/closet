@@ -1,0 +1,12 @@
+{
+  "skin_lab": [62.0, 12.0, 17.0],
+  "hair_L": 24.0,
+  "hue": 54.78,
+  "ita": 35.22,
+  "photos_used": 1,
+  "lighting_note": null,
+  "face_ratios": { "length": 1.25, "jaw": 0.83, "forehead": 0.86, "yaw": 0.03 },
+  "face_shape": "oval",
+  "face_shape_votes": ["oval"],
+  "body_ratios": { "shoulder_hip": 1.7, "leg_torso": 1.45 }
+}

@@ -21,7 +21,8 @@ def run(payload: dict[str, Any], ctx: JobContext | None) -> dict[str, Any]:
     c = Context.from_payload(payload)
     pieces = [Piece.from_row(r) for r in ctx.items.list_items()]
     history = History.from_logs(ctx.items.list_wear_logs())
-    picks = ideas(pieces, c, history)
+    analysis = (ctx.items.get_profile() or {}).get("analysis")
+    picks = ideas(pieces, c, history, profile=analysis)
     context = {"weather": payload.get("weather"), "note": c.note, "date": c.day.isoformat()}
     out = []
     for o, s in picks:

@@ -75,6 +75,7 @@ class Context:
     rain_pct: float = 0.0
     note: str = ""
     unit: str = "F"  # how to show temperatures in text
+    code: int | None = None  # Open-Meteo weather code (0–2 is clear to partly cloudy)
 
     @staticmethod
     def from_payload(p: dict[str, Any]) -> Context:
@@ -91,6 +92,7 @@ class Context:
             rain_pct=float(w.get("rain_pct") or 0),
             note=str(p.get("note") or "")[:200],
             unit=unit,
+            code=None if w.get("code") is None else int(w["code"]),
         )
 
     def temp_text(self) -> str:

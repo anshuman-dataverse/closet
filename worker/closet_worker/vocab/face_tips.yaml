@@ -1,0 +1,26 @@
+# Face-shape tips for frames (glasses and sunglasses) and hairstyles. Common style guidelines, not rules:
+# they're suggestions to try, never judgments. Wording stays neutral and practical.
+oval:
+  why: "Balanced proportions, so most shapes work."
+  frames: ["Most frame shapes work: wayfarers and soft rectangles are easy picks", "Aviators for sunglasses"]
+  hair: ["Most cuts work: a textured crop or a side part keeps it simple", "Medium length with a little texture on top"]
+round:
+  why: "Angles and a little height add structure to softer curves."
+  frames: ["Rectangular or angular frames", "Wayfarer-style sunglasses", "Frames slightly wider than the cheekbones"]
+  hair: ["Some height on top with shorter sides (a quiff or textured top)", "A side part or an off-center sweep"]
+square:
+  why: "Curves and softer lines balance a strong jaw."
+  frames: ["Round or oval frames", "Aviators or round sunglasses", "Finer rims rather than heavy square ones"]
+  hair: ["A textured, slightly longer top", "A side part or soft fringe that breaks up straight lines"]
+oblong:
+  why: "Width and a fringe balance a longer shape."
+  frames: ["Deeper frames with a strong top line", "Oversized square or wayfarer sunglasses", "Decorative or contrasting temples"]
+  hair: ["Medium length with some volume at the sides", "A fringe or textured top that isn't very tall"]
+heart:
+  why: "Detail lower on the face balances a wider forehead."
+  frames: ["Bottom-heavy or rimless frames", "Aviators or round sunglasses", "Light, fine rims"]
+  hair: ["Medium length with fullness near the ears", "A side-swept fringe; a beard adds balance at the jaw"]
+diamond:
+  why: "Frames and hair that add width at the brow and chin balance strong cheekbones."
+  frames: ["Oval or browline frames", "Round or cat-eye sunglasses", "Frames with detail on the top line"]
+  hair: ["A fuller top or a fringe", "Some length at the sides; a beard adds width at the chin"]

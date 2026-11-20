@@ -55,10 +55,22 @@ def _owned(p: Piece, owned: list[Piece]) -> bool:
     )
 
 
-def gap_ideas(pieces: list[Piece], ctx: Context, h: History) -> list[dict[str, Any]]:
+def staple_colors(s: dict[str, Any], analysis: dict[str, Any] | None) -> list[str]:
+    """With a style profile: your best colors near the face, your neutrals below it."""
+    if not analysis or not analysis.get("best"):
+        return list(s["colors"])
+    best = [c["name"].lower() for c in analysis["best"]]
+    neutrals = [c["name"].lower() for c in analysis.get("neutrals", [])]
+    near_face = s["category"] in ("Tops", "Layers", "Sets & suits")
+    return (best if near_face else neutrals)[:3] or list(s["colors"])
+
+
+def gap_ideas(
+    pieces: list[Piece], ctx: Context, h: History, analysis: dict[str, Any] | None = None
+) -> list[dict[str, Any]]:
     scored = []
     for s in staples():
-        for color in s["colors"]:
+        for color in staple_colors(s, analysis):
             p = Piece(
                 id=f"staple:{s['type']}:{color}",
                 name=f"{color.capitalize()} {s['type']}",
@@ -112,4 +124,5 @@ def run(payload: dict[str, Any], ctx: JobContext | None) -> dict[str, Any]:
     )
     pieces = [Piece.from_row(r) for r in ctx.items.list_items()]
     h = History.from_logs(ctx.items.list_wear_logs())
-    return {"occasion": c.occasion, "ideas": gap_ideas(pieces, c, h)}
+    analysis = (ctx.items.get_profile() or {}).get("analysis")
+    return {"occasion": c.occasion, "ideas": gap_ideas(pieces, c, h, analysis)}
