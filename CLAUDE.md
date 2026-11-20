@@ -35,10 +35,9 @@ Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Ve
 - Client data goes through `lib/supabase/client.ts` with RLS. Server-only code imports `server-only`.
 - Styling: tokens and classes in `web/app/globals.css`, ported from the prototype. No new card kits or gradients.
 - Copy: sentence case, typographic apostrophes (’), no “Claude”/AI sparkle words, no arrows in buttons. Errors say what to do.
-- Never `dangerouslySetInnerHTML`. Links to outside sites use `target="_blank" rel="noopener noreferrer"`.
-- Python: ruff (line 100), mypy strict, handlers idempotent. Raise `TransientError` for retryable failures.
-- Secrets: `worker/.env`, `infra/searxng/.env` and `web/.env.local` are gitignored.
-  The committed local keys are the public Supabase demo keys.
+- Never `dangerouslySetInnerHTML`. Outside links use `target="_blank" rel="noopener noreferrer"`.
+- Python: ruff (line 100), mypy strict, idempotent handlers, `TransientError` for retryable failures.
+- Secrets: `worker/.env`, `infra/searxng/.env` and `web/.env.local` are gitignored (committed keys are local demo keys).
 
 ## Web data layer
 - `lib/closet/store.ts` is one client store (useSyncExternalStore). It loads everything once and refetches when the tab
