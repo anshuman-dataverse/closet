@@ -1,0 +1,2256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E6EBF1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10131C" media="(prefers-color-scheme: dark)">
+<title>Closet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --paper:#E6EBF1; --card:#FFFFFF; --sunk:#D5DCE6; --ink:#1A2142; --ink-2:#525C76; --line:#C3CCD8;
+  --chalk:#F4C430; --chalk-ink:#1A2142; --sale:#C3372B; --good:#1E7650; --wait:#8A5E00; --focus:#2F6FED;
+  --mark:#F4C430;
+  --scrim:rgba(14,19,38,.48); --shadow:0 20px 50px rgba(16,22,48,.24);
+  --font:"Archivo","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --paper:#10131C; --card:#181D2A; --sunk:#232A3B; --ink:#E8ECF4; --ink-2:#A2ABBF; --line:#2C3448;
+    --chalk:#F4C430; --chalk-ink:#1A2142; --sale:#FF7A6B; --good:#57C997; --wait:#E8B84B; --focus:#86A9FF;
+    --mark:rgba(244,196,48,.36);
+    --scrim:rgba(0,0,0,.6); --shadow:0 20px 50px rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --paper:#10131C; --card:#181D2A; --sunk:#232A3B; --ink:#E8ECF4; --ink-2:#A2ABBF; --line:#2C3448;
+  --chalk:#F4C430; --chalk-ink:#1A2142; --sale:#FF7A6B; --good:#57C997; --wait:#E8B84B; --focus:#86A9FF;
+  --mark:rgba(244,196,48,.36);
+  --scrim:rgba(0,0,0,.6); --shadow:0 20px 50px rgba(0,0,0,.55);
+}
+html{ scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px); -webkit-text-size-adjust:100%; }
+*,*::before,*::after{ box-sizing:inherit; }
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:var(--font); font-size:16px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));
+}
+body::before{
+  content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:10;
+  background:var(--paper);
+}
+img{ max-width:100%; }
+button{ font-family:inherit; }
+a{ color:inherit; }
+:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; }
+.sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{ transition:none !important; animation:none !important; }
+}
+
+/* header */
+.top{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:9;
+  background:var(--paper);
+}
+.top-in{ max-width:1080px; margin:0 auto; padding:10px 20px; display:flex; align-items:center; gap:16px; min-height:60px; }
+.mark{
+  font-stretch:125%; font-weight:800; font-size:25px; letter-spacing:-.02em; line-height:1;
+  text-decoration:none; color:var(--ink);
+}
+.tabs-wide{ display:none; gap:2px; margin-left:16px; }
+.tabs-wide a{
+  padding:8px 12px; font-weight:600; font-stretch:95%; color:var(--ink-2); text-decoration:none; border-radius:8px;
+}
+.tabs-wide a[aria-current="page"]{
+  color:var(--ink); text-decoration:underline; text-decoration-color:var(--chalk);
+  text-decoration-thickness:4px; text-underline-offset:7px;
+}
+.me-btn{
+  margin-left:auto; width:42px; height:42px; border-radius:50%; display:grid; place-items:center;
+  color:var(--ink); border:1px solid var(--line); background:var(--card); text-decoration:none;
+}
+.me-btn[aria-current="page"]{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.me-btn svg, .tabbar svg{ width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+
+/* bottom tabs */
+.tabbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:9;
+  display:grid; grid-template-columns:repeat(5,1fr);
+  background:var(--card); border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.tabbar a{
+  position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+  min-height:58px; padding:6px 0; font-size:11.5px; font-weight:600; font-stretch:90%;
+  color:var(--ink-2); text-decoration:none;
+}
+.tabbar a[aria-current="page"]{ color:var(--ink); }
+.tabbar a[aria-current="page"]::before{
+  content:""; position:absolute; top:-1px; left:30%; right:30%; height:3px; border-radius:0 0 3px 3px; background:var(--chalk);
+}
+@media (min-width:900px){
+  .tabbar{ display:none; }
+  body{ padding-bottom:0; }
+  .tabs-wide{ display:flex; }
+}
+
+.wrap{ max-width:1080px; margin:0 auto; padding:0 20px; }
+main.wrap{ padding-bottom:40px; outline:none; }
+.banner{
+  margin:8px 0 0; padding:10px 14px; border-radius:10px; font-size:14px;
+  background:var(--card); border:1px solid var(--sale); color:var(--ink);
+}
+
+/* type */
+h1,h2,h3{ line-height:1.15; }
+.page-head{ display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 14px; padding:20px 0 12px; }
+.page-head h1{ margin:0; font-size:clamp(34px,8.5vw,52px); font-stretch:125%; font-weight:800; letter-spacing:-.035em; line-height:1; }
+.page-head p{ margin:0; }
+.page-head .btn{ margin-left:auto; align-self:center; }
+.block{ margin:30px 0; }
+.block-head{ display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:8px; }
+.block h2, .empty h2{ margin:0; font-size:21px; font-stretch:112%; font-weight:750; letter-spacing:-.01em; }
+h3{ font-size:16px; font-weight:700; margin:20px 0 8px; }
+.muted{ color:var(--ink-2); }
+.small{ font-size:13.5px; }
+.err{ color:var(--sale); font-weight:600; margin:8px 0 0; }
+.err:empty{ display:none; }
+.lead{ font-size:18px; max-width:62ch; margin:4px 0 12px; }
+.thinking{ animation:pulse 1.6s ease-in-out infinite; }
+@keyframes pulse{ 50%{ opacity:.45; } }
+
+/* buttons, chips */
+.btn{
+  appearance:none; font:inherit; font-weight:650; font-size:15px; line-height:1.1;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  min-height:44px; padding:0 18px; border-radius:999px; cursor:pointer; text-decoration:none;
+  border:1.5px solid var(--ink); background:transparent; color:var(--ink);
+}
+.btn.primary{ background:var(--ink); color:var(--paper); }
+.btn.sm{ min-height:36px; padding:0 14px; font-size:14px; }
+.btn.ghost{ border-color:transparent; color:var(--ink-2); }
+.btn.danger{ color:var(--sale); }
+.btn:disabled{ opacity:.45; cursor:default; }
+.link{
+  appearance:none; background:none; border:0; padding:0; font:inherit; font-weight:600; cursor:pointer;
+  color:var(--ink); text-decoration:underline; text-underline-offset:3px; text-align:left;
+}
+.row{ display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; align-items:center; }
+.row.tight{ margin-top:4px; }
+.grow{ flex:1; }
+.chips{ display:flex; gap:6px; overflow-x:auto; padding:2px 2px 8px; scrollbar-width:none; }
+.chips::-webkit-scrollbar{ display:none; }
+.chips.wrap-chips{ flex-wrap:wrap; overflow:visible; padding-bottom:2px; }
+.chip{
+  flex:none; appearance:none; font:inherit; font-size:14px; font-weight:600; font-stretch:92%;
+  min-height:36px; padding:0 14px; border-radius:999px; cursor:pointer;
+  border:1px solid var(--line); background:var(--card); color:var(--ink);
+}
+.chip[aria-pressed="true"]{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.pill{
+  display:inline-block; font-size:12.5px; font-weight:600; font-stretch:90%;
+  padding:2px 9px; border-radius:999px; background:transparent; color:var(--ink-2); border:1px solid var(--line);
+}
+.pills{ display:flex; flex-wrap:wrap; gap:6px; }
+.hangtag{
+  position:relative; display:inline-flex; align-items:center;
+  padding:5px 12px 5px 22px; font-size:14px; font-weight:650; font-stretch:88%;
+  color:var(--chalk-ink); background:var(--chalk);
+  clip-path:polygon(10px 0,100% 0,100% 100%,10px 100%,0 50%);
+}
+.hangtag::before{
+  content:""; position:absolute; left:11px; top:50%; width:5px; height:5px; margin-top:-2.5px; border-radius:50%;
+  background:var(--card);
+}
+.hangtag.sm{ font-size:12.5px; padding:3px 10px 3px 19px; }
+.hangtag.sm::before{ left:9px; width:4px; height:4px; margin-top:-2px; }
+
+/* today */
+.hero{ padding:14px 0 4px; }
+.dateline{ margin:0; color:var(--ink-2); font-size:15px; }
+.hero-q{ margin:10px 0 0; font-size:17px; font-weight:500; color:var(--ink-2); }
+.occ-words{ display:flex; flex-direction:column; align-items:flex-start; margin:0 0 6px; }
+.occ-word{
+  appearance:none; border:0; background:none; cursor:pointer; color:var(--ink-2);
+  font-family:var(--font); font-size:clamp(38px,10.5vw,76px); line-height:1; letter-spacing:-.035em;
+  padding:0 .06em .04em 0; margin:0; border-radius:4px; text-align:left;
+  font-weight:300; font-variation-settings:"wdth" 62, "wght" 300; opacity:.6;
+  transition:font-variation-settings .5s cubic-bezier(.2,.75,.2,1), opacity .3s, color .3s;
+}
+.occ-word:hover{ opacity:.85; }
+.occ-word[aria-checked="true"]{
+  color:var(--ink); opacity:1; font-weight:800; font-variation-settings:"wdth" 125, "wght" 820;
+  background:linear-gradient(transparent 60%, var(--mark) 60%, var(--mark) 88%, transparent 88%) no-repeat;
+}
+.pick{
+  background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; margin:14px 0 0;
+}
+.pick.empty-pick{ background:transparent; border:1.5px dashed var(--line); }
+.kicker{ margin:0; color:var(--ink-2); font-size:14px; }
+.pick-name{ margin:2px 0 12px; font-size:22px; font-stretch:110%; font-weight:750; letter-spacing:-.01em; }
+.pick-meta{ display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin-top:14px; }
+.flatlay{ position:relative; display:grid; gap:6px; padding:6px; border-radius:10px; background:var(--paper); min-width:0; }
+.flatlay.n1{ grid-template-columns:minmax(0,1fr); }
+.flatlay.n2, .flatlay.n4{ grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+.flatlay.n3{ grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); }
+.flatlay.n3 > :first-child{ grid-row:span 2; aspect-ratio:auto; }
+.flatlay > img, .flatlay > .ph{ width:100%; height:100%; aspect-ratio:1; object-fit:cover; border-radius:6px; }
+.flatlay > img{ display:block; background:var(--card); }
+.flatlay.n1 > img, .flatlay.n1 > .ph{ aspect-ratio:4/3; }
+.more{
+  position:absolute; right:12px; bottom:12px; padding:2px 8px; border-radius:999px;
+  background:var(--ink); color:var(--paper); font-size:13px; font-weight:700;
+}
+.ph{
+  display:grid; place-items:center; text-align:center; padding:8px; overflow:hidden;
+  background:var(--sw, var(--sunk)); color:var(--ink); font-size:13px; font-weight:650; font-stretch:88%; line-height:1.2;
+}
+.ph.dk{ color:#F3F5FA; }
+.combo-list{ display:grid; gap:12px; margin-top:14px; }
+.combo{
+  display:grid; grid-template-columns:minmax(96px,120px) 1fr; gap:14px; align-items:start;
+  padding:12px; border:1px solid var(--line); border-radius:16px; background:var(--card);
+}
+.combo h3{ margin:0 0 4px; font-size:16px; }
+.combo p{ margin:0; font-size:14.5px; color:var(--ink-2); }
+.combo .flatlay{ padding:4px; gap:4px; }
+.log{ list-style:none; padding:0; margin:0; }
+.log li{
+  display:grid; grid-template-columns:72px minmax(0,1fr) auto auto; gap:10px; align-items:center;
+  padding:10px 0; border-top:1px solid var(--line);
+}
+.log-date{ font-weight:650; font-stretch:90%; color:var(--ink-2); font-size:14px; }
+.log-name{ font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.field{ display:flex; flex-direction:column; gap:6px; margin:12px 0; border:0; padding:0; min-width:0; }
+.field > span:first-child, .field > legend{ font-size:14px; font-weight:600; color:var(--ink-2); padding:0; margin-bottom:6px; }
+.field > span:first-child{ margin-bottom:0; }
+input[type="text"], input[type="number"], input[type="url"], input[type="date"], select, textarea{
+  font:inherit; font-size:16px; color:var(--ink); background:var(--card);
+  border:1px solid var(--line); border-radius:10px; min-height:46px; padding:10px 12px; width:100%;
+}
+textarea{ min-height:84px; resize:vertical; }
+select{ appearance:auto; }
+.field-row{ display:grid; grid-template-columns:1fr 1fr; gap:0 12px; }
+@media (min-width:900px){
+  .today{ display:grid; grid-template-columns:minmax(0,5fr) minmax(0,7fr); gap:0 56px; align-items:start; }
+  .today .hero{ position:sticky; top:calc(env(safe-area-inset-top,0px) + 76px); padding-top:28px; }
+  .today-main{ padding-top:22px; }
+}
+
+/* closet */
+.filters{ display:flex; flex-direction:column; gap:2px; }
+.sort{ display:flex; align-items:center; gap:10px; font-size:14px; font-weight:600; color:var(--ink-2); max-width:320px; }
+.sort select{ min-height:38px; padding:6px 10px; font-size:15px; width:auto; }
+.grid{ list-style:none; margin:14px 0 0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:20px 12px; }
+.tile{ all:unset; cursor:pointer; display:flex; flex-direction:column; gap:6px; width:100%; }
+.tile:focus-visible{ outline:3px solid var(--focus); outline-offset:3px; border-radius:6px; }
+.tile-ph{ display:block; aspect-ratio:1; border-radius:6px; overflow:hidden; background:var(--sunk); border:1px solid var(--line); }
+.tile-ph > img, .tile-ph > .ph{ width:100%; height:100%; object-fit:cover; }
+.tile-ph > img{ display:block; }
+.ph-ico{ width:34%; height:34%; fill:none; stroke:currentColor; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round; opacity:.45; }
+.tile-name{ font-weight:650; font-size:15px; line-height:1.25; }
+.tile-sub{ font-size:13px; color:var(--ink-2); }
+
+/* outfits */
+.outfit-grid{ list-style:none; padding:0; margin:12px 0 0; display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; }
+.ocard{ display:flex; flex-direction:column; gap:10px; padding:10px; min-width:0; border:1px solid var(--line); border-radius:16px; background:var(--card); }
+.ocard-main{ all:unset; cursor:pointer; display:grid; gap:10px; min-width:0; }
+.ocard-main:focus-visible{ outline:3px solid var(--focus); outline-offset:3px; border-radius:10px; }
+.ocard-name{ font-weight:700; font-size:16px; line-height:1.25; }
+.ocard-meta{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+
+/* shop */
+.seg{
+  display:flex; gap:4px; padding:4px; width:fit-content; max-width:100%; overflow-x:auto;
+  background:var(--card); border:1px solid var(--line); border-radius:999px;
+}
+.seg button{
+  appearance:none; border:0; background:transparent; font:inherit; font-weight:650; font-size:14.5px;
+  padding:8px 14px; border-radius:999px; color:var(--ink-2); cursor:pointer; white-space:nowrap;
+}
+.seg button[aria-selected="true"]{ background:var(--ink); color:var(--paper); }
+.panel-head{ display:flex; flex-wrap:wrap; gap:10px 16px; align-items:center; justify-content:space-between; margin:18px 0 4px; }
+.panel-head p{ margin:0; max-width:58ch; }
+.cards{ list-style:none; padding:0; margin:14px 0; display:grid; gap:14px; }
+.card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 16px; }
+.card h3{ margin:0 0 2px; font-size:17px; }
+.wish-top{ display:flex; gap:12px; }
+.wish-img{ width:76px; height:76px; object-fit:cover; border-radius:6px; flex:none; }
+.price{ font-weight:750; font-stretch:110%; margin:4px 0; }
+.overlap{ margin:12px 0 0; font-size:14px; padding:8px 10px; background:var(--paper); border-radius:8px; }
+.verdict{ margin-top:10px; padding:10px 12px; background:var(--paper); border-left:4px solid var(--wait); border-radius:0 8px 8px 0; }
+.verdict.good{ border-color:var(--good); }
+.verdict.bad{ border-color:var(--sale); }
+.verdict p{ margin:0; }
+.verdict ul{ margin:6px 0 0; padding-left:18px; }
+.verdict .v-word{ font-weight:800; font-stretch:112%; }
+.verdict.good .v-word{ color:var(--good); } .verdict.bad .v-word{ color:var(--sale); } .verdict.wait .v-word{ color:var(--wait); }
+.hunt-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.hunt-head p{ margin:2px 0 0; }
+.status{ flex:none; font-size:13px; font-weight:650; padding:4px 10px; border-radius:999px; background:var(--paper); white-space:nowrap; }
+.status.wait{ color:var(--wait); } .status.good{ color:var(--good); }
+.hunt-how, .hunt-sum{ margin:10px 0 0; font-size:14.5px; }
+.hunt-how{ color:var(--ink-2); }
+.results{ list-style:none; margin:10px 0 0; padding:0; counter-reset:r; }
+.result{ display:grid; grid-template-columns:minmax(0,1fr) auto; gap:12px; padding:12px 0; border-top:1px solid var(--line); counter-increment:r; }
+.result p{ margin:4px 0 0; font-size:14.5px; }
+.r-title{ font-weight:700; color:var(--ink); }
+.r-title::before{ content:counter(r) ". "; color:var(--ink-2); }
+.r-side{ display:flex; flex-direction:column; align-items:flex-end; gap:6px; text-align:right; }
+.r-side s{ font-size:13.5px; }
+.off{ font-size:12.5px; font-weight:750; padding:2px 8px; border-radius:999px; background:var(--sale); color:var(--card); }
+
+/* spend */
+.spend-num{ margin:4px 0 2px; font-size:clamp(56px,17vw,104px); font-weight:800; font-stretch:125%; letter-spacing:-.045em; line-height:1; }
+.meter{ height:10px; background:var(--sunk); border-radius:999px; overflow:hidden; margin:12px 0 6px; max-width:440px; }
+.meter > span{ display:block; height:100%; width:0; background:var(--chalk); border-radius:inherit; }
+.meter.over > span{ background:var(--sale); }
+.chart{ display:block; width:100%; max-width:600px; height:auto; }
+.chart .bar{ fill:var(--ink); }
+.chart .bar.now{ fill:var(--chalk); stroke:var(--chalk-ink); stroke-width:1; }
+.chart .axis{ fill:var(--ink-2); font-size:11px; font-family:var(--font); font-weight:600; }
+.chart .base{ stroke:var(--line); stroke-width:1; }
+.bars{ list-style:none; padding:0; margin:0; display:grid; gap:12px; max-width:600px; }
+.bars li{ display:grid; grid-template-columns:1fr auto; gap:2px 12px; }
+.bars .meter{ grid-column:1 / -1; margin:2px 0 0; height:8px; max-width:none; }
+.bars .meter > span{ background:var(--ink); }
+.cpw{ list-style:none; padding:0; margin:10px 0 0; display:grid; gap:10px; max-width:600px; }
+.cpw li{ display:grid; grid-template-columns:48px minmax(0,1fr) auto; gap:12px; align-items:center; }
+.cpw .tile-ph{ width:48px; height:48px; }
+.cpw-n{ font-weight:700; white-space:nowrap; text-align:right; }
+
+/* profile */
+.me-photos{ list-style:none; padding:0; margin:14px 0; display:grid; grid-template-columns:repeat(auto-fill,minmax(100px,1fr)); gap:8px; max-width:720px; }
+.me-photos li{ position:relative; aspect-ratio:3/4; }
+.me-photos img, .me-photos .ph{ width:100%; height:100%; object-fit:cover; border-radius:6px; display:block; }
+.me-photos .x{
+  position:absolute; top:5px; right:5px; min-width:32px; height:32px; padding:0 8px; border:0; border-radius:999px;
+  background:rgba(10,14,30,.66); color:#fff; font-size:17px; font-weight:600; cursor:pointer;
+}
+.me-photos .x.confirm{ font-size:13px; background:var(--sale); }
+.add-photo{
+  width:100%; height:100%; border:1.5px dashed var(--line); border-radius:6px; background:transparent;
+  color:var(--ink); font:inherit; font-weight:650; cursor:pointer;
+}
+.swatches{ list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:14px 10px; max-width:760px; }
+.swatch{ display:flex; flex-direction:column; gap:6px; font-size:13.5px; font-weight:650; line-height:1.25; }
+.sw-wrap{ display:block; filter:drop-shadow(0 0 .6px rgba(20,28,60,.55)); }
+.chip-sw{
+  display:block; height:68px; background:var(--sw, var(--sunk)); border-radius:4px 4px 0 0;
+  clip-path:polygon(0 0,100% 0,100% 84%,95% 100%,90% 84%,85% 100%,80% 84%,75% 100%,70% 84%,65% 100%,60% 84%,55% 100%,50% 84%,45% 100%,40% 84%,35% 100%,30% 84%,25% 100%,20% 84%,15% 100%,10% 84%,5% 100%,0 84%);
+}
+.sw-why{ font-weight:400; font-size:12.5px; color:var(--ink-2); }
+.facts, .fitnotes{ margin:0; display:grid; gap:10px; max-width:760px; }
+.facts{ grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); }
+.facts > div, .fitnotes > div{ padding:10px 12px; background:var(--card); border:1px solid var(--line); border-radius:10px; }
+.facts dt, .fitnotes dt{ font-size:13px; font-weight:650; color:var(--ink-2); }
+.facts dd, .fitnotes dd{ margin:2px 0 0; font-weight:600; }
+.fitnotes dd{ font-weight:400; }
+.privacy{ margin-top:32px; max-width:62ch; }
+
+/* empty states */
+.empty{ margin:22px 0; padding:22px 20px; border:1.5px dashed var(--line); border-radius:16px; }
+.empty p{ margin:6px 0 0; color:var(--ink-2); max-width:58ch; }
+.empty.soft{ border-style:solid; border-color:transparent; }
+
+/* sheet */
+dialog#sheet{
+  border:0; padding:0; color:var(--ink); background:var(--card);
+  width:100%; max-width:640px; margin:auto auto 0;
+  max-height:calc(100% - 20px - env(safe-area-inset-top,0px));
+  border-radius:20px 20px 0 0; box-shadow:var(--shadow);
+  overflow:auto; overscroll-behavior:contain;
+}
+dialog#sheet::backdrop{ background:var(--scrim); }
+@media (min-width:700px){
+  dialog#sheet{ margin:auto; border-radius:20px; max-height:88vh; }
+}
+#sheet-body{ position:relative; padding:22px 20px 0; }
+#sheet-body > h2{ margin:0 48px 10px 0; font-size:25px; font-stretch:115%; font-weight:800; letter-spacing:-.02em; }
+.sheet-x{
+  position:absolute; top:14px; right:14px; width:40px; height:40px; border-radius:50%;
+  border:1px solid var(--line); background:var(--card); color:var(--ink); font-size:22px; line-height:1; cursor:pointer;
+}
+.sheet-actions{
+  position:sticky; bottom:0; z-index:2; display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+  margin:14px -20px 0; padding:12px 20px calc(14px + env(safe-area-inset-bottom,0px));
+  background:var(--card); border-top:1px solid var(--line);
+}
+.photo-pick{ display:grid; grid-template-columns:120px minmax(0,1fr); gap:14px; align-items:start; margin:10px 0; }
+.photo-box{
+  width:120px; height:120px; border-radius:8px; overflow:hidden; display:grid; place-items:center; text-align:center;
+  background:var(--sunk); border:1px solid var(--line); font-size:13px;
+}
+.photo-box img{ width:100%; height:100%; object-fit:cover; display:block; }
+.col{ display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+.hint{ margin:0; font-size:13.5px; color:var(--ink-2); }
+.hint:empty{ display:none; }
+.stats{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:0 0 6px; }
+.color-in{ display:flex; align-items:center; gap:8px; }
+.dot{ flex:none; width:24px; height:24px; border-radius:50%; background:var(--sw, transparent); border:1px solid var(--line); }
+.picker h3{ margin:18px 0 8px; font-size:14px; color:var(--ink-2); }
+.pick-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(86px,1fr)); gap:10px 8px; }
+.pick-tile{ all:unset; cursor:pointer; position:relative; display:flex; flex-direction:column; gap:4px; font-size:12.5px; font-weight:600; line-height:1.2; }
+.pick-tile:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; border-radius:6px; }
+.pick-tile .tile-ph{ border-width:2px; }
+.pick-tile[aria-pressed="true"] .tile-ph{ border-color:var(--ink); box-shadow:0 0 0 3px var(--chalk); }
+.pick-tile[aria-pressed="true"]::after{
+  content:"✓"; position:absolute; top:6px; right:6px; width:22px; height:22px; border-radius:50%;
+  display:grid; place-items:center; font-size:13px; background:var(--ink); color:var(--paper);
+}
+.piece-list{ margin:10px 0; padding-left:18px; }
+.piece-list li{ margin:4px 0; }
+.inline-date input{ width:auto; min-height:44px; }
+.copybox{ width:100%; min-height:220px; font-size:15px; }
+
+/* toast */
+.toast{
+  position:fixed; left:50%; bottom:calc(72px + env(safe-area-inset-bottom,0px) + 12px); z-index:20;
+  display:flex; align-items:center; gap:14px; max-width:calc(100% - 32px);
+  padding:10px 14px 10px 18px; border-radius:999px; background:var(--ink); color:var(--paper);
+  font-weight:600; font-size:15px; box-shadow:var(--shadow);
+  opacity:0; pointer-events:none; transform:translate(-50%,16px); transition:opacity .2s, transform .2s;
+}
+.toast.on{ opacity:1; pointer-events:auto; transform:translate(-50%,0); }
+.toast-act{
+  appearance:none; border:0; background:none; color:inherit; font:inherit; font-weight:750; cursor:pointer; padding:4px 6px;
+  text-decoration:underline; text-decoration-color:var(--chalk); text-decoration-thickness:3px; text-underline-offset:4px;
+}
+@media (min-width:900px){ .toast{ bottom:28px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <a class="mark" href="#today" aria-label="Closet, today">closet</a>
+    <nav class="tabs-wide" aria-label="Sections">
+      <a href="#today" data-tab="today">Today</a>
+      <a href="#closet" data-tab="closet">Closet</a>
+      <a href="#outfits" data-tab="outfits">Outfits</a>
+      <a href="#shop" data-tab="shop">Shop</a>
+      <a href="#spend" data-tab="spend">Spend</a>
+    </nav>
+    <a class="me-btn" href="#profile" data-tab="profile" aria-label="Style profile" title="Style profile">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20.5c1.4-3.9 4.2-5.9 7.5-5.9s6.1 2 7.5 5.9"/></svg>
+    </a>
+  </div>
+</header>
+<div class="wrap"><div id="banner" class="banner" role="status" hidden></div></div>
+<main id="view" class="wrap" tabindex="-1"></main>
+<nav class="tabbar" aria-label="Sections">
+  <a href="#today" data-tab="today"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3.5 12 5l3-1.5 5 2.8-1.8 4.2-2.2-.9V20H8V9.6l-2.2.9L4 6.3z"/></svg><span>Today</span></a>
+  <a href="#closet" data-tab="closet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6.2a2 2 0 1 1 3 1.7c-.6.4-1 .9-1 1.6v.7"/><path d="M12 10.2 3.6 16a1 1 0 0 0 .6 1.8h15.6a1 1 0 0 0 .6-1.8z"/></svg><span>Closet</span></a>
+  <a href="#outfits" data-tab="outfits"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8" width="10.5" height="12" rx="1.6"/><path d="M8 4.5h10.9a1.6 1.6 0 0 1 1.6 1.6V16"/></svg><span>Outfits</span></a>
+  <a href="#shop" data-tab="shop"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.3V4.5a1 1 0 0 1 1-1h7.8l8.2 8.2a1.4 1.4 0 0 1 0 2l-6.8 6.8a1.4 1.4 0 0 1-2 0z"/><circle cx="8" cy="8" r="1.5"/></svg><span>Shop</span></a>
+  <a href="#spend" data-tab="spend"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h12v17l-3-1.8-3 1.8-3-1.8-3 1.8z"/><path d="M9 8.5h6M9 12h6M9 15.5h3.5"/></svg><span>Spend</span></a>
+</nav>
+<dialog id="sheet" aria-labelledby="sheet-title"><div id="sheet-body"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+(() => {
+"use strict";
+
+/* ---------- constants ---------- */
+const OCC = [
+  { id: "office", label: "Office" },
+  { id: "college", label: "College" },
+  { id: "party", label: "Party" },
+  { id: "home", label: "Home" },
+];
+const OCC_LABEL = Object.fromEntries(OCC.map(o => [o.id, o.label]));
+const CATS = ["Tops", "Bottoms", "Layers", "Shoes", "Accessories", "Sets & suits"];
+const CAT_ORDER = ["Tops", "Sets & suits", "Layers", "Bottoms", "Shoes", "Accessories"];
+const VIEWS = ["today", "closet", "outfits", "shop", "spend", "profile"];
+const FATAL = new Set(["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"]);
+const SORTS = [["recent", "Recently added"], ["stale", "Longest since worn"], ["least", "Least worn"], ["most", "Most worn"], ["price", "Price, high to low"]];
+const NAMED = {
+  black: "#1c1c1e", white: "#f6f6f3", ivory: "#f1ead8", cream: "#ede3c8", beige: "#d6c3a1", khaki: "#b5a273",
+  tan: "#c19f72", camel: "#c0955f", brown: "#6a4a33", navy: "#1f2a48", "light blue": "#a9c4e4", "sky blue": "#86b4df",
+  blue: "#3a5aa4", teal: "#2c7a7a", "forest green": "#2c4a33", olive: "#6a6a39", green: "#3e7a4a", charcoal: "#3c3f47",
+  grey: "#8a8f98", gray: "#8a8f98", silver: "#c0c4ca", maroon: "#6c1f2a", burgundy: "#6d1f30", red: "#b2261e",
+  pink: "#e6a2b6", lavender: "#b7a8d8", purple: "#6a4b99", mustard: "#c79a2d", yellow: "#e6c446", orange: "#d8722a", rust: "#a54a2a",
+};
+const ERR = {
+  not_granted: "Claude isn’t allowed in this app yet. Allow it when asked, or turn it on in the app’s permissions.",
+  sampling_disabled: "Claude isn’t available on this account.",
+  rate_limited: "Claude is busy or you’ve reached a usage limit. Try again in a little while.",
+  session_expired: "You’ve been signed out. Sign in to Claude and try again.",
+  image_rejected: "That photo couldn’t be sent. Try a JPEG or PNG.",
+  images_unavailable: "Sending photos to Claude isn’t available here.",
+  refused: "Claude couldn’t help with that one. Try different details or photos.",
+  invalid_json: "Claude’s answer came back in the wrong format. Try again.",
+  empty_completion: "Claude didn’t send anything back. Try again.",
+  prompt_too_large: "That’s too much to send at once. Try again with fewer photos or items.",
+  quota_exceeded: "This app’s storage is full. Delete some old items or photos, then try again.",
+  resource_exhausted: "Too many changes at once. Wait a moment and try again.",
+  invalid_argument: "That couldn’t be saved. Check the details and try again.",
+  revoked: "Saving is turned off for this view right now.",
+  too_large: "That photo is too large. Try a smaller one.",
+  unsupported_type: "That file type isn’t supported. Use a JPEG or PNG.",
+  quota_or_state: "Photo storage is full. Delete some old photos, then try again.",
+  _nophoto: "Photos can’t be saved in this view.",
+};
+
+/* ---------- state ---------- */
+const S = {
+  phase: "loading", note: "", uid: null,
+  profile: {}, profileExists: false,
+  items: new Map(), outfits: new Map(), wish: new Map(), hunts: new Map(), wearlog: new Map(),
+  loaded: { profile: false, items: false, outfits: false, wish: false, hunts: false, wearlog: false },
+  view: "today", occ: "office", pickIndex: 0, showPicks: false, todayNotes: "",
+  ideas: null,
+  closet: { cat: "all", occ: "any", sort: "recent", retired: false },
+  outfitOcc: "any", shopTab: "wishlist",
+  gaps: { occ: "office", loading: false, ideas: null, forOcc: null, error: "" },
+  checks: {},
+  analysis: { loading: false, error: "" },
+};
+const cap = { db: null, user: null, assets: null, sample: null, imagesOK: false, imageMax: 0, sampleOff: false, sampleKnown: false };
+let closetRef = null;
+let wearCache = null;
+let loadTimer = null;
+let ideasCtl = null;
+
+/* ---------- small helpers ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const arr = v => (Array.isArray(v) ? v : []);
+const str = (v, n = 200) => (typeof v === "string" ? v : v == null ? "" : String(v)).trim().slice(0, n);
+const num = v => {
+  if (v === "" || v == null) return null;
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null;
+};
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const cap1 = s => { const t = str(s, 40); return t ? t[0].toUpperCase() + t.slice(1) : ""; };
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-");
+const rid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const clone = o => JSON.parse(JSON.stringify(o == null ? {} : o));
+
+function ymd(d = new Date()) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+const validDate = s => (typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) ? s : "");
+function dayNum(s) { const [y, m, d] = s.split("-").map(Number); return Math.round(Date.UTC(y, m - 1, d) / 86400000); }
+function daysAgo(s) { return validDate(s) ? dayNum(ymd()) - dayNum(s) : null; }
+function shortDate(s) {
+  if (!validDate(s)) return "";
+  const [y, m, d] = s.split("-").map(Number);
+  const opts = { month: "short", day: "numeric" };
+  if (y !== new Date().getFullYear()) opts.year = "numeric";
+  return new Date(y, m - 1, d).toLocaleDateString(undefined, opts);
+}
+function lastWornText(s) {
+  const n = daysAgo(s);
+  if (n === null) return "Never worn";
+  if (n <= 0) return "Worn today";
+  if (n === 1) return "Worn yesterday";
+  return `Last worn ${n} days ago`;
+}
+function money(v) {
+  const n = Number(v) || 0;
+  return "$" + n.toLocaleString("en-US", { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 });
+}
+function safeHex(h) { return typeof h === "string" && /^#[0-9a-f]{6}$/i.test(h.trim()) ? h.trim().toLowerCase() : ""; }
+function safeUrl(u) {
+  try { const x = new URL(String(u)); return x.protocol === "https:" || x.protocol === "http:" ? x.href : ""; } catch (_) { return ""; }
+}
+const NAMED_KEYS = Object.keys(NAMED).sort((a, b) => b.length - a.length);
+function colorKey(s) {
+  const c = String(s || "").toLowerCase();
+  const k = NAMED_KEYS.find(n => c.includes(n));
+  return k ? (k === "gray" ? "grey" : k) : c.trim();
+}
+function swatchFor(it) {
+  const h = safeHex(it.colorHex);
+  if (h) return h;
+  const k = colorKey(it.color);
+  return NAMED[k] || "";
+}
+function isDark(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+  return 0.299 * r + 0.587 * g + 0.114 * b < 140;
+}
+function applyDecor(root) {
+  root.querySelectorAll("[data-sw]").forEach(el => {
+    const v = safeHex(el.dataset.sw);
+    if (v) { el.style.setProperty("--sw", v); el.classList.toggle("dk", isDark(v)); }
+  });
+  root.querySelectorAll("[data-pct]").forEach(el => {
+    const p = Math.max(0, Math.min(100, Number(el.dataset.pct) || 0));
+    el.style.width = p + "%";
+  });
+}
+const photoUrl = id => (id ? "/_blob/" + encodeURIComponent(id) : "");
+const sampleOn = () => !!cap.sample && !cap.sampleOff;
+function errText(e) { return (e && ERR[e.code]) || "Something went wrong. Try again."; }
+function noteSampleFailure(e) {
+  if (!e) return;
+  if (FATAL.has(e.code) && !cap.sampleOff) {
+    cap.sampleOff = true;
+    toast(e.code === "not_granted" ? "Claude is switched off for this app. You can turn it back on from your style profile." : errText(e));
+  }
+  if (e.code === "images_unavailable") cap.imagesOK = false;
+  render();
+}
+async function openPermissions() {
+  const C = window.claude;
+  const perm = C && typeof C.use === "function" ? await C.use("permissions").catch(() => null) : null;
+  if (!perm) { toast("Open this app’s Permissions menu to turn Claude back on."); return; }
+  try {
+    await perm.manage();
+    const st = await perm.state("sample");
+    if (st === "granted" || st === "prompt") { cap.sampleOff = false; render(); }
+  } catch (_) { toast("Open this app’s Permissions menu to turn Claude back on."); }
+}
+
+/* ---------- data accessors ---------- */
+const itemsAll = () => [...S.items].map(([id, d]) => ({ ...d, id }));
+const activeItems = () => itemsAll().filter(i => i.status !== "retired");
+const itemById = id => { const d = S.items.get(id); return d ? { ...d, id } : null; };
+const outfitsAll = () => [...S.outfits].map(([id, d]) => ({ ...d, id }));
+const outfitItems = o => arr(o.itemIds).map(itemById).filter(Boolean);
+const catRank = i => { const k = CAT_ORDER.indexOf(i.category); return k < 0 ? 9 : k; };
+function outfitName(o) {
+  return str(o.name, 80) || outfitItems(o).slice(0, 2).map(i => i.name).join(" + ") || "Untitled outfit";
+}
+function wear() {
+  if (wearCache) return wearCache;
+  const items = new Map(), outfits = new Map(), entries = [];
+  for (const [month, d] of S.wearlog) for (const e of arr(d && d.entries)) if (e && validDate(e.date)) entries.push({ ...e, month });
+  entries.sort((a, b) => b.date.localeCompare(a.date) || (b.t || 0) - (a.t || 0));
+  const bump = (m, id, date) => {
+    const s = m.get(id) || { count: 0, last: null };
+    s.count++;
+    if (!s.last || date > s.last) s.last = date;
+    m.set(id, s);
+  };
+  for (const e of entries) {
+    arr(e.itemIds).forEach(id => bump(items, id, e.date));
+    if (e.outfitId) bump(outfits, e.outfitId, e.date);
+  }
+  wearCache = { items, outfits, entries };
+  return wearCache;
+}
+function outfitsFor(occ) {
+  const w = wear().outfits;
+  return outfitsAll()
+    .filter(o => arr(o.occasions).includes(occ))
+    .filter(o => { const its = outfitItems(o); return its.length && its.every(i => i.status !== "retired"); })
+    .sort((a, b) => ((w.get(a.id) || {}).last || "0000").localeCompare((w.get(b.id) || {}).last || "0000") || (a.createdAt || 0) - (b.createdAt || 0));
+}
+function monthSpend() {
+  const m = ymd().slice(0, 7);
+  return itemsAll().filter(i => validDate(i.boughtOn) && i.boughtOn.slice(0, 7) === m).reduce((s, i) => s + (num(i.price) || 0), 0);
+}
+function assetInUse(assetId, opts = {}) {
+  for (const [id, d] of S.items) if (id !== opts.exceptItem && d.photo === assetId) return true;
+  for (const [id, d] of S.wish) if (id !== opts.exceptWish && d.photo === assetId) return true;
+  if (!opts.skipProfile && arr(S.profile.photos).includes(assetId)) return true;
+  return false;
+}
+const GENERIC = new Set(["the", "and", "with", "for", "men", "mens", "slim", "regular", "relaxed", "fit", "classic", "new", "cotton", "stretch", "casual", "formal", "long", "short", "sleeve", "size", "light", "dark"]);
+const COLOR_WORDS = new Set(Object.keys(NAMED).flatMap(k => k.split(" ")));
+const words = s => String(s || "").toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 2 && !GENERIC.has(w) && !COLOR_WORDS.has(w));
+function similarTo(x) {
+  const ws = new Set(words(`${x.name} ${x.type || ""}`));
+  const ck = colorKey(x.color || "");
+  return activeItems()
+    .filter(i => (!x.category || !i.category || i.category === x.category) && words(`${i.type} ${i.name}`).some(w => ws.has(w)))
+    .sort((a, b) => (colorKey(b.color) === ck) - (colorKey(a.color) === ck));
+}
+
+/* ---------- db ---------- */
+const queues = new Map();
+function enqueue(key, fn) {
+  const prev = queues.get(key) || Promise.resolve();
+  const run = prev.then(fn);
+  const tail = run.then(() => {}, () => {});
+  queues.set(key, tail);
+  tail.then(() => { if (queues.get(key) === tail) queues.delete(key); });
+  return run;
+}
+const col = name => closetRef.collection(name);
+const newId = name => col(name).doc().id;
+function setDoc(name, id, data) { const ref = col(name).doc(id); return enqueue(ref.path, () => ref.set(data)); }
+function patchDoc(name, id, data) { const ref = col(name).doc(id); return enqueue(ref.path, () => ref.update(data)); }
+function delDoc(name, id) { const ref = col(name).doc(id); return enqueue(ref.path, () => ref.delete()); }
+function saveProfile(partial) {
+  return enqueue(closetRef.path, async () => {
+    if (S.profileExists) await closetRef.update(partial);
+    else { await closetRef.set({ ...S.profile, ...partial }); S.profileExists = true; }
+  });
+}
+function allLoaded() { return Object.values(S.loaded).every(Boolean); }
+function loadedOne(name, meta) {
+  S.loaded[name] = true;
+  if (allLoaded()) S.phase = "ready";
+  if (meta && !meta.fromCache && allLoaded()) {
+    if (loadTimer) { clearTimeout(loadTimer); loadTimer = null; }
+    if (S.note.startsWith("Your saved closet")) S.note = "";
+  }
+  render();
+}
+function subscribe() {
+  loadTimer = setTimeout(() => {
+    loadTimer = null;
+    if (!allLoaded()) { S.note = "Your saved closet can’t be reached right now, so what you see may be out of date."; S.phase = "ready"; render(); }
+  }, 10000);
+  const onErr = e => {
+    S.note = e && e.code === "revoked" ? "Saving is turned off for this view." : "Your closet stopped syncing. Reload the page to reconnect.";
+    render();
+  };
+  closetRef.onSnapshot(snap => {
+    S.profileExists = !!snap.exists;
+    S.profile = snap.exists ? clone(snap.data()) : {};
+    loadedOne("profile", snap.metadata);
+  }, onErr);
+  ["items", "outfits", "wish", "hunts", "wearlog"].forEach(name => {
+    col(name).onSnapshot(qs => {
+      const m = new Map();
+      qs.docs.forEach(d => { if (d.exists) m.set(d.id, d.data()); });
+      S[name] = m;
+      if (name === "wearlog") wearCache = null;
+      loadedOne(name, qs.metadata);
+    }, onErr);
+  });
+}
+
+/* ---------- wear log ---------- */
+async function logWear({ outfitId = null, itemIds = [], occasion, date = ymd() }) {
+  const month = date.slice(0, 7);
+  const ref = col("wearlog").doc(month);
+  const entry = { id: rid(), date, t: Date.now(), outfitId, itemIds: [...itemIds], occasion: occasion || S.occ };
+  await enqueue(ref.path, async () => {
+    const prev = S.wearlog.get(month);
+    const entries = [...arr(prev && prev.entries), entry];
+    S.wearlog.set(month, { month, entries }); wearCache = null; render();
+    try { await ref.set({ month, entries }); }
+    catch (e) { if (prev) S.wearlog.set(month, prev); else S.wearlog.delete(month); wearCache = null; render(); throw e; }
+  });
+  return { month, id: entry.id };
+}
+async function removeWear(month, id) {
+  const ref = col("wearlog").doc(month);
+  await enqueue(ref.path, async () => {
+    const prev = S.wearlog.get(month);
+    const entries = arr(prev && prev.entries).filter(e => e.id !== id);
+    S.wearlog.set(month, { month, entries }); wearCache = null; render();
+    try { if (entries.length) await ref.set({ month, entries }); else await ref.delete(); }
+    catch (e) { if (prev) S.wearlog.set(month, prev); wearCache = null; render(); throw e; }
+  });
+}
+async function wearOutfit(id, occ, opts = {}) {
+  const o = S.outfits.get(id);
+  const itemIds = opts.itemIds || arr(o && o.itemIds);
+  const date = opts.date || ymd();
+  const occs = arr(o && o.occasions);
+  const occasion = occ || (occs.includes(S.occ) ? S.occ : occs[0] || S.occ);
+  const isToday = date === ymd();
+  if (wear().entries.some(e => e.date === date && e.outfitId === id)) {
+    toast(isToday ? "Already logged for today" : `Already logged for ${shortDate(date)}`);
+    return;
+  }
+  try {
+    const r = await logWear({ outfitId: id, itemIds, occasion, date });
+    toast(isToday ? "Logged for today" : `Logged for ${shortDate(date)}`, {
+      action: "Undo", onAction: () => removeWear(r.month, r.id).catch(e => toast(errText(e))),
+    });
+  } catch (e) { toast(errText(e)); }
+}
+
+/* ---------- photos ---------- */
+function readAsDataURL(blob) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(blob); });
+}
+function loadImage(src) {
+  return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; });
+}
+async function decodeImage(file) {
+  if (window.createImageBitmap) {
+    try { return await createImageBitmap(file, { imageOrientation: "from-image" }); } catch (_) {}
+  }
+  return loadImage(await readAsDataURL(file));
+}
+async function shrink(file, max = 1280, q = 0.85) {
+  const src = await decodeImage(file);
+  const w0 = src.width || src.naturalWidth, h0 = src.height || src.naturalHeight;
+  if (!w0 || !h0) throw new Error("decode");
+  const s = Math.min(1, max / Math.max(w0, h0));
+  const w = Math.max(1, Math.round(w0 * s)), h = Math.max(1, Math.round(h0 * s));
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(src, 0, 0, w, h);
+  if (src.close) src.close();
+  const blob = await new Promise((res, rej) => c.toBlob(b => (b ? res(b) : rej(new Error("encode"))), "image/jpeg", q));
+  return { blob, dataUrl: c.toDataURL("image/jpeg", 0.7) };
+}
+const blobCache = new Map();
+async function uploadPhoto(blob) {
+  const up = await cap.assets.upload(blob, { type: "image/jpeg" });
+  blobCache.set(up.id, blob);
+  return up.id;
+}
+async function blobFromAsset(id) {
+  if (blobCache.has(id)) return blobCache.get(id);
+  try {
+    const r = await fetch(photoUrl(id));
+    if (r.ok) { const b = await r.blob(); if (b.size && /^image\//.test(b.type)) return b; }
+  } catch (_) {}
+  const im = await loadImage(photoUrl(id));
+  const c = document.createElement("canvas");
+  c.width = im.naturalWidth; c.height = im.naturalHeight;
+  c.getContext("2d").drawImage(im, 0, 0);
+  return new Promise((res, rej) => c.toBlob(b => (b ? res(b) : rej(new Error("encode"))), "image/jpeg", 0.88));
+}
+function pickFiles(multiple) {
+  return new Promise(resolve => {
+    const inp = document.createElement("input");
+    inp.type = "file"; inp.accept = "image/*";
+    if (multiple) inp.multiple = true;
+    inp.style.position = "fixed"; inp.style.left = "-9999px"; inp.style.opacity = "0";
+    const host = sheet.open ? $("#sheet-body") : document.body;
+    let settled = false;
+    const finish = files => { if (settled) return; settled = true; inp.remove(); resolve(files); };
+    inp.addEventListener("change", () => finish(Array.from(inp.files || [])));
+    inp.addEventListener("cancel", () => finish([]));
+    host.appendChild(inp);
+    inp.click();
+  });
+}
+
+/* ---------- rendering ---------- */
+let raf = 0;
+function render() {
+  if (raf) return;
+  raf = requestAnimationFrame(() => { raf = 0; draw(); });
+}
+function draw() {
+  document.querySelectorAll("[data-tab]").forEach(a => {
+    if (a.dataset.tab === S.view) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  const b = $("#banner");
+  b.hidden = !S.note; b.textContent = S.note;
+  const v = $("#view");
+  const ae = document.activeElement;
+  const fid = ae && ae.id && v.contains(ae) ? ae.id : null;
+  let sel = null;
+  if (fid) { try { if (typeof ae.selectionStart === "number") sel = [ae.selectionStart, ae.selectionEnd]; } catch (_) {} }
+  v.innerHTML = S.phase === "ready" ? (VIEW[S.view] || VIEW.today)() : phaseScreen();
+  applyDecor(v);
+  if (fid) {
+    const el = document.getElementById(fid);
+    if (el) {
+      el.focus({ preventScroll: true });
+      if (sel && el.setSelectionRange) { try { el.setSelectionRange(sel[0], sel[1]); } catch (_) {} }
+    }
+  }
+}
+function phaseScreen() {
+  if (S.phase === "loading") return `<section class="empty soft"><h2>Opening your closet…</h2></section>`;
+  if (S.phase === "signedout") return emptyBlock("Sign in to see your closet", "Your closet is saved to your Claude account. Sign in to Claude, then open this app again.", "");
+  return emptyBlock("Open this app in Claude", "Your closet saves to your Claude account, so it works when it’s opened from claude.ai or the Claude app.", "");
+}
+function emptyBlock(title, body, actions) {
+  return `<section class="empty"><h2>${esc(title)}</h2><p>${esc(body)}</p>${actions ? `<div class="row">${actions}</div>` : ""}</section>`;
+}
+function chip(group, val, label, on) {
+  return `<button type="button" id="c-${group}-${slug(val)}" class="chip" aria-pressed="${on}" data-act="chip" data-group="${group}" data-val="${esc(val)}">${esc(label)}</button>`;
+}
+const HANGER = `<svg class="ph-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6.2a2 2 0 1 1 3 1.7c-.6.4-1 .9-1 1.6v.7"/><path d="M12 10.2 3.6 16a1 1 0 0 0 .6 1.8h15.6a1 1 0 0 0 .6-1.8z"/></svg>`;
+function cell(i, bare) {
+  const sw = swatchFor(i);
+  if (i.photo) return `<img src="${photoUrl(i.photo)}" alt="${bare ? "" : esc(i.name || "Clothing photo")}"${sw ? ` data-fb="${sw}"` : ""} loading="lazy" decoding="async">`;
+  return `<span class="ph"${sw ? ` data-sw="${sw}"` : ""}>${bare ? HANGER : esc(i.name || i.type || "Item")}</span>`;
+}
+function flatlay(items, cls = "") {
+  const shown = items.slice(0, 4);
+  const n = Math.max(1, shown.length);
+  return `<div class="flatlay n${n} ${cls}">${shown.length ? shown.map(i => cell(i)).join("") : `<span class="ph">No pieces</span>`}${items.length > 4 ? `<span class="more">+${items.length - 4}</span>` : ""}</div>`;
+}
+
+/* today */
+function viewToday() {
+  const dateLine = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+  const hero = `<section class="hero">
+    <p class="dateline">${esc(dateLine)}</p>
+    <p class="hero-q" id="occ-label">Dressing for</p>
+    <div class="occ-words" role="radiogroup" aria-labelledby="occ-label">
+      ${OCC.map(o => `<button type="button" role="radio" id="occ-${o.id}" class="occ-word" aria-checked="${S.occ === o.id}" tabindex="${S.occ === o.id ? 0 : -1}" data-act="occ" data-occ="${o.id}">${o.label.toLowerCase()}</button>`).join("")}
+    </div>
+  </section>`;
+  return `<div class="today">${hero}<div class="today-main">${todayMain()}</div></div>`;
+}
+function todayMain() {
+  if (!activeItems().length) {
+    return emptyBlock("Your closet is empty", "Add the pieces you wear most: go-to shirts, trousers and shoes. Outfit picks start once there’s something to pick from.", `<button type="button" class="btn primary" data-act="add-item">Add clothes</button>`);
+  }
+  const done = wear().entries.find(e => e.date === ymd() && e.occasion === S.occ);
+  let h = done && !S.showPicks ? todayDone(done) : pickCard();
+  h += ideasBlock();
+  h += recentBlock();
+  return h;
+}
+function todayDone(e) {
+  const o = e.outfitId ? S.outfits.get(e.outfitId) : null;
+  const its = arr(e.itemIds).map(itemById).filter(Boolean);
+  const name = o ? outfitName({ ...o, id: e.outfitId }) : its.map(i => i.name).join(" + ") || "Today’s outfit";
+  return `<section class="pick" aria-label="Today’s outfit">
+    <p class="kicker">You’re wearing</p>
+    <h2 class="pick-name">${esc(name)}</h2>
+    ${flatlay(its)}
+    <div class="row">
+      <button type="button" class="btn" data-act="show-picks">Pick something else</button>
+      <button type="button" class="btn ghost" data-act="undo-wear" data-month="${esc(e.month)}" data-id="${esc(e.id)}">Remove from log</button>
+    </div>
+  </section>`;
+}
+function pickCard() {
+  const list = outfitsFor(S.occ);
+  const occName = OCC_LABEL[S.occ].toLowerCase();
+  if (!list.length) {
+    return `<section class="pick empty-pick">
+      <h2 class="pick-name">No ${esc(occName)} outfits saved yet</h2>
+      <p class="muted">Put one together from your closet${sampleOn() ? ", or ask Claude for ideas below" : ""}.</p>
+      <div class="row"><button type="button" class="btn primary" data-act="new-outfit">Build an outfit</button></div>
+    </section>`;
+  }
+  const i = S.pickIndex % list.length, o = list[i];
+  const w = wear().outfits.get(o.id);
+  return `<section class="pick" aria-label="Suggested outfit">
+    <p class="kicker">${i === 0 ? "Least recently worn" : `Option ${i + 1} of ${list.length}`}</p>
+    <h2 class="pick-name">${esc(outfitName(o))}</h2>
+    ${flatlay(outfitItems(o))}
+    <div class="pick-meta"><span class="hangtag">${esc(lastWornText(w && w.last))}</span>${w && w.count ? `<span class="muted">${plural(w.count, "wear", "wears")} so far</span>` : ""}</div>
+    <div class="row">
+      <button type="button" class="btn primary" data-act="wear-outfit" data-id="${esc(o.id)}" data-occ="${S.occ}">Wear this</button>
+      ${list.length > 1 ? `<button type="button" class="btn" id="next-pick" data-act="next-pick">Next option</button>` : ""}
+      <button type="button" class="btn ghost" data-act="open-outfit" data-id="${esc(o.id)}">Details</button>
+    </div>
+  </section>`;
+}
+function ideasBlock() {
+  if (!sampleOn()) return "";
+  const I = S.ideas && S.ideas.occ === S.occ ? S.ideas : null;
+  let h = `<section class="block" aria-labelledby="ideas-h">
+    <div class="block-head"><h2 id="ideas-h">Fresh combos from Claude</h2></div>
+    <label class="field"><span>Anything special today?</span><input id="today-notes" type="text" value="${esc(S.todayNotes)}" placeholder="Cold and rainy, client meeting at 2" autocomplete="off" maxlength="200"></label>
+    <div class="row">
+      <button type="button" class="btn" id="ask-ideas" data-act="ask-ideas" ${I && I.loading ? "disabled" : ""}>${I && I.combos ? "Ask again" : "Ask Claude for combos"}</button>
+      ${I && I.loading ? `<button type="button" class="btn ghost" data-act="stop-ideas">Stop</button>` : ""}
+    </div>`;
+  if (I && I.loading) h += `<p class="muted thinking">Claude is putting outfits together from your closet…</p>`;
+  if (I && I.error) h += `<p class="err">${esc(I.error)}</p>`;
+  if (I && I.combos && I.combos.length) h += `<div class="combo-list">${I.combos.map(comboCard).join("")}</div>`;
+  return h + `</section>`;
+}
+function comboCard(c, k) {
+  const its = c.itemIds.map(itemById).filter(Boolean);
+  return `<article class="combo">
+    ${flatlay(its)}
+    <div>
+      <h3>${esc(c.name || its.map(i => i.name).join(" + "))}</h3>
+      <p>${esc(c.why)}</p>
+      <div class="row">
+        <button type="button" class="btn primary sm" data-act="wear-combo" data-k="${k}">Wear today</button>
+        <button type="button" class="btn sm" data-act="save-combo" data-k="${k}" ${c.savedId ? "disabled" : ""}>${c.savedId ? "Saved" : "Save outfit"}</button>
+      </div>
+    </div>
+  </article>`;
+}
+function recentBlock() {
+  const es = wear().entries.slice(0, 6);
+  if (!es.length) return "";
+  const today = ymd();
+  return `<section class="block" aria-labelledby="recent-h">
+    <div class="block-head"><h2 id="recent-h">Recently worn</h2></div>
+    <ul class="log">${es.map(e => {
+      const o = e.outfitId ? S.outfits.get(e.outfitId) : null;
+      const name = o ? outfitName({ ...o, id: e.outfitId }) : arr(e.itemIds).map(itemById).filter(Boolean).map(i => i.name).join(" + ") || "Outfit";
+      const recent = daysAgo(e.date) !== null && daysAgo(e.date) <= 1;
+      return `<li><span class="log-date">${e.date === today ? "Today" : esc(shortDate(e.date))}</span><span class="log-name">${esc(name)}</span><span class="pill">${esc(OCC_LABEL[e.occasion] || "")}</span>${recent ? `<button type="button" class="link" data-act="undo-wear" data-month="${esc(e.month)}" data-id="${esc(e.id)}">Remove</button>` : "<span></span>"}</li>`;
+    }).join("")}</ul>
+  </section>`;
+}
+
+/* closet */
+function viewCloset() {
+  const all = itemsAll();
+  const f = S.closet;
+  const w = wear().items;
+  let list = all.filter(i => (f.retired ? i.status === "retired" : i.status !== "retired"));
+  if (f.cat !== "all") list = list.filter(i => i.category === f.cat);
+  if (f.occ !== "any") list = list.filter(i => arr(i.occasions).includes(f.occ));
+  const cnt = id => (w.get(id) || {}).count || 0;
+  const last = id => (w.get(id) || {}).last || "0000";
+  const sorters = {
+    recent: (a, b) => (b.createdAt || 0) - (a.createdAt || 0),
+    stale: (a, b) => last(a.id).localeCompare(last(b.id)),
+    least: (a, b) => cnt(a.id) - cnt(b.id),
+    most: (a, b) => cnt(b.id) - cnt(a.id),
+    price: (a, b) => (num(b.price) || 0) - (num(a.price) || 0),
+  };
+  list.sort(sorters[f.sort] || sorters.recent);
+  const active = all.filter(i => i.status !== "retired").length;
+  const retired = all.length - active;
+  let h = `<div class="page-head"><h1>${f.retired ? "Retired" : "Closet"}</h1><p class="muted">${plural(f.retired ? retired : active, "piece", "pieces")}</p><button type="button" class="btn primary" data-act="add-item">Add clothes</button></div>`;
+  if (!all.length) {
+    return h + emptyBlock("Nothing here yet", "Snap a photo of each piece you own. Claude can fill in the name, color and where it fits, so each one takes a few seconds.", `<button type="button" class="btn primary" data-act="add-item">Add your first piece</button>`);
+  }
+  h += `<div class="filters">
+    <div class="chips" role="group" aria-label="Category">${chip("cat", "all", "All", f.cat === "all")}${CATS.map(c => chip("cat", c, c, f.cat === c)).join("")}</div>
+    <div class="chips" role="group" aria-label="Occasion">${chip("cocc", "any", "Any occasion", f.occ === "any")}${OCC.map(o => chip("cocc", o.id, o.label, f.occ === o.id)).join("")}</div>
+    <label class="sort"><span>Sort</span><select id="closet-sort">${SORTS.map(([v, l]) => `<option value="${v}"${f.sort === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+  </div>`;
+  if (!list.length) h += `<p class="muted">Nothing matches these filters.</p>`;
+  else h += `<ul class="grid">${list.map(i => tile(i, w.get(i.id))).join("")}</ul>`;
+  if (retired || f.retired) h += `<div class="row"><button type="button" class="link" id="toggle-retired" data-act="toggle-retired">${f.retired ? "Back to your closet" : `Show retired pieces (${retired})`}</button></div>`;
+  return h;
+}
+function tile(i, ws) {
+  const sub = ws && ws.count ? `${plural(ws.count, "wear", "wears")}, last ${shortDate(ws.last)}` : "Not worn yet";
+  return `<li><button type="button" class="tile" data-act="open-item" data-id="${esc(i.id)}"><span class="tile-ph">${cell(i, true)}</span><span class="tile-name">${esc(i.name || "Untitled")}</span><span class="tile-sub">${esc(sub)}</span></button></li>`;
+}
+
+/* outfits */
+function viewOutfits() {
+  const w = wear().outfits;
+  const enough = activeItems().length >= 2;
+  const all = outfitsAll().filter(o => outfitItems(o).length);
+  let list = S.outfitOcc === "any" ? all : all.filter(o => arr(o.occasions).includes(S.outfitOcc));
+  list.sort((a, b) => ((w.get(a.id) || {}).last || "0000").localeCompare((w.get(b.id) || {}).last || "0000") || (b.createdAt || 0) - (a.createdAt || 0));
+  let h = `<div class="page-head"><h1>Outfits</h1><p class="muted">${plural(all.length, "outfit", "outfits")}</p>${enough ? `<button type="button" class="btn primary" data-act="new-outfit">Build an outfit</button>` : ""}</div>`;
+  if (!all.length) {
+    return h + emptyBlock("No outfits yet",
+      enough ? "Pick pieces that go together and tag where you’d wear them. Today then suggests whichever outfit you’ve gone longest without." : "Add a few clothes first, then put them together here.",
+      enough ? `<button type="button" class="btn primary" data-act="new-outfit">Build an outfit</button>` : `<button type="button" class="btn primary" data-act="add-item">Add clothes</button>`);
+  }
+  h += `<div class="chips" role="group" aria-label="Occasion">${chip("oocc", "any", "All", S.outfitOcc === "any")}${OCC.map(o => chip("oocc", o.id, o.label, S.outfitOcc === o.id)).join("")}</div>`;
+  if (!list.length) return h + `<p class="muted">No outfits tagged for this occasion yet.</p>`;
+  h += `<p class="muted small">Least recently worn first.</p><ul class="outfit-grid">${list.map(o => {
+    const s = w.get(o.id);
+    return `<li class="ocard">
+      <button type="button" class="ocard-main" data-act="open-outfit" data-id="${esc(o.id)}">${flatlay(outfitItems(o))}<span class="ocard-name">${esc(outfitName(o))}</span></button>
+      <div class="ocard-meta"><span class="hangtag sm">${esc(lastWornText(s && s.last))}</span>${arr(o.occasions).map(x => `<span class="pill">${esc(OCC_LABEL[x] || x)}</span>`).join("")}</div>
+      <div class="row tight"><button type="button" class="btn sm primary" data-act="wear-outfit" data-id="${esc(o.id)}">Wear today</button><button type="button" class="btn sm ghost" data-act="edit-outfit" data-id="${esc(o.id)}">Edit</button></div>
+    </li>`;
+  }).join("")}</ul>`;
+  return h;
+}
+
+/* shop */
+function viewShop() {
+  const tabs = [["wishlist", "Wishlist"], ["hunts", "Deal hunts"], ["gaps", "What’s missing"]];
+  let h = `<div class="page-head"><h1>Shop</h1></div><div class="seg" role="tablist" aria-label="Shopping">${tabs.map(([id, l]) => `<button type="button" role="tab" id="tab-${id}" aria-selected="${S.shopTab === id}" data-act="shoptab" data-val="${id}">${l}</button>`).join("")}</div>`;
+  if (S.shopTab === "hunts") h += huntsPanel();
+  else if (S.shopTab === "gaps") h += gapsPanel();
+  else h += wishPanel();
+  return h;
+}
+function wishPanel() {
+  const list = [...S.wish].map(([id, d]) => ({ ...d, id })).filter(x => x.status !== "bought").sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  let h = `<div class="panel-head"><p class="muted">Things you’re thinking of buying. Check each against what you already own before you spend.</p><button type="button" class="btn primary" data-act="add-wish">Add to wishlist</button></div>`;
+  if (!list.length) return h + emptyBlock("Your wishlist is empty", "Add something you’ve seen online or in a store, with the price and link. Claude can tell you whether it earns a place in your closet.", "");
+  return h + `<ul class="cards">${list.map(wishCard).join("")}</ul>`;
+}
+function wishCard(x) {
+  const sim = similarTo(x);
+  const st = S.checks[x.id] || {};
+  const url = safeUrl(x.url);
+  const meta = [x.category, OCC_LABEL[x.occasion], x.store].filter(Boolean).join(", ");
+  return `<li class="card">
+    <div class="wish-top">
+      ${x.photo ? `<img class="wish-img" src="${photoUrl(x.photo)}" alt="">` : ""}
+      <div>
+        <h3>${esc(x.name)}</h3>
+        ${meta ? `<p class="muted small" style="margin:0">${esc(meta)}</p>` : ""}
+        ${num(x.price) ? `<p class="price">${money(num(x.price))}</p>` : ""}
+        ${url ? `<a class="link" href="${esc(url)}" target="_blank" rel="noopener noreferrer">Open listing</a>` : ""}
+      </div>
+    </div>
+    <p class="overlap">${sim.length ? `You own ${sim.length} similar: ${esc(sim.slice(0, 3).map(i => i.name).join(", "))}${sim.length > 3 ? " and more" : ""}.` : "Nothing like it in your closet yet."}</p>
+    ${x.check ? verdictBlock(x.check) : ""}
+    ${st.loading ? `<p class="muted thinking">Claude is weighing it up…</p>` : ""}
+    ${st.error ? `<p class="err">${esc(st.error)}</p>` : ""}
+    <div class="row">
+      ${sampleOn() ? `<button type="button" class="btn sm${x.check ? "" : " primary"}" data-act="check-wish" data-id="${esc(x.id)}" ${st.loading ? "disabled" : ""}>${x.check ? "Check again" : "Do I need this?"}</button>` : ""}
+      <button type="button" class="btn sm" data-act="bought-wish" data-id="${esc(x.id)}">I bought it</button>
+      <button type="button" class="btn sm ghost" data-act="remove-wish" data-id="${esc(x.id)}">Remove</button>
+    </div>
+  </li>`;
+}
+function verdictBlock(c) {
+  const v = { buy: ["Buy it.", "good"], wait: ["Wait.", "wait"], skip: ["Skip it.", "bad"] }[c.verdict] || ["Think it over.", "wait"];
+  const n = Number(c.newOutfits) || 0;
+  return `<div class="verdict ${v[1]}">
+    <p><span class="v-word">${v[0]}</span> ${esc(c.headline)}</p>
+    ${arr(c.reasons).length ? `<ul>${arr(c.reasons).slice(0, 4).map(r => `<li>${esc(r)}</li>`).join("")}</ul>` : ""}
+    ${n > 0 ? `<p class="muted small" style="margin-top:6px">Adds about ${plural(n, "new outfit", "new outfits")}.</p>` : ""}
+  </div>`;
+}
+function budgetText(h) {
+  const a = num(h.budgetMin), b = num(h.budgetMax);
+  if (a != null && b != null) return `${money(a)} to ${money(b)}`;
+  if (b != null) return `up to ${money(b)}`;
+  if (a != null) return `from ${money(a)}`;
+  return "";
+}
+function huntsPanel() {
+  const list = [...S.hunts].map(([id, d]) => ({ ...d, id })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+  let h = `<div class="panel-head"><p class="muted">Say what you’re after and your budget. Claude searches current sales across stores and saves the best-made options here.</p><button type="button" class="btn primary" data-act="add-hunt">New hunt</button></div>`;
+  if (!list.length) return h + emptyBlock("No hunts yet", "Try something like “white oxford shirt for the office, $25 to $60”.", "");
+  return h + `<ul class="cards">${list.map(huntCard).join("")}</ul>`;
+}
+function huntCard(x) {
+  const res = arr(x.results);
+  const waiting = x.status !== "done";
+  const meta = [OCC_LABEL[x.occasion], budgetText(x)].filter(Boolean).join(", ");
+  return `<li class="card">
+    <div class="hunt-head">
+      <div><h3>${esc(x.what)}</h3>${meta ? `<p class="muted small">${esc(meta)}</p>` : ""}</div>
+      <span class="status ${waiting ? "wait" : "good"}">${waiting ? "Waiting for Claude" : plural(res.length, "pick", "picks")}</span>
+    </div>
+    ${waiting ? `<p class="hunt-how">Copy the request and send it to Claude in chat. The picks show up here when Claude is done.</p>` : ""}
+    ${x.summary ? `<p class="hunt-sum">${esc(str(x.summary, 400))}</p>` : ""}
+    ${res.length ? `<ol class="results">${res.slice(0, 8).map((r, k) => resultRow(x, r, k)).join("")}</ol>` : ""}
+    <div class="row">
+      <button type="button" class="btn sm${waiting ? " primary" : ""}" data-act="copy-hunt" data-id="${esc(x.id)}">${waiting ? "Copy request for Claude" : "Copy request again"}</button>
+      <button type="button" class="btn sm ghost" data-act="del-hunt" data-id="${esc(x.id)}">Delete</button>
+    </div>
+  </li>`;
+}
+function resultRow(h, r, k) {
+  if (!r || typeof r !== "object") return "";
+  const url = safeUrl(r.url);
+  const price = num(r.price), was = num(r.wasPrice);
+  const off = price && was && was > price ? Math.round((1 - price / was) * 100) : 0;
+  const title = esc(str(r.title, 140) || "Listing");
+  return `<li class="result">
+    <div>
+      ${url ? `<a class="r-title" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${title}</a>` : `<span class="r-title">${title}</span>`}
+      ${r.store ? `<p class="muted">${esc(str(r.store, 60))}</p>` : ""}
+      ${r.why ? `<p>${esc(str(r.why, 300))}</p>` : ""}
+      ${r.quality ? `<p class="muted">${esc(str(r.quality, 300))}</p>` : ""}
+    </div>
+    <div class="r-side">
+      ${price ? `<span class="price">${money(price)}</span>` : ""}
+      ${off > 0 ? `<s class="muted">${money(was)}</s><span class="off">${off}% off</span>` : ""}
+      <button type="button" class="btn sm" data-act="result-wish" data-id="${esc(h.id)}" data-k="${k}">Add to wishlist</button>
+    </div>
+  </li>`;
+}
+function gapsPanel() {
+  const G = S.gaps;
+  let h = `<div class="panel-head"><p class="muted">Claude looks at what you own for an occasion and suggests the few pieces that would add the most new outfits.</p></div>
+    <div class="chips" role="group" aria-label="Occasion">${OCC.map(o => chip("gocc", o.id, o.label, G.occ === o.id)).join("")}</div>`;
+  if (!sampleOn()) return h + `<p class="muted">Asking Claude isn’t available in this view.</p>`;
+  h += `<div class="row"><button type="button" class="btn primary" id="find-gaps" data-act="find-gaps" ${G.loading ? "disabled" : ""}>Find what’s missing</button></div>`;
+  if (G.loading) h += `<p class="muted thinking">Claude is looking through your ${esc(OCC_LABEL[G.forOcc || G.occ].toLowerCase())} clothes…</p>`;
+  if (G.error) h += `<p class="err">${esc(G.error)}</p>`;
+  if (G.ideas && G.ideas.length && G.forOcc === G.occ) {
+    h += `<ul class="cards">${G.ideas.map((x, k) => `<li class="card">
+      <h3>${esc(x.what)}</h3>
+      <p style="margin:4px 0 0">${esc(x.why)}</p>
+      ${priceRange(x) ? `<p class="muted small" style="margin:4px 0 0">Usually ${esc(priceRange(x))}</p>` : ""}
+      <div class="row"><button type="button" class="btn sm primary" data-act="gap-hunt" data-k="${k}">Start a hunt</button><button type="button" class="btn sm" data-act="gap-wish" data-k="${k}">Add to wishlist</button></div>
+    </li>`).join("")}</ul>`;
+  }
+  return h;
+}
+function priceRange(x) {
+  if (x.priceMin != null && x.priceMax != null) return `${money(x.priceMin)} to ${money(x.priceMax)}`;
+  return "";
+}
+
+/* spend */
+function viewSpend() {
+  const items = itemsAll();
+  const priced = items.filter(i => num(i.price) > 0);
+  let h = `<div class="page-head"><h1>Spend</h1></div>`;
+  if (!priced.length) {
+    return h + emptyBlock("No prices yet", "Add what you paid when you add clothes. This page then shows what you spend each month and which pieces earn their keep.", `<button type="button" class="btn primary" data-act="add-item">Add clothes</button>`);
+  }
+  const dated = priced.filter(i => validDate(i.boughtOn));
+  const now = new Date(), thisMonth = ymd(now).slice(0, 7);
+  const months = [];
+  for (let k = 11; k >= 0; k--) months.push(ymd(new Date(now.getFullYear(), now.getMonth() - k, 1)).slice(0, 7));
+  const byMonth = Object.fromEntries(months.map(m => [m, 0]));
+  dated.forEach(i => { const m = i.boughtOn.slice(0, 7); if (m in byMonth) byMonth[m] += num(i.price); });
+  const monthTotal = byMonth[thisMonth] || 0;
+  const yearTotal = months.reduce((s, m) => s + byMonth[m], 0);
+  const budget = num(S.profile.budget) || 0;
+  const monthName = now.toLocaleDateString(undefined, { month: "long" });
+  const over = budget && monthTotal > budget;
+  h += `<section class="block" style="margin-top:8px">
+    <p class="spend-num">${money(Math.round(monthTotal))}</p>
+    <p class="muted" style="margin:0">spent in ${esc(monthName)}${budget ? ` of your ${money(budget)} budget` : ""}</p>
+    ${budget ? `<div class="meter${over ? " over" : ""}"><span data-pct="${Math.round(Math.min(100, (monthTotal / budget) * 100))}"></span></div>
+      <p class="small ${over ? "err" : "muted"}" style="margin:0">${over ? `${money(Math.round(monthTotal - budget))} over budget` : `${money(Math.round(budget - monthTotal))} left this month`}</p>`
+      : `<div class="row"><button type="button" class="link" data-act="edit-prefs">Set a monthly budget</button></div>`}
+  </section>`;
+  h += `<section class="block"><div class="block-head"><h2>Last 12 months</h2><span class="muted">${money(Math.round(yearTotal))} total</span></div>${monthChart(months, byMonth, thisMonth)}</section>`;
+  const cat = {};
+  dated.forEach(i => { if (i.boughtOn.slice(0, 7) >= months[0]) { const c = i.category || "Other"; cat[c] = (cat[c] || 0) + num(i.price); } });
+  const rows = Object.entries(cat).sort((a, b) => b[1] - a[1]);
+  const top = Math.max(1, ...rows.map(r => r[1]));
+  if (rows.length) {
+    h += `<section class="block"><div class="block-head"><h2>By category</h2></div><ul class="bars">${rows.map(([c, v]) => `<li><span>${esc(c)}</span><span class="muted">${money(Math.round(v))}</span><div class="meter"><span data-pct="${Math.round((v / top) * 100)}"></span></div></li>`).join("")}</ul></section>`;
+  }
+  const w = wear().items;
+  const cpw = priced.map(i => { const c = (w.get(i.id) || {}).count || 0; return { i, c, v: num(i.price) / Math.max(1, c) }; });
+  const best = cpw.filter(r => r.c >= 2).sort((a, b) => a.v - b.v).slice(0, 5);
+  const idle = cpw.filter(r => r.i.status !== "retired" && r.c <= 1 && (!validDate(r.i.boughtOn) || daysAgo(r.i.boughtOn) >= 30)).sort((a, b) => num(b.i.price) - num(a.i.price)).slice(0, 5);
+  if (best.length) h += cpwBlock("Earning their keep", "Lowest cost per wear so far.", best);
+  if (idle.length) h += cpwBlock("Waiting for a wear", "Worn once or never, and bought more than a month ago.", idle);
+  const missing = items.filter(i => i.status !== "retired" && !(num(i.price) > 0 && validDate(i.boughtOn))).length;
+  if (missing) h += `<p class="muted small">${plural(missing, "piece has", "pieces have")} no price or purchase date, so ${missing === 1 ? "it isn’t" : "they aren’t"} in the monthly totals.</p>`;
+  return h;
+}
+function monthChart(months, byMonth, thisMonth) {
+  const W = 360, base = 118, top = 12, bw = 18, gap = (W - 12 * bw) / 12;
+  const max = Math.max(1, ...months.map(m => byMonth[m]));
+  const bars = months.map((m, k) => {
+    const v = byMonth[m];
+    const hgt = v ? Math.max(3, Math.round((v / max) * (base - top))) : 2;
+    const x = gap / 2 + k * (bw + gap);
+    const [yy, mm] = m.split("-").map(Number);
+    const d = new Date(yy, mm - 1, 1);
+    const label = d.toLocaleDateString(undefined, { month: "narrow" });
+    const long = d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    return `<g><title>${esc(long)}: ${money(Math.round(v))}</title><rect class="bar${m === thisMonth ? " now" : ""}" x="${x.toFixed(1)}" y="${base - hgt}" width="${bw}" height="${hgt}" rx="2"></rect><text class="axis" x="${(x + bw / 2).toFixed(1)}" y="${base + 18}" text-anchor="middle">${esc(label)}</text></g>`;
+  }).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${base + 26}" role="img" aria-label="Clothing spend per month for the last 12 months">${bars}<line class="base" x1="0" x2="${W}" y1="${base + 0.5}" y2="${base + 0.5}"></line></svg>`;
+}
+function cpwBlock(title, sub, rows) {
+  return `<section class="block"><div class="block-head"><h2>${esc(title)}</h2></div><p class="muted small" style="margin:0">${esc(sub)}</p>
+    <ul class="cpw">${rows.map(r => `<li><span class="tile-ph">${cell(r.i, true)}</span><button type="button" class="link" data-act="open-item" data-id="${esc(r.i.id)}">${esc(r.i.name)}</button><span class="cpw-n">${money(Math.round(r.v * 100) / 100)}<span class="muted small"> per wear</span></span></li>`).join("")}</ul>
+  </section>`;
+}
+
+/* profile */
+function viewProfile() {
+  const p = S.profile || {}, a = p.analysis, sz = p.sizes || {};
+  const photos = arr(p.photos);
+  const canAnalyze = photos.length > 0 && cap.imagesOK && sampleOn();
+  let h = `<div class="page-head"><h1>Style profile</h1></div>`;
+  h += `<section class="block" style="margin-top:4px">
+    <div class="block-head"><h2>Your photos</h2><span class="muted small">${photos.length} of 6</span></div>
+    <p class="muted" style="max-width:62ch;margin:0">Add 3 to 5 photos: front, side and back in fitted clothes, plus a close-up of your face in daylight with no filter. Claude uses them to work out which colors and fits suit you.</p>
+    <ul class="me-photos">${photos.map(id => `<li><img src="${photoUrl(id)}" alt="Style photo"><button type="button" class="x" data-act="del-me-photo" data-id="${esc(id)}" aria-label="Remove photo">×</button></li>`).join("")}${cap.assets && photos.length < 6 ? `<li><button type="button" class="add-photo" id="add-me-photos" data-act="add-me-photos">Add photos</button></li>` : ""}</ul>
+    ${!cap.assets ? `<p class="muted small">Photos can’t be added in this view.</p>` : ""}
+    ${canAnalyze ? `<div class="row"><button type="button" class="btn primary" id="analyze" data-act="analyze" ${S.analysis.loading ? "disabled" : ""}>${a ? "Analyze again" : "Analyze my photos"}</button></div>` : ""}
+    ${photos.length && cap.sampleKnown && !canAnalyze ? `<p class="muted small">Photo analysis isn’t available in this view.</p>` : ""}
+    ${S.analysis.loading ? `<p class="muted thinking">Claude is studying your photos. This can take a minute.</p>` : ""}
+    ${S.analysis.error ? `<p class="err">${esc(S.analysis.error)}</p>` : ""}
+  </section>`;
+  if (a && typeof a === "object") h += analysisBlock(a, p.analyzedAt);
+  h += `<section class="block">
+    <div class="block-head"><h2>Sizes and budget</h2><button type="button" class="btn sm" data-act="edit-prefs">Edit</button></div>
+    <dl class="facts">${fact("Tops", sz.top)}${fact("Waist", sz.waist)}${fact("Inseam", sz.inseam)}${fact("Shoes", sz.shoe)}${fact("Fit", p.fit)}${fact("Monthly budget", num(p.budget) ? money(num(p.budget)) : "")}${fact("Stores you like", p.stores)}</dl>
+  </section>`;
+  if (cap.sampleOff) {
+    h += `<section class="block"><div class="block-head"><h2>Claude in this app</h2></div><p class="muted" style="margin:0;max-width:62ch">Claude is switched off here, so photo analysis, outfit ideas and purchase checks are hidden.</p><div class="row"><button type="button" class="btn sm" data-act="permissions">Open permissions</button></div></section>`;
+  }
+  h += `<p class="muted small privacy">Your closet and profile are saved in your own private space in this app. Photos are stored with the app, which stays visible only to you unless you share it.</p>`;
+  return h;
+}
+function fact(label, v) {
+  return `<div><dt>${esc(label)}</dt><dd>${v ? esc(v) : `<span class="muted">Not set</span>`}</dd></div>`;
+}
+function analysisBlock(a, at) {
+  const sw = c => `<li class="swatch"><span class="sw-wrap"><span class="chip-sw"${safeHex(c.hex) ? ` data-sw="${safeHex(c.hex)}"` : ""}></span></span><span>${esc(c.name)}</span>${c.why ? `<span class="sw-why">${esc(c.why)}</span>` : ""}</li>`;
+  const list = (title, cs) => (cs.length ? `<h3>${title}</h3><ul class="swatches">${cs.map(sw).join("")}</ul>` : "");
+  const tips = a.occasionTips && typeof a.occasionTips === "object" ? OCC.filter(o => a.occasionTips[o.id]) : [];
+  const atDate = at ? shortDate(ymd(new Date(at))) : "";
+  return `<section class="block">
+    <div class="block-head"><h2>What suits you</h2>${atDate ? `<span class="muted small">From ${esc(atDate)}</span>` : ""}</div>
+    ${a.summary ? `<p class="lead">${esc(a.summary)}</p>` : ""}
+    <div class="pills">${a.undertone ? `<span class="pill">${esc(cap1(a.undertone))} undertone</span>` : ""}${a.contrast ? `<span class="pill">${esc(cap1(a.contrast))} contrast</span>` : ""}</div>
+    ${list("Your best colors", arr(a.bestColors))}
+    ${list("Neutrals to build on", arr(a.neutrals))}
+    ${list("Use carefully", arr(a.useCarefully))}
+    ${arr(a.fit).length ? `<h3>Fit notes</h3><dl class="fitnotes">${arr(a.fit).map(f => `<div><dt>${esc(f.area)}</dt><dd>${esc(f.advice)}</dd></div>`).join("")}</dl>` : ""}
+    ${tips.length ? `<h3>By occasion</h3><dl class="fitnotes">${tips.map(o => `<div><dt>${o.label}</dt><dd>${esc(a.occasionTips[o.id])}</dd></div>`).join("")}</dl>` : ""}
+  </section>`;
+}
+
+const VIEW = { today: viewToday, closet: viewCloset, outfits: viewOutfits, shop: viewShop, spend: viewSpend, profile: viewProfile };
+
+/* ---------- sheet + toast ---------- */
+const sheet = $("#sheet");
+let sheetCleanup = null;
+function openSheet(html, mount) {
+  if (typeof sheetCleanup === "function") sheetCleanup();
+  sheetCleanup = null;
+  const body = $("#sheet-body");
+  body.innerHTML = `<button type="button" class="sheet-x" aria-label="Close" data-close>×</button>` + html;
+  applyDecor(body);
+  if (!sheet.open) {
+    if (typeof sheet.showModal === "function") sheet.showModal(); else sheet.setAttribute("open", "");
+  }
+  sheet.scrollTop = 0;
+  sheetCleanup = mount ? mount(body) || null : null;
+}
+function closeSheet() {
+  if (typeof sheetCleanup === "function") sheetCleanup();
+  sheetCleanup = null;
+  if (sheet.open) { if (typeof sheet.close === "function") sheet.close(); else sheet.removeAttribute("open"); }
+}
+sheet.addEventListener("close", () => { if (typeof sheetCleanup === "function") sheetCleanup(); sheetCleanup = null; });
+sheet.addEventListener("click", e => {
+  if (e.target === sheet || e.target.closest("[data-close]")) closeSheet();
+});
+let toastTimer = 0;
+function toast(msg, opt = {}) {
+  const t = $("#toast");
+  t.innerHTML = `<span>${esc(msg)}</span>${opt.action ? `<button type="button" class="toast-act">${esc(opt.action)}</button>` : ""}`;
+  if (opt.action) t.querySelector(".toast-act").onclick = () => { t.classList.remove("on"); opt.onAction(); };
+  t.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("on"), opt.action ? 6500 : 3200);
+}
+const occChips = (set, attr) => OCC.map(o => `<button type="button" class="chip" aria-pressed="${set.has(o.id)}" data-${attr}="${o.id}">${o.label}</button>`).join("");
+
+/* ---------- item sheet ---------- */
+function openItemSheet(id, prefill, onSaved) {
+  const it = id ? itemById(id) : null;
+  if (id && !it) return;
+  const base = it || Object.assign({ name: "", category: CATS[0], type: "", color: "", colorHex: "", pattern: "", brand: "", size: "", occasions: [S.occ], price: null, boughtOn: "", store: "", notes: "", photo: null }, prefill || {});
+  const occs = new Set(arr(base.occasions));
+  let pending = null;
+  let hex = safeHex(base.colorHex);
+  const ws = it ? wear().items.get(it.id) : null;
+  const inOutfits = it ? outfitsAll().filter(o => arr(o.itemIds).includes(it.id)).length : 0;
+  const cpw = it && num(it.price) ? num(it.price) / Math.max(1, (ws && ws.count) || 0) : null;
+  const canPhoto = !!cap.assets;
+  const canFill = cap.imagesOK && sampleOn();
+  const priceVal = num(base.price);
+  const html = `
+    <h2 id="sheet-title">${it ? esc(it.name || "Edit piece") : "Add clothes"}</h2>
+    ${it ? `<div class="stats"><span class="hangtag sm">${esc(lastWornText(ws && ws.last))}</span><span class="pill">${plural((ws && ws.count) || 0, "wear", "wears")}</span>${cpw !== null ? `<span class="pill">${money(Math.round(cpw * 100) / 100)} per wear</span>` : ""}${inOutfits ? `<span class="pill">In ${plural(inOutfits, "outfit", "outfits")}</span>` : ""}</div>` : ""}
+    <div class="photo-pick">
+      <div class="photo-box" id="ip-box">${base.photo ? `<img src="${photoUrl(base.photo)}" alt="">` : `<span class="muted">No photo yet</span>`}</div>
+      <div class="col">
+        ${canPhoto ? `<button type="button" class="btn sm" id="ip-choose">${base.photo ? "Change photo" : "Take or choose a photo"}</button>` : `<p class="hint">Photos can’t be saved in this view.</p>`}
+        ${canFill ? `<button type="button" class="btn sm" id="ip-fill"${base.photo ? "" : " disabled"}>Fill in with Claude</button>` : ""}
+        <p class="hint" id="ip-hint" aria-live="polite">${canFill ? "Claude can read the photo and fill in the details for you." : ""}</p>
+      </div>
+    </div>
+    <label class="field"><span>Name</span><input id="ip-name" type="text" value="${esc(base.name)}" placeholder="Navy oxford shirt" autocomplete="off" maxlength="80"></label>
+    <div class="field-row">
+      <label class="field"><span>Category</span><select id="ip-cat">${CATS.map(c => `<option${c === base.category ? " selected" : ""}>${esc(c)}</option>`).join("")}</select></label>
+      <label class="field"><span>Type</span><input id="ip-type" type="text" value="${esc(base.type)}" placeholder="Oxford shirt" autocomplete="off" maxlength="60"></label>
+    </div>
+    <div class="field-row">
+      <label class="field"><span>Color</span><span class="color-in"><span class="dot" id="ip-dot"${hex ? ` data-sw="${hex}"` : ""}></span><input id="ip-color" type="text" value="${esc(base.color)}" placeholder="Navy" autocomplete="off" maxlength="40"></span></label>
+      <label class="field"><span>Pattern</span><input id="ip-pattern" type="text" value="${esc(base.pattern)}" placeholder="Solid" autocomplete="off" maxlength="40"></label>
+    </div>
+    <fieldset class="field"><legend>Good for</legend><div class="chips wrap-chips">${occChips(occs, "occt")}</div></fieldset>
+    <div class="field-row">
+      <label class="field"><span>Price paid ($)</span><input id="ip-price" type="number" inputmode="decimal" min="0" step="0.01" value="${priceVal != null ? priceVal : ""}" placeholder="0"></label>
+      <label class="field"><span>Bought on</span><input id="ip-date" type="date" value="${esc(validDate(base.boughtOn))}" max="${ymd()}"></label>
+    </div>
+    <div class="field-row">
+      <label class="field"><span>Brand</span><input id="ip-brand" type="text" value="${esc(base.brand)}" autocomplete="off" maxlength="60"></label>
+      <label class="field"><span>Size</span><input id="ip-size" type="text" value="${esc(base.size)}" autocomplete="off" maxlength="20"></label>
+    </div>
+    <label class="field"><span>Store</span><input id="ip-store" type="text" value="${esc(base.store)}" autocomplete="off" maxlength="60"></label>
+    <label class="field"><span>Notes</span><textarea id="ip-notes" rows="2" maxlength="500">${esc(base.notes)}</textarea></label>
+    <p class="err" id="ip-err" role="alert"></p>
+    <div class="sheet-actions">
+      ${it ? `<button type="button" class="btn sm ghost danger" id="ip-del">Delete</button><button type="button" class="btn sm ghost" id="ip-retire">${it.status === "retired" ? "Bring back" : "Retire"}</button>` : ""}
+      <span class="grow"></span>
+      <button type="button" class="btn primary" id="ip-save">${it ? "Save changes" : "Add to closet"}</button>
+    </div>`;
+  openSheet(html, root => {
+    const q = s => root.querySelector(s);
+    let fillCtl = null;
+    root.addEventListener("click", e => {
+      const b = e.target.closest("[data-occt]");
+      if (!b) return;
+      const v = b.dataset.occt;
+      if (occs.has(v)) occs.delete(v); else occs.add(v);
+      b.setAttribute("aria-pressed", String(occs.has(v)));
+    });
+    const chooseBtn = q("#ip-choose");
+    if (chooseBtn) chooseBtn.onclick = async () => {
+      const files = await pickFiles(false);
+      const f = files[0];
+      if (!f) return;
+      const hint = q("#ip-hint");
+      hint.textContent = "Preparing the photo…";
+      try { pending = await shrink(f, 1280); }
+      catch (_) { hint.textContent = "That photo couldn’t be opened. Try a JPEG or PNG."; return; }
+      q("#ip-box").innerHTML = `<img src="${pending.dataUrl}" alt="New photo">`;
+      hint.textContent = canFill ? "Photo ready. Tap “Fill in with Claude” to fill in the details." : "Photo ready.";
+      const fb = q("#ip-fill");
+      if (fb) fb.disabled = false;
+    };
+    const fillBtn = q("#ip-fill");
+    if (fillBtn) fillBtn.onclick = async () => {
+      const hint = q("#ip-hint");
+      fillBtn.disabled = true;
+      hint.textContent = "Claude is looking at the photo…";
+      fillCtl = new AbortController();
+      try {
+        const blob = pending ? pending.blob : await blobFromAsset(base.photo);
+        const r = await cap.sample.json(PROMPT_TAG, { images: [blob], modelTier: "quick", signal: fillCtl.signal });
+        if (!r || typeof r !== "object") throw { code: "invalid_json" };
+        if (str(r.name, 80)) q("#ip-name").value = str(r.name, 80);
+        if (CATS.includes(r.category)) q("#ip-cat").value = r.category;
+        if (str(r.type, 60)) q("#ip-type").value = str(r.type, 60);
+        if (str(r.color, 40)) q("#ip-color").value = str(r.color, 40);
+        if (str(r.pattern, 40)) q("#ip-pattern").value = str(r.pattern, 40);
+        const h2 = safeHex(r.colorHex);
+        if (h2) { hex = h2; q("#ip-dot").dataset.sw = h2; applyDecor(root); }
+        const oc = arr(r.occasions).map(x => String(x).toLowerCase()).filter(x => OCC_LABEL[x]);
+        if (oc.length) {
+          occs.clear(); oc.forEach(x => occs.add(x));
+          root.querySelectorAll("[data-occt]").forEach(b => b.setAttribute("aria-pressed", String(occs.has(b.dataset.occt))));
+        }
+        if (str(r.notes, 200) && !q("#ip-notes").value.trim()) q("#ip-notes").value = str(r.notes, 200);
+        hint.textContent = "Filled in. Check the details and fix anything that’s off.";
+      } catch (e) {
+        hint.textContent = e && e.code === "cancelled" ? "" : e && e.code ? errText(e) : "The photo couldn’t be read. Try choosing it again.";
+        noteSampleFailure(e);
+      } finally {
+        fillBtn.disabled = false;
+        fillCtl = null;
+      }
+    };
+    q("#ip-color").addEventListener("input", () => {
+      hex = "";
+      const dot = q("#ip-dot");
+      const k = NAMED[colorKey(q("#ip-color").value)];
+      if (k) { dot.dataset.sw = k; applyDecor(root); } else { delete dot.dataset.sw; dot.style.removeProperty("--sw"); }
+    });
+    q("#ip-save").onclick = async () => {
+      const err = q("#ip-err");
+      err.textContent = "";
+      const name = q("#ip-name").value.trim();
+      if (!name) { err.textContent = "Give it a name, like “Navy oxford shirt”."; q("#ip-name").focus(); return; }
+      const btn = q("#ip-save");
+      const label = btn.textContent;
+      btn.disabled = true; btn.textContent = "Saving…";
+      try {
+        let photo = base.photo || null, oldPhoto = null;
+        if (pending) {
+          if (!cap.assets) throw { code: "_nophoto" };
+          const upId = await uploadPhoto(pending.blob);
+          if (it && it.photo) oldPhoto = it.photo;
+          photo = upId;
+        }
+        const docId = it ? it.id : newId("items");
+        const data = {
+          name: name.slice(0, 80),
+          category: q("#ip-cat").value,
+          type: q("#ip-type").value.trim().slice(0, 60),
+          color: q("#ip-color").value.trim().slice(0, 40),
+          colorHex: hex || "",
+          pattern: q("#ip-pattern").value.trim().slice(0, 40),
+          occasions: OCC.map(o => o.id).filter(x => occs.has(x)),
+          price: num(q("#ip-price").value),
+          boughtOn: validDate(q("#ip-date").value),
+          brand: q("#ip-brand").value.trim().slice(0, 60),
+          size: q("#ip-size").value.trim().slice(0, 20),
+          store: q("#ip-store").value.trim().slice(0, 60),
+          notes: q("#ip-notes").value.trim().slice(0, 500),
+          photo,
+          status: it ? it.status || "active" : "active",
+          createdAt: it ? it.createdAt || Date.now() : Date.now(),
+          updatedAt: Date.now(),
+        };
+        await setDoc("items", docId, data);
+        if (oldPhoto && cap.assets && !assetInUse(oldPhoto, { exceptItem: docId })) cap.assets.delete(oldPhoto).catch(() => {});
+        closeSheet();
+        toast(it ? "Saved" : "Added to your closet");
+        if (onSaved) onSaved(docId);
+      } catch (e) {
+        err.textContent = errText(e);
+        btn.disabled = false; btn.textContent = label;
+      }
+    };
+    const del = q("#ip-del");
+    if (del) del.onclick = async () => {
+      if (del.dataset.confirm !== "1") { del.dataset.confirm = "1"; del.textContent = "Tap again to delete"; return; }
+      del.disabled = true;
+      try {
+        for (const o of outfitsAll().filter(x => arr(x.itemIds).includes(it.id))) {
+          await patchDoc("outfits", o.id, { itemIds: arr(o.itemIds).filter(x => x !== it.id), updatedAt: Date.now() });
+        }
+        await delDoc("items", it.id);
+        if (it.photo && cap.assets && !assetInUse(it.photo, { exceptItem: it.id })) cap.assets.delete(it.photo).catch(() => {});
+        closeSheet();
+        toast("Deleted");
+      } catch (e) { q("#ip-err").textContent = errText(e); del.disabled = false; }
+    };
+    const ret = q("#ip-retire");
+    if (ret) ret.onclick = async () => {
+      const back = it.status === "retired";
+      try {
+        await patchDoc("items", it.id, { status: back ? "active" : "retired", updatedAt: Date.now() });
+        closeSheet();
+        toast(back ? "Back in your closet" : "Retired. It won’t come up in picks.");
+      } catch (e) { q("#ip-err").textContent = errText(e); }
+    };
+    return () => { if (fillCtl) fillCtl.abort(); };
+  });
+}
+
+/* ---------- outfit sheets ---------- */
+function openOutfitSheet(id, preset) {
+  const od = id ? S.outfits.get(id) : null;
+  const o = od ? { ...od, id } : null;
+  const sel = new Set(arr(o ? o.itemIds : preset && preset.itemIds));
+  const occs = new Set(arr(o ? o.occasions : (preset && preset.occasions) || [S.occ]));
+  const items = activeItems().concat(o ? arr(o.itemIds).map(itemById).filter(i => i && i.status === "retired") : []);
+  const groups = CATS.map(c => [c, items.filter(i => i.category === c)]).filter(g => g[1].length);
+  const other = items.filter(i => !CATS.includes(i.category));
+  if (other.length) groups.push(["Other", other]);
+  const html = `
+    <h2 id="sheet-title">${o ? "Edit outfit" : "Build an outfit"}</h2>
+    <p class="muted" style="margin:0">${items.length ? "Tap the pieces that go together." : "Add clothes to your closet first."}</p>
+    <div class="picker">${groups.map(([c, l]) => `<h3>${esc(c)}</h3><div class="pick-grid">${l.map(i => `<button type="button" class="pick-tile" aria-pressed="${sel.has(i.id)}" data-pid="${esc(i.id)}"><span class="tile-ph">${cell(i)}</span><span>${esc(i.name)}</span></button>`).join("")}</div>`).join("")}</div>
+    <label class="field"><span>Name (optional)</span><input id="of-name" type="text" value="${esc(o ? o.name || "" : (preset && preset.name) || "")}" placeholder="Blue oxford and grey chinos" autocomplete="off" maxlength="80"></label>
+    <fieldset class="field"><legend>Good for</legend><div class="chips wrap-chips">${occChips(occs, "occt")}</div></fieldset>
+    <p class="err" id="of-err" role="alert"></p>
+    <div class="sheet-actions">
+      ${o ? `<button type="button" class="btn sm ghost danger" id="of-del">Delete</button>` : ""}
+      <span class="grow"></span>
+      <span class="muted small" id="of-count">${plural(sel.size, "piece", "pieces")}</span>
+      <button type="button" class="btn primary" id="of-save">${o ? "Save changes" : "Save outfit"}</button>
+    </div>`;
+  openSheet(html, root => {
+    const q = s => root.querySelector(s);
+    root.addEventListener("click", e => {
+      const p = e.target.closest("[data-pid]");
+      if (p) {
+        const v = p.dataset.pid;
+        if (sel.has(v)) sel.delete(v); else sel.add(v);
+        p.setAttribute("aria-pressed", String(sel.has(v)));
+        q("#of-count").textContent = plural(sel.size, "piece", "pieces");
+        return;
+      }
+      const t = e.target.closest("[data-occt]");
+      if (t) {
+        const v = t.dataset.occt;
+        if (occs.has(v)) occs.delete(v); else occs.add(v);
+        t.setAttribute("aria-pressed", String(occs.has(v)));
+      }
+    });
+    q("#of-save").onclick = async () => {
+      const err = q("#of-err");
+      err.textContent = "";
+      if (sel.size < 2) { err.textContent = "Pick at least two pieces, like a top and a bottom."; return; }
+      if (!occs.size) { err.textContent = "Choose at least one occasion."; return; }
+      const btn = q("#of-save");
+      btn.disabled = true;
+      try {
+        const oid = o ? o.id : newId("outfits");
+        const ordered = [...sel].map(itemById).filter(Boolean).sort((a, b) => catRank(a) - catRank(b)).map(i => i.id);
+        await setDoc("outfits", oid, {
+          name: q("#of-name").value.trim().slice(0, 80),
+          itemIds: ordered,
+          occasions: OCC.map(x => x.id).filter(x => occs.has(x)),
+          source: o ? o.source || "manual" : (preset && preset.source) || "manual",
+          createdAt: o ? o.createdAt || Date.now() : Date.now(),
+          updatedAt: Date.now(),
+        });
+        closeSheet();
+        toast("Outfit saved");
+      } catch (e) { err.textContent = errText(e); btn.disabled = false; }
+    };
+    const del = q("#of-del");
+    if (del) del.onclick = async () => {
+      if (del.dataset.confirm !== "1") { del.dataset.confirm = "1"; del.textContent = "Tap again to delete"; return; }
+      del.disabled = true;
+      try { await delDoc("outfits", o.id); closeSheet(); toast("Outfit deleted"); }
+      catch (e) { q("#of-err").textContent = errText(e); del.disabled = false; }
+    };
+  });
+}
+function openOutfitDetail(id) {
+  const d = S.outfits.get(id);
+  if (!d) return;
+  const o = { ...d, id };
+  const its = outfitItems(o);
+  const hist = wear().entries.filter(e => e.outfitId === id).slice(0, 12);
+  const occs = arr(o.occasions);
+  let wearOcc = occs.includes(S.occ) ? S.occ : occs[0] || S.occ;
+  const html = `
+    <h2 id="sheet-title">${esc(outfitName(o))}</h2>
+    <div class="pills">${occs.map(x => `<span class="pill">${esc(OCC_LABEL[x] || x)}</span>`).join("")}</div>
+    <div style="margin:12px 0">${flatlay(its)}</div>
+    <ul class="piece-list">${its.map(i => `<li><button type="button" class="link" data-act="open-item" data-id="${esc(i.id)}">${esc(i.name)}</button>${i.status === "retired" ? ` <span class="muted small">(retired)</span>` : ""}</li>`).join("")}</ul>
+    <h3>Wear it</h3>
+    <div class="chips wrap-chips" role="group" aria-label="Occasion">${OCC.map(x => `<button type="button" class="chip" aria-pressed="${x.id === wearOcc}" data-wocc="${x.id}">${x.label}</button>`).join("")}</div>
+    <div class="row">
+      <button type="button" class="btn primary" id="od-today">Wear today</button>
+      <label class="inline-date"><span class="sr">Another day</span><input id="od-date" type="date" max="${ymd()}" value="${ymd()}"></label>
+      <button type="button" class="btn" id="od-past">Log this day</button>
+    </div>
+    <h3>History</h3>
+    ${hist.length ? `<ul class="log">${hist.map(e => `<li><span class="log-date">${esc(shortDate(e.date))}</span><span class="log-name">${esc(OCC_LABEL[e.occasion] || "")}</span><span></span><button type="button" class="link" data-act="undo-wear" data-month="${esc(e.month)}" data-id="${esc(e.id)}" data-reopen="${esc(id)}">Remove</button></li>`).join("")}</ul>` : `<p class="muted">Not worn yet.</p>`}
+    <div class="sheet-actions"><span class="grow"></span><button type="button" class="btn" data-act="edit-outfit" data-id="${esc(id)}">Edit outfit</button></div>`;
+  openSheet(html, root => {
+    root.addEventListener("click", e => {
+      const b = e.target.closest("[data-wocc]");
+      if (!b) return;
+      wearOcc = b.dataset.wocc;
+      root.querySelectorAll("[data-wocc]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.wocc === wearOcc)));
+    });
+    root.querySelector("#od-today").onclick = async () => { closeSheet(); S.showPicks = false; await wearOutfit(id, wearOcc); };
+    root.querySelector("#od-past").onclick = async () => {
+      const dt = validDate(root.querySelector("#od-date").value);
+      if (!dt || dt > ymd()) return;
+      closeSheet();
+      await wearOutfit(id, wearOcc, { date: dt });
+    };
+  });
+}
+
+/* ---------- wishlist ---------- */
+function openWishSheet(prefill) {
+  const p = Object.assign({ name: "", category: CATS[0], color: "", occasion: S.occ, price: null, url: "", store: "", notes: "", photo: null }, prefill || {});
+  let occ = OCC_LABEL[p.occasion] ? p.occasion : S.occ;
+  let pending = null;
+  const priceVal = num(p.price);
+  const html = `
+    <h2 id="sheet-title">Add to wishlist</h2>
+    <label class="field"><span>What is it?</span><input id="wf-name" type="text" value="${esc(p.name)}" placeholder="Charcoal wool overcoat" autocomplete="off" maxlength="80"></label>
+    <div class="field-row">
+      <label class="field"><span>Category</span><select id="wf-cat">${CATS.map(c => `<option${c === p.category ? " selected" : ""}>${esc(c)}</option>`).join("")}</select></label>
+      <label class="field"><span>Color</span><input id="wf-color" type="text" value="${esc(p.color)}" placeholder="Charcoal" autocomplete="off" maxlength="40"></label>
+    </div>
+    <fieldset class="field"><legend>For</legend><div class="chips wrap-chips">${OCC.map(o => `<button type="button" class="chip" aria-pressed="${o.id === occ}" data-wocc="${o.id}">${o.label}</button>`).join("")}</div></fieldset>
+    <div class="field-row">
+      <label class="field"><span>Price ($)</span><input id="wf-price" type="number" inputmode="decimal" min="0" step="0.01" value="${priceVal != null ? priceVal : ""}"></label>
+      <label class="field"><span>Store</span><input id="wf-store" type="text" value="${esc(p.store)}" autocomplete="off" maxlength="60"></label>
+    </div>
+    <label class="field"><span>Link (optional)</span><input id="wf-url" type="url" value="${esc(p.url)}" placeholder="https://" autocomplete="off" inputmode="url"></label>
+    <label class="field"><span>Notes</span><textarea id="wf-notes" rows="2" maxlength="400">${esc(p.notes)}</textarea></label>
+    ${cap.assets ? `<div class="row" style="margin-top:4px"><button type="button" class="btn sm" id="wf-photo">${p.photo ? "Change photo" : "Add a photo or screenshot"}</button><span class="hint" id="wf-hint"></span></div>` : ""}
+    <p class="err" id="wf-err" role="alert"></p>
+    <div class="sheet-actions"><span class="grow"></span><button type="button" class="btn primary" id="wf-save">Add to wishlist</button></div>`;
+  openSheet(html, root => {
+    const q = s => root.querySelector(s);
+    root.addEventListener("click", e => {
+      const b = e.target.closest("[data-wocc]");
+      if (!b) return;
+      occ = b.dataset.wocc;
+      root.querySelectorAll("[data-wocc]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.wocc === occ)));
+    });
+    const pb = q("#wf-photo");
+    if (pb) pb.onclick = async () => {
+      const f = (await pickFiles(false))[0];
+      if (!f) return;
+      try { pending = await shrink(f, 1100); q("#wf-hint").textContent = "Photo ready."; }
+      catch (_) { q("#wf-hint").textContent = "That photo couldn’t be opened."; }
+    };
+    q("#wf-save").onclick = async () => {
+      const err = q("#wf-err");
+      err.textContent = "";
+      const name = q("#wf-name").value.trim();
+      if (!name) { err.textContent = "Say what it is, like “Charcoal wool overcoat”."; q("#wf-name").focus(); return; }
+      const rawUrl = q("#wf-url").value.trim();
+      const url = rawUrl ? safeUrl(/^https?:\/\//i.test(rawUrl) ? rawUrl : "https://" + rawUrl) : "";
+      if (rawUrl && !url) { err.textContent = "That link doesn’t look right. Paste the full web address."; return; }
+      const btn = q("#wf-save");
+      btn.disabled = true;
+      try {
+        let photo = p.photo || null;
+        if (pending && cap.assets) photo = await uploadPhoto(pending.blob);
+        await setDoc("wish", newId("wish"), {
+          name: name.slice(0, 80), category: q("#wf-cat").value, color: q("#wf-color").value.trim().slice(0, 40),
+          occasion: occ, price: num(q("#wf-price").value), store: q("#wf-store").value.trim().slice(0, 60),
+          url, notes: q("#wf-notes").value.trim().slice(0, 400), photo, status: "wanted", createdAt: Date.now(),
+        });
+        closeSheet();
+        S.shopTab = "wishlist";
+        go("shop");
+        toast("Added to your wishlist");
+      } catch (e) { err.textContent = errText(e); btn.disabled = false; }
+    };
+  });
+}
+async function checkWish(id) {
+  const d = S.wish.get(id);
+  if (!d || !sampleOn()) return;
+  S.checks[id] = { loading: true };
+  render();
+  try {
+    const r = await cap.sample.json(promptCheck({ ...d, id }), { cache: false });
+    const verdict = ["buy", "wait", "skip"].includes(r && r.verdict) ? r.verdict : "wait";
+    const check = {
+      verdict,
+      headline: str(r && r.headline, 200),
+      reasons: arr(r && r.reasons).map(x => str(x, 240)).filter(Boolean).slice(0, 4),
+      newOutfits: Math.max(0, Math.min(99, Math.round(Number(r && r.newOutfits) || 0))),
+      at: Date.now(),
+    };
+    await patchDoc("wish", id, { check });
+    S.checks[id] = {};
+  } catch (e) {
+    S.checks[id] = { error: e && e.code === "cancelled" ? "" : errText(e) };
+    noteSampleFailure(e);
+  }
+  render();
+}
+function boughtWish(id) {
+  const d = S.wish.get(id);
+  if (!d) return;
+  openItemSheet(null, {
+    name: d.name || "", category: CATS.includes(d.category) ? d.category : CATS[0], color: d.color || "",
+    occasions: OCC_LABEL[d.occasion] ? [d.occasion] : [S.occ], price: num(d.price), boughtOn: ymd(),
+    store: d.store || "", photo: d.photo || null, notes: "",
+  }, () => { patchDoc("wish", id, { status: "bought", boughtAt: Date.now() }).catch(() => {}); });
+}
+async function removeWish(id) {
+  const d = S.wish.get(id);
+  if (!d) return;
+  const copy = clone(d);
+  let undone = false;
+  try {
+    await delDoc("wish", id);
+    toast("Removed from your wishlist", { action: "Undo", onAction: () => { undone = true; setDoc("wish", id, copy).catch(e => toast(errText(e))); } });
+    if (copy.photo) setTimeout(() => {
+      if (!undone && cap.assets && !assetInUse(copy.photo, { exceptWish: id })) cap.assets.delete(copy.photo).catch(() => {});
+    }, 9000);
+  } catch (e) { toast(errText(e)); }
+}
+
+/* ---------- hunts ---------- */
+function openHuntSheet(prefill) {
+  const p = Object.assign({ what: "", occasion: S.occ, budgetMin: null, budgetMax: null, notes: "" }, prefill || {});
+  let occ = OCC_LABEL[p.occasion] ? p.occasion : S.occ;
+  const bmin = num(p.budgetMin), bmax = num(p.budgetMax);
+  const html = `
+    <h2 id="sheet-title">New deal hunt</h2>
+    <label class="field"><span>What are you looking for?</span><input id="hf-what" type="text" value="${esc(p.what)}" placeholder="White oxford shirt" autocomplete="off" maxlength="100"></label>
+    <fieldset class="field"><legend>For</legend><div class="chips wrap-chips">${OCC.map(o => `<button type="button" class="chip" aria-pressed="${o.id === occ}" data-hocc="${o.id}">${o.label}</button>`).join("")}</div></fieldset>
+    <div class="field-row">
+      <label class="field"><span>Budget from ($)</span><input id="hf-min" type="number" inputmode="decimal" min="0" step="1" value="${bmin != null ? bmin : ""}" placeholder="25"></label>
+      <label class="field"><span>Up to ($)</span><input id="hf-max" type="number" inputmode="decimal" min="0" step="1" value="${bmax != null ? bmax : ""}" placeholder="60"></label>
+    </div>
+    <label class="field"><span>Anything else? (optional)</span><textarea id="hf-notes" rows="2" maxlength="300" placeholder="Slim fit, non-iron, no logos">${esc(p.notes)}</textarea></label>
+    <p class="hint">Your sizes, fit and best colors from your style profile go into the request automatically.</p>
+    <p class="err" id="hf-err" role="alert"></p>
+    <div class="sheet-actions"><span class="grow"></span><button type="button" class="btn primary" id="hf-save">Save hunt</button></div>`;
+  openSheet(html, root => {
+    const q = s => root.querySelector(s);
+    root.addEventListener("click", e => {
+      const b = e.target.closest("[data-hocc]");
+      if (!b) return;
+      occ = b.dataset.hocc;
+      root.querySelectorAll("[data-hocc]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.hocc === occ)));
+    });
+    q("#hf-save").onclick = async () => {
+      const err = q("#hf-err");
+      err.textContent = "";
+      const what = q("#hf-what").value.trim();
+      if (!what) { err.textContent = "Say what you’re looking for."; q("#hf-what").focus(); return; }
+      let a = num(q("#hf-min").value), b = num(q("#hf-max").value);
+      if (a != null && b != null && a > b) [a, b] = [b, a];
+      const btn = q("#hf-save");
+      btn.disabled = true;
+      try {
+        await setDoc("hunts", newId("hunts"), {
+          what: what.slice(0, 100), occasion: occ, budgetMin: a, budgetMax: b,
+          notes: q("#hf-notes").value.trim().slice(0, 300), status: "waiting", summary: "", results: [], createdAt: Date.now(),
+        });
+        closeSheet();
+        S.shopTab = "hunts";
+        go("shop");
+        toast("Hunt saved. Copy the request and send it to Claude.");
+      } catch (e) { err.textContent = errText(e); btn.disabled = false; }
+    };
+  });
+}
+function huntRequest(h) {
+  const p = S.profile || {}, sz = p.sizes || {}, a = p.analysis || {};
+  const sizes = [sz.top && `top ${sz.top}`, sz.waist && `waist ${sz.waist}`, sz.inseam && `inseam ${sz.inseam}`, sz.shoe && `shoe ${sz.shoe}`].filter(Boolean).join(", ");
+  const best = arr(a.bestColors).map(c => c && c.name).filter(Boolean).join(", ");
+  const careful = arr(a.useCarefully).map(c => c && c.name).filter(Boolean).join(", ");
+  return [
+    `Run my Closet deal hunt: ${h.what}, for ${(OCC_LABEL[h.occasion] || "everyday").toLowerCase()}.`,
+    budgetText(h) && `Budget: ${budgetText(h)}.`,
+    sizes && `My sizes: ${sizes}.`,
+    p.fit && `Fit I like: ${String(p.fit).toLowerCase()}.`,
+    best && `Colors that suit me: ${best}.`,
+    careful && `Colors to go easy on: ${careful}.`,
+    p.stores && `Stores I like: ${p.stores}.`,
+    h.notes && `Notes: ${h.notes}`,
+    "Search current sales at reputable US stores, check quality (fabric, construction, reviews) and pick up to 5 of the best options in my budget and size.",
+    `Then save them into my Closet app (the artifact called “Closet”) at database doc data/users/me/closet/hunts/${h.id}: set status to "done", add a one-line summary, and add results as a list of {title, store, url, price, wasPrice, why, quality}.`,
+  ].filter(Boolean).join("\n");
+}
+async function copyHunt(id) {
+  const d = S.hunts.get(id);
+  if (!d) return;
+  const text = huntRequest({ ...d, id });
+  let ok = false;
+  try { if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); ok = true; } } catch (_) {}
+  if (!ok) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      ok = document.execCommand("copy");
+      ta.remove();
+    } catch (_) {}
+  }
+  if (ok) { toast("Copied. Paste it into a chat with Claude."); return; }
+  openSheet(`<h2 id="sheet-title">Copy this request</h2>
+    <p class="muted">Select all of it, copy it, and paste it into a chat with Claude.</p>
+    <textarea class="copybox" id="copybox" readonly>${esc(text)}</textarea>
+    <div class="sheet-actions"><span class="grow"></span><button type="button" class="btn primary" data-close>Done</button></div>`,
+    root => { const ta = root.querySelector("#copybox"); setTimeout(() => { ta.focus(); ta.select(); }, 60); });
+}
+async function removeHunt(id) {
+  const d = S.hunts.get(id);
+  if (!d) return;
+  const copy = clone(d);
+  try {
+    await delDoc("hunts", id);
+    toast("Hunt deleted", { action: "Undo", onAction: () => setDoc("hunts", id, copy).catch(e => toast(errText(e))) });
+  } catch (e) { toast(errText(e)); }
+}
+function resultToWish(hid, k) {
+  const h = S.hunts.get(hid);
+  const r = h && arr(h.results)[k];
+  if (!r) return;
+  openWishSheet({ name: str(r.title, 80), price: num(r.price), url: safeUrl(r.url), store: str(r.store, 60), occasion: h.occasion, notes: str(r.why, 300) });
+}
+
+/* ---------- Claude prompts ---------- */
+const PROMPT_TAG = [
+  "Tag this clothing item for a personal wardrobe app. The photo shows one piece of clothing, footwear or an accessory, worn or laid flat. If several items are visible, describe the most prominent one.",
+  "Category must be one of: Tops, Bottoms, Layers, Shoes, Accessories, Sets & suits. Layers means jackets, blazers, sweaters, hoodies and coats.",
+  'Reply with only JSON: {"name":"short name like Navy oxford shirt","category":"Tops","type":"specific type like Oxford shirt","color":"main color name","colorHex":"#rrggbb","pattern":"solid, stripes, checks, print or texture","occasions":["office","college","party","home"],"notes":"one short line on fabric or style if visible, else empty"}',
+  "In occasions, include only those where the piece would look right: office, college, party, home.",
+].join("\n");
+const PROMPT_PROFILE = [
+  "These photos show one person, the owner of this wardrobe app, for a personal color and fit profile. They may include full-body shots from different angles and a close-up of the face.",
+  "Judge skin undertone and contrast from the face, neck and hands, and say in the summary if lighting or filters make that uncertain.",
+  "Describe body proportions only in neutral, practical clothing-fit terms (shoulders relative to hips, torso relative to legs, overall frame). Never comment on weight or attractiveness, and never suggest changing the body.",
+  "Name colors the way stores do, with a representative hex value. Give 6 to 8 best colors, 3 to 5 neutrals, 2 to 4 colors to use carefully, and 4 to 6 fit notes covering shirts, trousers, jackets and shoes.",
+  'Reply with only JSON: {"summary":"2 or 3 sentences on what generally works","undertone":"warm, cool, neutral or olive","contrast":"low, medium or high","bestColors":[{"name":"Navy","hex":"#1f2a48"}],"neutrals":[{"name":"Charcoal","hex":"#3c3f47"}],"useCarefully":[{"name":"Mustard","hex":"#c79a2d","why":"short reason"}],"fit":[{"area":"Shirts","advice":"one sentence"}],"occasionTips":{"office":"one sentence","college":"one sentence","party":"one sentence","home":"one sentence"}}',
+].join("\n");
+function profileLines() {
+  const p = S.profile || {}, a = p.analysis || {};
+  const out = [];
+  if (a.summary) out.push(`Style profile: ${a.summary}`);
+  const best = arr(a.bestColors).map(c => c && c.name).filter(Boolean).join(", ");
+  if (best) out.push(`Colors that suit them: ${best}.`);
+  const neu = arr(a.neutrals).map(c => c && c.name).filter(Boolean).join(", ");
+  if (neu) out.push(`Good neutrals: ${neu}.`);
+  const car = arr(a.useCarefully).map(c => c && c.name).filter(Boolean).join(", ");
+  if (car) out.push(`Colors to use carefully: ${car}.`);
+  const fit = arr(a.fit).map(f => f && `${f.area}: ${f.advice}`).filter(Boolean).join(" ");
+  if (fit) out.push(`Fit notes: ${fit}`);
+  if (p.fit) out.push(`Preferred fit: ${p.fit}.`);
+  return out;
+}
+function itemLine(key, it) {
+  const s = wear().items.get(it.id);
+  const lw = s && s.last ? `${daysAgo(s.last)} days since last worn` : "never worn";
+  return `${key}: ${it.name}; ${it.category || "uncategorized"}${it.type ? " / " + it.type : ""}; ${it.color || "color unknown"}${it.pattern ? ", " + it.pattern : ""}; for ${arr(it.occasions).join("/") || "any occasion"}; ${lw}`;
+}
+function promptIdeas(occ, keyed) {
+  const keyOf = new Map(keyed.map(([k, it]) => [it.id, k]));
+  const recentIds = new Set();
+  wear().entries.forEach(e => { const d = daysAgo(e.date); if (d !== null && d <= 6) arr(e.itemIds).forEach(x => recentIds.add(x)); });
+  const recent = [...recentIds].map(x => keyOf.get(x)).filter(Boolean);
+  const saved = outfitsFor(occ).map(o => arr(o.itemIds).map(x => keyOf.get(x)).filter(Boolean).join("+")).filter(Boolean);
+  return [
+    "You are a personal stylist putting together outfits from one person’s own wardrobe.",
+    `Occasion: ${OCC_LABEL[occ]}.`,
+    S.todayNotes.trim() && `About today: ${S.todayNotes.trim()}`,
+    ...profileLines(),
+    "Wardrobe (refer to pieces only by these keys):",
+    ...keyed.map(([k, it]) => itemLine(k, it)),
+    recent.length && `Worn in the past week, so use sparingly: ${recent.join(", ")}.`,
+    saved.length && `Outfits already saved for this occasion (don’t repeat these exact sets): ${saved.join("; ")}.`,
+    "Create 3 different outfits. Each needs a top and a bottom (or a one-piece set or suit), plus shoes and a layer when suitable ones exist. Match the occasion’s dress level, keep colors harmonious and flattering for this person, and favor pieces that haven’t been worn lately.",
+    'Reply with only JSON: {"combos":[{"name":"short outfit name","keys":["p1","p4","p7"],"why":"one sentence on why it works"}]}',
+  ].filter(Boolean).join("\n");
+}
+async function askIdeas() {
+  if (!sampleOn()) return;
+  const occ = S.occ;
+  const items = activeItems();
+  if (items.length < 2) { S.ideas = { occ, error: "Add at least a top and a bottom to your closet first." }; render(); return; }
+  const keyed = items.slice(0, 300).map((it, n) => ["p" + (n + 1), it]);
+  const byKey = new Map(keyed);
+  if (ideasCtl) ideasCtl.abort();
+  const ctl = new AbortController();
+  ideasCtl = ctl;
+  S.ideas = { occ, loading: true };
+  render();
+  try {
+    const r = await cap.sample.json(promptIdeas(occ, keyed), { signal: ctl.signal, cache: false });
+    if (ideasCtl !== ctl) return;
+    const combos = arr(r && r.combos).map(c => ({
+      name: str(c && c.name, 80),
+      why: str(c && c.why, 300),
+      itemIds: [...new Set(arr(c && c.keys).map(k => byKey.get(String(k).trim())).filter(Boolean).map(it => it.id))],
+    })).filter(c => c.itemIds.length >= 2).slice(0, 4);
+    S.ideas = { occ, combos, error: combos.length ? "" : "Claude couldn’t make complete outfits from what’s here. Add a few more pieces and try again." };
+  } catch (e) {
+    if (ideasCtl !== ctl) return;
+    S.ideas = e && e.code === "cancelled" ? null : { occ, error: errText(e) };
+    noteSampleFailure(e);
+  }
+  ideasCtl = null;
+  render();
+}
+async function saveCombo(k, andWear) {
+  const I = S.ideas;
+  const c = I && I.combos && I.combos[k];
+  if (!c) return;
+  try {
+    if (!c.savedId) {
+      const oid = newId("outfits");
+      const ordered = c.itemIds.map(itemById).filter(Boolean).sort((a, b) => catRank(a) - catRank(b)).map(i => i.id);
+      await setDoc("outfits", oid, { name: c.name, itemIds: ordered, occasions: [I.occ], source: "claude", createdAt: Date.now(), updatedAt: Date.now() });
+      c.savedId = oid;
+    }
+    if (andWear) { S.showPicks = false; await wearOutfit(c.savedId, I.occ, { itemIds: c.itemIds }); }
+    else toast("Outfit saved");
+    render();
+  } catch (e) { toast(errText(e)); }
+}
+function promptCheck(x) {
+  const items = activeItems();
+  const sim = similarTo(x);
+  const w = wear().items;
+  const simLines = sim.slice(0, 12).map(i => {
+    const s = w.get(i.id);
+    return `- ${i.name} (${i.color || "color unknown"}): ${s ? `worn ${s.count} times, last ${daysAgo(s.last)} days ago` : "never worn"}${num(i.price) ? `, paid ${money(num(i.price))}` : ""}`;
+  });
+  const pool = x.occasion ? items.filter(i => arr(i.occasions).includes(x.occasion)) : items;
+  const counts = CATS.map(c => [c, pool.filter(i => i.category === c).length]).filter(r => r[1]).map(r => `${r[0]} ${r[1]}`).join(", ");
+  const budget = num(S.profile.budget);
+  const occName = x.occasion && OCC_LABEL[x.occasion] ? OCC_LABEL[x.occasion].toLowerCase() : "";
+  return [
+    "Help decide whether a clothing purchase is worth it, using the person’s actual wardrobe and wear history.",
+    `Thinking of buying: ${x.name}${x.category ? ` (${x.category})` : ""}${x.color ? `, ${x.color}` : ""}${occName ? `, for ${occName}` : ""}${num(x.price) ? `, ${money(num(x.price))}` : ""}${x.store ? `, from ${x.store}` : ""}.`,
+    x.notes && `Their notes: ${x.notes}`,
+    simLines.length ? "Similar pieces they already own:\n" + simLines.join("\n") : "They don’t own anything very similar.",
+    counts && `Pieces they own${occName ? ` for ${occName}` : ""}: ${counts}.`,
+    `Spent on clothes so far this month: ${money(Math.round(monthSpend()))}${budget ? `, out of a ${money(budget)} monthly budget` : ""}.`,
+    ...profileLines(),
+    "Choose buy (fills a real gap or will clearly get worn), wait (fine but not needed now, or likely to drop in price), or skip (a near-duplicate, clashes with the wardrobe or their colors, or strains the budget).",
+    'Reply with only JSON: {"verdict":"buy, wait or skip","headline":"one short sentence","reasons":["2 to 4 short reasons"],"newOutfits":0}',
+  ].filter(Boolean).join("\n");
+}
+function promptGaps(occ) {
+  const its = activeItems().filter(i => arr(i.occasions).includes(occ));
+  const w = wear().items;
+  const budget = num(S.profile.budget);
+  return [
+    `Find the gaps in one person’s wardrobe for ${OCC_LABEL[occ].toLowerCase()} wear.`,
+    its.length
+      ? "What they own for this occasion:\n" + its.slice(0, 200).map(i => `- ${i.name}; ${i.category}${i.type ? " / " + i.type : ""}; ${i.color || "color unknown"}; worn ${(w.get(i.id) || {}).count || 0} times`).join("\n")
+      : "They haven’t tagged anything for this occasion yet.",
+    ...profileLines(),
+    budget && `Monthly clothing budget: ${money(budget)}.`,
+    "Suggest 3 to 5 purchases that would add the most new outfits or fill a real need. Don’t suggest near-duplicates of what they own. Give realistic US sale prices in dollars. Category must be one of: Tops, Bottoms, Layers, Shoes, Accessories, Sets & suits.",
+    'Reply with only JSON: {"ideas":[{"what":"Navy unstructured blazer","category":"Layers","color":"navy","priceRange":[60,120],"why":"one sentence"}]}',
+  ].filter(Boolean).join("\n");
+}
+async function findGaps() {
+  if (!sampleOn() || S.gaps.loading) return;
+  const occ = S.gaps.occ;
+  S.gaps = { ...S.gaps, loading: true, error: "", forOcc: occ, ideas: null };
+  render();
+  try {
+    const r = await cap.sample.json(promptGaps(occ), { cache: false });
+    const ideas = arr(r && r.ideas).map(x => {
+      const pr = arr(x && x.priceRange).map(num);
+      let lo = pr[0], hi = pr[1];
+      if (lo != null && hi != null && lo > hi) [lo, hi] = [hi, lo];
+      return {
+        what: str(x && x.what, 100), category: CATS.includes(x && x.category) ? x.category : "",
+        color: str(x && x.color, 40), why: str(x && x.why, 300),
+        priceMin: lo != null ? lo : null, priceMax: hi != null ? hi : null,
+      };
+    }).filter(x => x.what).slice(0, 5);
+    S.gaps = { ...S.gaps, loading: false, ideas, error: ideas.length ? "" : "Claude didn’t find clear gaps here. Try another occasion." };
+  } catch (e) {
+    S.gaps = { ...S.gaps, loading: false, error: e && e.code === "cancelled" ? "" : errText(e) };
+    noteSampleFailure(e);
+  }
+  render();
+}
+function gapIdea(k) { return S.gaps.ideas && S.gaps.ideas[k]; }
+function gapToHunt(k) {
+  const x = gapIdea(k);
+  if (!x) return;
+  openHuntSheet({ what: x.what, occasion: S.gaps.forOcc, budgetMin: x.priceMin, budgetMax: x.priceMax, notes: x.color ? `Color: ${x.color}` : "" });
+}
+function gapToWish(k) {
+  const x = gapIdea(k);
+  if (!x) return;
+  openWishSheet({ name: x.what, category: x.category || CATS[0], color: x.color, occasion: S.gaps.forOcc, notes: x.why });
+}
+
+/* ---------- style profile ---------- */
+function normalizeAnalysis(r) {
+  if (!r || typeof r !== "object") return null;
+  const colors = (v, n) => arr(v).map(c => ({ name: str(c && c.name, 40), hex: safeHex(c && c.hex), why: str(c && c.why, 140) })).filter(c => c.name).slice(0, n);
+  const ot = r.occasionTips && typeof r.occasionTips === "object" ? r.occasionTips : {};
+  const tips = {};
+  OCC.forEach(o => { const t = str(ot[o.id], 300); if (t) tips[o.id] = t; });
+  const a = {
+    summary: str(r.summary, 600),
+    undertone: str(r.undertone, 20).toLowerCase(),
+    contrast: str(r.contrast, 20).toLowerCase(),
+    bestColors: colors(r.bestColors, 10),
+    neutrals: colors(r.neutrals, 6),
+    useCarefully: colors(r.useCarefully, 5),
+    fit: arr(r.fit).map(f => ({ area: str(f && f.area, 40), advice: str(f && f.advice, 300) })).filter(f => f.area && f.advice).slice(0, 8),
+    occasionTips: tips,
+  };
+  return a.summary || a.bestColors.length ? a : null;
+}
+async function analyze() {
+  if (S.analysis.loading || !sampleOn() || !cap.imagesOK) return;
+  const photos = arr(S.profile.photos).slice(0, cap.imageMax || 5);
+  S.analysis = { loading: true, error: "" };
+  render();
+  try {
+    const blobs = [];
+    for (const id of photos) { try { blobs.push(await blobFromAsset(id)); } catch (_) {} }
+    if (!blobs.length) throw { code: "_photosgone" };
+    const r = await cap.sample.json(PROMPT_PROFILE, { images: blobs, cache: false });
+    const a = normalizeAnalysis(r);
+    if (!a) throw { code: "invalid_json" };
+    await saveProfile({ analysis: a, analyzedAt: Date.now() });
+    S.analysis = { loading: false, error: "" };
+  } catch (e) {
+    S.analysis = { loading: false, error: e && e.code === "_photosgone" ? "Your photos couldn’t be loaded. Remove them and add them again." : errText(e) };
+    noteSampleFailure(e);
+  }
+  render();
+}
+async function addMePhotos() {
+  if (!cap.assets) return;
+  const room = 6 - arr(S.profile.photos).length;
+  if (room <= 0) return;
+  const files = (await pickFiles(true)).slice(0, room);
+  if (!files.length) return;
+  toast(files.length === 1 ? "Uploading your photo…" : `Uploading ${files.length} photos…`);
+  const ids = [];
+  for (const f of files) {
+    try {
+      const s = await shrink(f, 1400, 0.86);
+      ids.push(await uploadPhoto(s.blob));
+    } catch (e) { toast(e && e.code ? errText(e) : "One photo couldn’t be opened. Try a JPEG or PNG."); }
+  }
+  if (!ids.length) return;
+  try {
+    await saveProfile({ photos: [...arr(S.profile.photos), ...ids].slice(0, 6) });
+    toast(ids.length === 1 ? "Photo added" : `${ids.length} photos added`);
+  } catch (e) { toast(errText(e)); }
+}
+async function delMePhoto(id, btn) {
+  if (btn.dataset.confirm !== "1") { btn.dataset.confirm = "1"; btn.textContent = "Remove?"; btn.classList.add("confirm"); return; }
+  try {
+    await saveProfile({ photos: arr(S.profile.photos).filter(x => x !== id) });
+    if (cap.assets && !assetInUse(id, { skipProfile: true })) cap.assets.delete(id).catch(() => {});
+    toast("Photo removed");
+  } catch (e) { toast(errText(e)); }
+}
+function openPrefsSheet() {
+  const p = S.profile || {}, sz = p.sizes || {};
+  const fits = ["", "Slim", "Regular", "Relaxed"];
+  const budget = num(p.budget);
+  const html = `
+    <h2 id="sheet-title">Sizes and budget</h2>
+    <p class="muted" style="margin:0">These go into deal hunts so Claude only picks things that come in your size.</p>
+    <div class="field-row">
+      <label class="field"><span>Tops</span><input id="pf-top" type="text" value="${esc(sz.top)}" placeholder="M" autocomplete="off" maxlength="20"></label>
+      <label class="field"><span>Waist</span><input id="pf-waist" type="text" value="${esc(sz.waist)}" placeholder="32" autocomplete="off" maxlength="20"></label>
+    </div>
+    <div class="field-row">
+      <label class="field"><span>Inseam</span><input id="pf-inseam" type="text" value="${esc(sz.inseam)}" placeholder="32" autocomplete="off" maxlength="20"></label>
+      <label class="field"><span>Shoes (US)</span><input id="pf-shoe" type="text" value="${esc(sz.shoe)}" placeholder="10" autocomplete="off" maxlength="20"></label>
+    </div>
+    <div class="field-row">
+      <label class="field"><span>Fit you like</span><select id="pf-fit">${fits.map(f => `<option value="${f}"${(p.fit || "") === f ? " selected" : ""}>${f || "No preference"}</option>`).join("")}</select></label>
+      <label class="field"><span>Monthly budget ($)</span><input id="pf-budget" type="number" inputmode="decimal" min="0" step="1" value="${budget != null ? budget : ""}" placeholder="150"></label>
+    </div>
+    <label class="field"><span>Stores you like</span><input id="pf-stores" type="text" value="${esc(p.stores)}" placeholder="Uniqlo, J.Crew, Nordstrom Rack" autocomplete="off" maxlength="200"></label>
+    <p class="err" id="pf-err" role="alert"></p>
+    <div class="sheet-actions"><span class="grow"></span><button type="button" class="btn primary" id="pf-save">Save</button></div>`;
+  openSheet(html, root => {
+    const q = s => root.querySelector(s);
+    q("#pf-save").onclick = async () => {
+      const btn = q("#pf-save");
+      btn.disabled = true;
+      try {
+        await saveProfile({
+          sizes: {
+            top: q("#pf-top").value.trim().slice(0, 20), waist: q("#pf-waist").value.trim().slice(0, 20),
+            inseam: q("#pf-inseam").value.trim().slice(0, 20), shoe: q("#pf-shoe").value.trim().slice(0, 20),
+          },
+          fit: q("#pf-fit").value,
+          budget: num(q("#pf-budget").value),
+          stores: q("#pf-stores").value.trim().slice(0, 200),
+        });
+        closeSheet();
+        toast("Saved");
+      } catch (e) { q("#pf-err").textContent = errText(e); btn.disabled = false; }
+    };
+  });
+}
+
+/* ---------- events ---------- */
+function setOcc(id, focus) {
+  if (!OCC_LABEL[id]) return;
+  S.occ = id; S.pickIndex = 0; S.showPicks = false;
+  try { localStorage.setItem("closet.occ", id); } catch (_) {}
+  draw();
+  if (focus) { const b = document.getElementById("occ-" + id); if (b) b.focus(); }
+}
+function onChip(group, val) {
+  if (group === "cat") S.closet.cat = val;
+  else if (group === "cocc") S.closet.occ = val;
+  else if (group === "oocc") S.outfitOcc = val;
+  else if (group === "gocc") S.gaps.occ = val;
+  draw();
+}
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]");
+  if (!el || el.disabled) return;
+  const act = el.dataset.act, id = el.dataset.id;
+  switch (act) {
+    case "occ": setOcc(el.dataset.occ, false); break;
+    case "next-pick": S.pickIndex++; draw(); break;
+    case "show-picks": S.showPicks = true; draw(); break;
+    case "wear-outfit": S.showPicks = false; wearOutfit(id, el.dataset.occ || null); break;
+    case "undo-wear":
+      removeWear(el.dataset.month, id)
+        .then(() => { toast("Removed from your log"); if (el.dataset.reopen) openOutfitDetail(el.dataset.reopen); })
+        .catch(err => toast(errText(err)));
+      break;
+    case "ask-ideas": askIdeas(); break;
+    case "stop-ideas": if (ideasCtl) ideasCtl.abort(); break;
+    case "wear-combo": saveCombo(Number(el.dataset.k), true); break;
+    case "save-combo": saveCombo(Number(el.dataset.k), false); break;
+    case "add-item": openItemSheet(null); break;
+    case "open-item": openItemSheet(id); break;
+    case "chip": onChip(el.dataset.group, el.dataset.val); break;
+    case "toggle-retired": S.closet.retired = !S.closet.retired; draw(); break;
+    case "new-outfit": openOutfitSheet(null); break;
+    case "open-outfit": openOutfitDetail(id); break;
+    case "edit-outfit": openOutfitSheet(id); break;
+    case "shoptab": S.shopTab = el.dataset.val; draw(); break;
+    case "add-wish": openWishSheet(null); break;
+    case "check-wish": checkWish(id); break;
+    case "bought-wish": boughtWish(id); break;
+    case "remove-wish": removeWish(id); break;
+    case "add-hunt": openHuntSheet(null); break;
+    case "copy-hunt": copyHunt(id); break;
+    case "del-hunt": removeHunt(id); break;
+    case "result-wish": resultToWish(id, Number(el.dataset.k)); break;
+    case "find-gaps": findGaps(); break;
+    case "gap-hunt": gapToHunt(Number(el.dataset.k)); break;
+    case "gap-wish": gapToWish(Number(el.dataset.k)); break;
+    case "add-me-photos": addMePhotos(); break;
+    case "del-me-photo": delMePhoto(id, el); break;
+    case "analyze": analyze(); break;
+    case "edit-prefs": openPrefsSheet(); break;
+    case "permissions": openPermissions(); break;
+  }
+});
+document.addEventListener("change", e => {
+  if (e.target && e.target.id === "closet-sort") { S.closet.sort = e.target.value; draw(); }
+});
+document.addEventListener("input", e => {
+  if (e.target && e.target.id === "today-notes") S.todayNotes = e.target.value.slice(0, 200);
+});
+document.addEventListener("keydown", e => {
+  const t = e.target;
+  if (!t || !t.classList || !t.classList.contains("occ-word")) return;
+  let d = 0;
+  if (e.key === "ArrowDown" || e.key === "ArrowRight") d = 1;
+  else if (e.key === "ArrowUp" || e.key === "ArrowLeft") d = -1;
+  else return;
+  e.preventDefault();
+  const i = OCC.findIndex(o => o.id === S.occ);
+  setOcc(OCC[(i + d + OCC.length) % OCC.length].id, true);
+});
+document.addEventListener("error", e => {
+  const t = e.target;
+  if (!t || t.tagName !== "IMG" || t.dataset.failed) return;
+  t.dataset.failed = "1";
+  const ph = document.createElement("span");
+  ph.className = "ph";
+  if (t.alt) ph.textContent = t.alt; else ph.innerHTML = HANGER;
+  if (t.dataset.fb) ph.dataset.sw = t.dataset.fb;
+  t.replaceWith(ph);
+  applyDecor(ph.parentNode || document);
+}, true);
+
+/* ---------- routing + boot ---------- */
+function route() {
+  const h = decodeURIComponent(location.hash.replace(/^#/, ""));
+  const v = VIEWS.includes(h) ? h : "today";
+  const changed = v !== S.view;
+  S.view = v;
+  draw();
+  if (changed) window.scrollTo(0, 0);
+}
+function go(v) { if (location.hash !== "#" + v) location.hash = v; else route(); }
+window.addEventListener("hashchange", route);
+
+async function boot() {
+  try { const v = localStorage.getItem("closet.occ"); if (OCC_LABEL[v]) S.occ = v; } catch (_) {}
+  route();
+  const C = window.claude;
+  if (!C || typeof C.use !== "function") { S.phase = "outside"; draw(); return; }
+  let db = null, user = null;
+  try { [db, user] = await Promise.all([C.use("db"), C.use("user")]); } catch (_) {}
+  cap.db = db; cap.user = user;
+  if (!db || !user) { S.phase = "outside"; draw(); return; }
+  let uid = null;
+  try { uid = await user.id(); } catch (_) {}
+  if (!uid) { S.phase = "signedout"; draw(); return; }
+  S.uid = uid;
+  closetRef = db.doc(`data/users/${uid}/closet`);
+  subscribe();
+  C.use("assets").then(a => { cap.assets = a; render(); }, () => {});
+  C.use("sample").then(async s => {
+    cap.sample = s;
+    if (s) {
+      try {
+        const lim = await s.limits();
+        cap.imagesOK = !!(lim && lim.images);
+        cap.imageMax = (lim && lim.images && lim.images.maxCount) || 0;
+      } catch (_) { cap.imagesOK = false; }
+    }
+    cap.sampleKnown = true;
+    render();
+  }, () => { cap.sampleKnown = true; render(); });
+}
+boot();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# SearXNG settings for Closet. Only reachable from this Mac (see docker-compose.yml).
+use_default_settings: true
+
+general:
+  instance_name: "closet-local"
+  enable_metrics: false
+
+server:
+  # The real secret comes from the SEARXNG_SECRET environment variable.
+  secret_key: "overridden-by-env"
+  limiter: false          # localhost only, single user
+  image_proxy: false
+  public_instance: false
+
+search:
+  safe_search: 1
+  formats:
+    - html
+    - json                # the worker calls /search?q=...&format=json
+
+ui:
+  query_in_title: false
