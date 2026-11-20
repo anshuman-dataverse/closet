@@ -9,13 +9,17 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from . import ping
+from . import ping, tag_item
+from .context import JobContext
 
-Handler = Callable[[dict[str, Any]], dict[str, Any]]
+Handler = Callable[[dict[str, Any], JobContext | None], dict[str, Any]]
 
 
 class TransientError(Exception):
     """A failure worth retrying (network blip, store timeout)."""
+
+
+BadJob = tag_item.BadJob
 
 
 class NotImplementedYet(Exception):
@@ -35,7 +39,7 @@ def _todo(kind: str) -> Spec:
 # Every kind allowed by the jobs.kind check constraint.
 REGISTRY: dict[str, Spec] = {
     "ping": Spec(handler=ping.run, timeout_s=10),
-    "tag_item": _todo("tag_item"),
+    "tag_item": Spec(handler=tag_item.run, timeout_s=180),
     "embed_wish": _todo("embed_wish"),
     "analyze_profile": _todo("analyze_profile"),
     "suggest_outfits": _todo("suggest_outfits"),
@@ -48,7 +52,6 @@ REGISTRY: dict[str, Spec] = {
 }
 
 TIMEOUTS_S: dict[str, float] = {
-    "tag_item": 120,
     "analyze_profile": 180,
     "run_hunt": 300,
     "train_ranker": 540,

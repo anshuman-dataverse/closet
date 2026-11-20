@@ -2,7 +2,7 @@
 
 The spec is **SPEC.md** (read it before planning). The look, copy and interactions are in `design-reference/closet-demo.html`.
 Work phase by phase (SPEC 12). Plan each phase and get an OK first. Ask before adding paid services or deps that need accounts.
-Done: Phase 0 (foundation) and Phase 1 (core wardrobe). Next: Phase 2 (vision).
+Done: Phases 0–1. Phase 2 (vision) is built; it counts as done once your Colab eval meets ≥90% category and ≥70% type.
 
 ## Run
 - Local Supabase: `supabase start` (repo root; ports 554xx because another project uses 543xx). Studio :55423, Mailpit :55424.
@@ -48,6 +48,17 @@ Done: Phase 0 (foundation) and Phase 1 (core wardrobe). Next: Phase 2 (vision).
 - Photos: `lib/photos.ts` (1600px + 480px JPEG, EXIF stripped, upload as soon as picked). `lib/signed-urls.ts` batches signed URLs.
 - Sheets are addressed by query params (`?item=`, `?add=1`, `?outfit=`, `?edit=`, `?new=1`) through `useSheetParam`.
 - e2e: `tests/e2e/data.ts` resets and seeds the owner. Bulk inserts need every key, or missing ones become null.
+
+## Vision (worker)
+- `tag_item` (`jobs/tag_item.py`): rembg `isnet-general-use` → cutout `{photo}_cutout.webp` → fashion CLIP embedding
+  (`item_embeddings`, 512-d for FashionCLIP) → zero-shot type and pattern → k-means/ΔE2000 color → `items.suggestions`.
+- Vocab lives in `closet_worker/vocab/*.yaml`. The clothing check compares clothing prompts with concrete non-clothing scenes,
+  because CLIP can't handle "not clothing". This departs on purpose from SPEC 5.1.
+- Tests use `tests/stubs.py` (no downloads). Real models run with `uv run pytest -m models`.
+  Linux uses CPU-only torch (`[tool.uv.sources]`).
+- Web flow: picking a photo in Add clothes saves a draft row ("New piece"), queues `tag_item`, and waits 20 s. The draft is
+  deleted on cancel. Suggestions fill only untouched fields (`lib/domain/suggestions.ts`). Saved pieces show `SuggestionBox`.
+- Keep sheets at a stable spot in the tree (one return with `{body}{sheet}`), or switching branches remounts them.
 
 ## Colab
 Training and eval only (see `colab/README.md`). The Mac runs all live inference.

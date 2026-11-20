@@ -1,0 +1,6 @@
+# Zero-shot patterns (SPEC 5.1).
+solid: "a photo of a plain solid-colored garment"
+striped: "a photo of a striped garment"
+checked: "a photo of a plaid checked garment"
+printed: "a photo of a garment with a printed pattern"
+textured: "a photo of a textured knit garment"

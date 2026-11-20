@@ -7,21 +7,40 @@ import { ConfirmButton } from "@/components/ConfirmButton";
 import { HangTag } from "@/components/HangTag";
 import { PieceCell } from "@/components/Piece";
 import { Sheet } from "@/components/Sheet";
+import { SuggestionBox } from "@/components/SuggestionBox";
 import { useToast } from "@/components/Toast";
-import { deleteItem, type ItemInput, saveItem, setItemsStatus, useCloset, useDerived } from "@/lib/closet/store";
+import { useWorkerStatus } from "@/components/WorkerStatus";
+import {
+  deleteItem,
+  type ItemInput,
+  requestTagging,
+  saveItem,
+  setItemsStatus,
+  useCloset,
+  useDerived,
+} from "@/lib/closet/store";
 import { CATEGORIES, type Category, type Item } from "@/lib/closet/types";
 import { NAMED, safeHex, swatchFor } from "@/lib/domain/colors";
 import { isYmd, lastWornText } from "@/lib/domain/dates";
 import { centsToInput, formatCents, parseDollars } from "@/lib/domain/money";
 import { STARTERS, type Starter } from "@/lib/domain/starters";
+import {
+  mergeSuggestions,
+  OFFLINE_MESSAGE,
+  parseSuggestion,
+  type SuggestableKey,
+  statusMessage,
+  touchedFromValues,
+} from "@/lib/domain/suggestions";
 import { costPerWear, NO_WEAR } from "@/lib/domain/wear";
 import { type Occasion, OCCASIONS } from "@/lib/occasions";
 import { preparePhoto, removePaths, uploadItemPhoto } from "@/lib/photos";
 import { supabase } from "@/lib/supabase/client";
 
 const FORMALITY = ["", "1 · Lounge", "2 · Casual", "3 · Smart casual", "4 · Business", "5 · Formal"];
+const READING = "Reading your photo…";
 
-type Form = {
+export type Form = {
   name: string;
   category: Category;
   type: string;
@@ -55,7 +74,7 @@ const blank = (occ: Occasion[] = []): Form => ({
   notes: "",
 });
 
-const fromItem = (i: Item): Form => ({
+export const fromItem = (i: Item): Form => ({
   name: i.name,
   category: i.category ?? "Tops",
   type: i.type ?? "",
@@ -74,21 +93,48 @@ const fromItem = (i: Item): Form => ({
 
 type Upload = { previewUrl: string; promise: Promise<{ photo_path: string; thumb_path: string }> };
 
+/** Everything the sheet edits, kept together so async suggestion merges see the latest touches. */
+type Draft = {
+  mode: "add" | "edit";
+  id: string;
+  form: Form;
+  touched: SuggestableKey[];
+  saved: "none" | "draft" | "done"; // add mode: is there a draft row, and has it been saved for real?
+  merged: boolean; // suggestions were reviewed in the form
+  sugHex: { name: string; hex: string } | null;
+  cutout: { photo: string; path: string } | null; // cutout made for a new, unsaved photo
+};
+
+const fresh = (item: Item | null): Draft => ({
+  mode: item ? "edit" : "add",
+  id: item ? item.id : crypto.randomUUID(),
+  form: item ? fromItem(item) : blank(),
+  touched: [],
+  saved: "none",
+  merged: false,
+  sugHex: null,
+  cutout: null,
+});
+
 export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: string | null; onClose: () => void }) {
   const s = useCloset();
   const d = useDerived(s);
   const toast = useToast();
+  const worker = useWorkerStatus();
   const item = itemId ? (d.byId.get(itemId) ?? null) : null;
   const editing = !!item;
 
-  const [form, setForm] = useState<Form>(blank());
-  const [draftId, setDraftId] = useState("");
+  const [dr, setDr] = useState<Draft>(() => fresh(null));
+  const form = dr.form;
   const [upload, setUpload] = useState<Upload | null>(null);
   const [hint, setHint] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [reading, setReading] = useState(false);
+  const [view, setView] = useState<"photo" | "cutout">("cutout");
   const fileRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+  const session = useRef(0);
   const uid = useId();
 
   // Reset whenever the sheet opens for a different piece.
@@ -97,57 +143,129 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
   if (key !== openedFor) {
     setOpenedFor(key);
     if (open) {
-      setForm(item ? fromItem(item) : blank());
-      setDraftId(item ? item.id : crypto.randomUUID());
+      setDr(fresh(item));
       setUpload(null);
       setHint("");
       setErr("");
       setBusy(false);
+      setReading(false);
+      setView("cutout");
     }
   }
-
-  // Drop an uploaded-but-unsaved photo when the sheet closes without saving.
-  // (A successful save clears `upload` before closing, so only abandoned uploads get here.)
   useEffect(() => {
-    if (open || !upload) return;
-    void upload.promise.then((p) => removePaths(supabase(), [p.photo_path, p.thumb_path])).catch(() => {});
-  }, [open, upload]);
+    session.current += 1; // async work from an earlier opening must not touch this one
+  }, [key]);
 
-  const set = <K extends keyof Form>(k: K, v: Form[K]) => setForm((f) => ({ ...f, [k]: v }));
+  // Closing without saving: drop the draft row (add) or the unsaved replacement photo (edit).
+  useEffect(() => {
+    if (open) return;
+    if (dr.mode === "add" && dr.saved === "draft") void deleteItem(dr.id).catch(() => {});
+    if (dr.mode === "edit" && upload)
+      void upload.promise.then((p) => removePaths(supabase(), [p.photo_path, p.thumb_path])).catch(() => {});
+  }, [open, dr.mode, dr.saved, dr.id, upload]);
+
+  const set = <K extends keyof Form>(k: K, v: Form[K]) =>
+    setDr((x) => ({
+      ...x,
+      form: { ...x.form, [k]: v },
+      touched: x.touched.includes(k as SuggestableKey) ? x.touched : [...x.touched, k as SuggestableKey],
+    }));
 
   const owned = useMemo(() => new Set(s.items.map((i) => i.name.trim().toLowerCase())), [s.items]);
   const starters = editing ? [] : STARTERS.filter((x) => !owned.has(x.name.toLowerCase()));
 
   const applyStarter = (st: Starter) => {
-    setForm((f) => ({
-      ...f,
-      name: st.name,
-      category: st.category,
-      type: st.type,
-      color_name: st.color_name,
-      occasions: [...st.occasions],
+    setDr((x) => ({
+      ...x,
+      form: {
+        ...x.form,
+        name: st.name,
+        category: st.category,
+        type: st.type,
+        color_name: st.color_name,
+        occasions: [...st.occasions],
+      },
+      touched: [...new Set<SuggestableKey>([...x.touched, "name", "category", "type", "color_name", "occasions"])],
     }));
     setErr("");
   };
 
+  /** Queue tagging and merge the result into untouched fields (SPEC 4.2 steps 3–6). */
+  const readPhoto = async (pieceId: string, photoPath: string | undefined, mine: number) => {
+    if (worker.offline) {
+      setHint(OFFLINE_MESSAGE);
+      void requestTagging(pieceId, photoPath, 0).catch(() => {});
+      return;
+    }
+    setReading(true);
+    setHint(READING);
+    try {
+      const job = await requestTagging(pieceId, photoPath);
+      if (session.current !== mine) return;
+      if (!job) return setHint("Still reading. The details will show on this piece when your Mac finishes.");
+      if (job.status === "failed") return setHint("Your Mac couldn’t read this photo. Fill in the details yourself.");
+      const result = (job.result ?? {}) as { suggestions?: unknown; cutout_path?: string | null; photo_path?: string };
+      const sug = parseSuggestion(result.suggestions);
+      if (!sug) return setHint("");
+      setDr((x) => {
+        const touched = new Set<SuggestableKey>(
+          x.mode === "edit" ? [...touchedFromValues(x.form), ...x.touched] : x.touched,
+        );
+        const { form: merged, filled } = mergeSuggestions(x.form, touched, sug);
+        return {
+          ...x,
+          form: merged,
+          merged: true,
+          sugHex:
+            filled.includes("color_name") && sug.color_hex ? { name: sug.color_name, hex: sug.color_hex } : x.sugHex,
+          cutout: photoPath && result.cutout_path ? { photo: photoPath, path: result.cutout_path } : x.cutout,
+        };
+      });
+      setHint(statusMessage(sug.status));
+    } catch {
+      if (session.current === mine) setHint("");
+    } finally {
+      if (session.current === mine) setReading(false);
+    }
+  };
+
   const pickPhoto = async (file: File | undefined) => {
     if (!file || !s.userId) return;
+    const mine = session.current;
+    const uidNow = s.userId;
     setHint("Preparing the photo…");
     setErr("");
     try {
       const prepared = await preparePhoto(file);
-      const promise = uploadItemPhoto(supabase(), s.userId, draftId, prepared);
-      promise.then(
-        () => setHint("Photo ready."),
-        (e: Error) => {
-          setUpload(null);
-          setHint("");
-          setErr(e.message);
-        },
-      );
+      const promise = uploadItemPhoto(supabase(), uidNow, dr.id, prepared);
       setUpload({ previewUrl: prepared.previewUrl, promise });
       setHint("Uploading…");
+      const paths = await promise;
+      if (session.current !== mine) {
+        void removePaths(supabase(), [paths.photo_path, paths.thumb_path]);
+        return;
+      }
+      if (dr.mode === "add") {
+        // Save a draft row right away so the Mac has a piece to write to. Cancel deletes it.
+        const old = s.items.find((i) => i.id === dr.id);
+        await saveItem(
+          {
+            id: dr.id,
+            name: dr.form.name.trim() || "New piece",
+            category: dr.form.category,
+            occasions: dr.form.occasions,
+            ...paths,
+            cutout_path: null,
+          },
+          old ? [old.photo_path, old.thumb_path, old.cutout_path] : [],
+        );
+        setDr((x) => ({ ...x, saved: x.saved === "none" ? "draft" : x.saved }));
+        await readPhoto(dr.id, undefined, mine);
+      } else {
+        await readPhoto(dr.id, paths.photo_path, mine);
+      }
     } catch (e) {
+      setUpload(null);
       setHint("");
       setErr((e as Error).message);
     }
@@ -169,10 +287,11 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
     setErr("");
     try {
       const photo = upload ? await upload.promise : null;
-      const colorHex =
-        safeHex(item?.color_hex) && form.color_name === (item?.color_name ?? "") ? item!.color_hex : null;
+      const keepHex = safeHex(item?.color_hex) && form.color_name === (item?.color_name ?? "") ? item!.color_hex : null;
+      const colorHex = dr.sugHex && form.color_name === dr.sugHex.name ? dr.sugHex.hex : keepHex;
+      const newPhotoCutout = photo && dr.cutout?.photo === photo.photo_path ? dr.cutout.path : null;
       const input: ItemInput & { id: string } = {
-        id: draftId,
+        id: dr.id,
         name: name.slice(0, 80),
         category: form.category,
         type: form.type.trim() || null,
@@ -188,19 +307,21 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
         size: form.size.trim() || null,
         store: form.store.trim() || null,
         notes: form.notes.trim() || null,
-        ...(photo ?? {}),
-        ...(photo && item?.cutout_path ? { cutout_path: null } : {}),
+        ...(dr.mode === "edit" && photo ? { ...photo, cutout_path: newPhotoCutout } : {}),
+        ...(dr.merged ? { suggestions: null } : {}),
       };
-      const replaced = photo && item ? [item.photo_path, item.thumb_path, item.cutout_path] : [];
+      const replaced = dr.mode === "edit" && photo && item ? [item.photo_path, item.thumb_path, item.cutout_path] : [];
       await saveItem(input, replaced);
       setUpload(null);
       if (again) {
         toast("Added to your closet");
-        setForm((f) => ({ ...blank(f.occasions) }));
-        setDraftId(crypto.randomUUID());
+        session.current += 1;
+        setDr((x) => ({ ...fresh(null), form: blank(x.form.occasions) }));
         setHint("");
+        setReading(false);
         nameRef.current?.focus();
       } else {
+        setDr((x) => ({ ...x, saved: "done" }));
         toast(editing ? "Saved" : "Added to your closet");
         onClose();
       }
@@ -227,6 +348,7 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
   const inOutfits = item ? s.outfits.filter((o) => o.itemIds.includes(item.id)).length : 0;
   const swatch = swatchFor({ color_name: form.color_name }) || (item ? swatchFor(item) : "");
   const preview = upload?.previewUrl;
+  const draftRow = !editing ? s.items.find((i) => i.id === dr.id) : undefined;
 
   return (
     <Sheet
@@ -325,12 +447,22 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
         </fieldset>
       )}
 
+      {editing && item!.suggestions && item!.tags_status !== "pending" && !dr.merged && (
+        <SuggestionBox
+          item={item!}
+          form={form}
+          onApplied={(f) => setDr((x) => ({ ...x, form: { ...x.form, ...f } }))}
+        />
+      )}
+
       <div className="photo-pick">
         <div className="photo-box">
           {preview ? (
             <img src={preview} alt="New photo" />
           ) : item && (item.photo_path || swatch) ? (
-            <PieceCell item={item} large />
+            <PieceCell item={item} large prefer={view} />
+          ) : draftRow?.cutout_path ? (
+            <PieceCell item={draftRow} large />
           ) : (
             <span className="muted">No photo yet</span>
           )}
@@ -347,10 +479,31 @@ export function ItemSheet({ open, itemId, onClose }: { open: boolean; itemId: st
               e.target.value = "";
             }}
           />
-          <button type="button" className="btn sm" onClick={() => fileRef.current?.click()}>
+          <button type="button" className="btn sm" onClick={() => fileRef.current?.click()} disabled={reading}>
             {preview || item?.photo_path ? "Change photo" : "Take or choose a photo"}
           </button>
-          <p className="hint" aria-live="polite">
+          {editing && item!.photo_path && !preview && (
+            <button
+              type="button"
+              className="btn sm"
+              disabled={reading}
+              onClick={() => void readPhoto(item!.id, undefined, session.current)}
+            >
+              Fill in from photo
+            </button>
+          )}
+          {editing && item!.cutout_path && !preview && (
+            <Chips
+              label="Show"
+              options={[
+                { id: "cutout" as const, label: "Cutout" },
+                { id: "photo" as const, label: "Photo" },
+              ]}
+              value={view}
+              onChange={setView}
+            />
+          )}
+          <p className={`hint${reading ? " thinking" : ""}`} aria-live="polite" data-testid="photo-hint">
             {hint}
           </p>
         </div>

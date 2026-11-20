@@ -63,104 +63,100 @@ export function OutfitsView() {
     </div>
   );
 
-  if (s.status !== "ready")
-    return (
-      <>
-        {head}
-        <LoadGate s={s} />
-      </>
+  // One return with the sheets always last, so they never remount when the page switches branches.
+  let body: React.ReactNode;
+  if (s.status !== "ready") body = <LoadGate s={s} />;
+  else if (!all.length)
+    body = enough ? (
+      <EmptyState
+        title="No outfits yet"
+        actions={
+          <button type="button" className="btn primary" onClick={() => open("new", "1")}>
+            Build an outfit
+          </button>
+        }
+      >
+        Pick pieces that go together and tag where you’d wear them. Today then suggests whichever outfit you’ve gone
+        longest without.
+      </EmptyState>
+    ) : (
+      <EmptyState
+        title="No outfits yet"
+        actions={
+          <Link className="btn primary" href="/closet?add=1">
+            Add clothes
+          </Link>
+        }
+      >
+        Add a few clothes first, then put them together here.
+      </EmptyState>
     );
-  if (!all.length)
-    return (
+  else
+    body = (
       <>
-        {head}
-        {enough ? (
-          <EmptyState
-            title="No outfits yet"
-            actions={
-              <button type="button" className="btn primary" onClick={() => open("new", "1")}>
-                Build an outfit
-              </button>
-            }
-          >
-            Pick pieces that go together and tag where you’d wear them. Today then suggests whichever outfit you’ve gone
-            longest without.
-          </EmptyState>
+        <Chips
+          label="Occasion"
+          options={[{ id: "any" as const, label: "All" }, ...OCCASIONS]}
+          value={occ}
+          onChange={setOcc}
+        />
+        {list.length ? (
+          <>
+            <p className="muted small">Least recently worn first.</p>
+            <ul className="outfit-grid" aria-label="Your outfits">
+              {list.map((o) => {
+                const pieces = outfitPieces(o, d.byId);
+                const w = d.stats.outfits.get(o.id) ?? NO_WEAR;
+                const name = outfitName(o, pieces);
+                return (
+                  <li key={o.id} className="ocard">
+                    <button type="button" className="ocard-main" aria-label={name} onClick={() => open("outfit", o.id)}>
+                      <Flatlay pieces={pieces} />
+                      <span className="ocard-name">{name}</span>
+                    </button>
+                    <div className="ocard-meta">
+                      <HangTag small>{lastWornText(w.last, d.today)}</HangTag>
+                      {o.occasions.map((x) => (
+                        <span key={x} className="pill">
+                          {OCC_LABEL[x]}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="row tight">
+                      <button
+                        type="button"
+                        className="btn sm primary"
+                        aria-label={`Wear ${name} today`}
+                        onClick={() =>
+                          void wear(o, o.occasions.includes(current) ? current : (o.occasions[0] ?? current), d.today)
+                        }
+                      >
+                        Wear today
+                      </button>
+                      <button
+                        type="button"
+                        className="btn sm ghost"
+                        aria-label={`Edit ${name}`}
+                        onClick={() => open("edit", o.id)}
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
         ) : (
-          <EmptyState
-            title="No outfits yet"
-            actions={
-              <Link className="btn primary" href="/closet?add=1">
-                Add clothes
-              </Link>
-            }
-          >
-            Add a few clothes first, then put them together here.
-          </EmptyState>
+          <p className="muted">No outfits tagged for this occasion yet.</p>
         )}
-        {sheets}
       </>
     );
 
   return (
     <>
       {head}
-      <Chips
-        label="Occasion"
-        options={[{ id: "any" as const, label: "All" }, ...OCCASIONS]}
-        value={occ}
-        onChange={setOcc}
-      />
-      {list.length ? (
-        <>
-          <p className="muted small">Least recently worn first.</p>
-          <ul className="outfit-grid" aria-label="Your outfits">
-            {list.map((o) => {
-              const pieces = outfitPieces(o, d.byId);
-              const w = d.stats.outfits.get(o.id) ?? NO_WEAR;
-              const name = outfitName(o, pieces);
-              return (
-                <li key={o.id} className="ocard">
-                  <button type="button" className="ocard-main" aria-label={name} onClick={() => open("outfit", o.id)}>
-                    <Flatlay pieces={pieces} />
-                    <span className="ocard-name">{name}</span>
-                  </button>
-                  <div className="ocard-meta">
-                    <HangTag small>{lastWornText(w.last, d.today)}</HangTag>
-                    {o.occasions.map((x) => (
-                      <span key={x} className="pill">
-                        {OCC_LABEL[x]}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="row tight">
-                    <button
-                      type="button"
-                      className="btn sm primary"
-                      aria-label={`Wear ${name} today`}
-                      onClick={() =>
-                        void wear(o, o.occasions.includes(current) ? current : (o.occasions[0] ?? current), d.today)
-                      }
-                    >
-                      Wear today
-                    </button>
-                    <button
-                      type="button"
-                      className="btn sm ghost"
-                      aria-label={`Edit ${name}`}
-                      onClick={() => open("edit", o.id)}
-                    >
-                      Edit
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </>
-      ) : (
-        <p className="muted">No outfits tagged for this occasion yet.</p>
-      )}
+      {body}
       {sheets}
     </>
   );

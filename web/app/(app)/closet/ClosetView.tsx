@@ -92,98 +92,97 @@ export function ClosetView() {
 
   const sheet = <ItemSheet open={sheetOpen && s.status === "ready"} itemId={itemParam} onClose={close} />;
 
-  if (s.status !== "ready")
-    return (
-      <>
-        {head}
-        <LoadGate s={s} />
-      </>
+  // One return with the sheet always last: switching between the empty state and the grid
+  // (e.g. when a draft piece is saved) must not remount the sheet and lose its state.
+  let body: React.ReactNode;
+  if (s.status !== "ready") body = <LoadGate s={s} />;
+  else if (!s.items.length)
+    body = (
+      <EmptyState
+        title="Nothing here yet"
+        actions={
+          <button type="button" className="btn primary" onClick={() => open("add", "1")}>
+            Add your first piece
+          </button>
+        }
+      >
+        Snap a photo of each piece you own. Fill in a name and where you’d wear it, and it’s in. Your Mac fills in the
+        details for you once photo reading is on.
+      </EmptyState>
     );
-  if (!s.items.length)
-    return (
+  else
+    body = (
       <>
-        {head}
-        <EmptyState
-          title="Nothing here yet"
-          actions={
-            <button type="button" className="btn primary" onClick={() => open("add", "1")}>
-              Add your first piece
-            </button>
-          }
-        >
-          Snap a photo of each piece you own. Fill in a name and where you’d wear it, and it’s in. Your Mac fills in the
-          details for you once photo reading is on.
-        </EmptyState>
-        {sheet}
+        <div className="filters">
+          <Chips
+            label="Category"
+            options={[{ id: "all" as const, label: "All" }, ...CATEGORIES.map((c) => ({ id: c, label: c }))]}
+            value={cat}
+            onChange={setCat}
+          />
+          <Chips
+            label="Occasion"
+            options={[{ id: "any" as const, label: "Any occasion" }, ...OCCASIONS]}
+            value={occ}
+            onChange={setOcc}
+          />
+          <Chips
+            label="Status"
+            options={STATUSES.map((x) => ({
+              ...x,
+              label: counts[x.id] && x.id !== "active" ? `${x.label} (${counts[x.id]})` : x.label,
+            }))}
+            value={status}
+            onChange={setStatus}
+          />
+          <div className="row tight">
+            <label className="sort">
+              <span>Sort</span>
+              <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+                {SORTS.map(([v, l]) => (
+                  <option key={v} value={v}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {counts.laundry > 0 && (
+              <button type="button" className="btn sm" onClick={laundryDone}>
+                Laundry done
+              </button>
+            )}
+          </div>
+        </div>
+        {list.length ? (
+          <ul className="grid" aria-label="Your pieces">
+            {list.map((i) => {
+              const w = d.stats.items.get(i.id) ?? NO_WEAR;
+              const sub = w.count
+                ? `${w.count} ${w.count === 1 ? "wear" : "wears"}, last ${shortDate(w.last, d.today)}`
+                : "Not worn yet";
+              return (
+                <li key={i.id}>
+                  <button type="button" className="tile" onClick={() => open("item", i.id)}>
+                    <span className="tile-ph">
+                      <PieceCell item={i} bare />
+                    </span>
+                    <span className="tile-name">{i.name}</span>
+                    <span className="tile-sub">{sub}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="muted">Nothing matches these filters.</p>
+        )}
       </>
     );
 
   return (
     <>
       {head}
-      <div className="filters">
-        <Chips
-          label="Category"
-          options={[{ id: "all" as const, label: "All" }, ...CATEGORIES.map((c) => ({ id: c, label: c }))]}
-          value={cat}
-          onChange={setCat}
-        />
-        <Chips
-          label="Occasion"
-          options={[{ id: "any" as const, label: "Any occasion" }, ...OCCASIONS]}
-          value={occ}
-          onChange={setOcc}
-        />
-        <Chips
-          label="Status"
-          options={STATUSES.map((x) => ({
-            ...x,
-            label: counts[x.id] && x.id !== "active" ? `${x.label} (${counts[x.id]})` : x.label,
-          }))}
-          value={status}
-          onChange={setStatus}
-        />
-        <div className="row tight">
-          <label className="sort">
-            <span>Sort</span>
-            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
-              {SORTS.map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
-            </select>
-          </label>
-          {counts.laundry > 0 && (
-            <button type="button" className="btn sm" onClick={laundryDone}>
-              Laundry done
-            </button>
-          )}
-        </div>
-      </div>
-      {list.length ? (
-        <ul className="grid" aria-label="Your pieces">
-          {list.map((i) => {
-            const w = d.stats.items.get(i.id) ?? NO_WEAR;
-            const sub = w.count
-              ? `${w.count} ${w.count === 1 ? "wear" : "wears"}, last ${shortDate(w.last, d.today)}`
-              : "Not worn yet";
-            return (
-              <li key={i.id}>
-                <button type="button" className="tile" onClick={() => open("item", i.id)}>
-                  <span className="tile-ph">
-                    <PieceCell item={i} bare />
-                  </span>
-                  <span className="tile-name">{i.name}</span>
-                  <span className="tile-sub">{sub}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <p className="muted">Nothing matches these filters.</p>
-      )}
+      {body}
       {sheet}
     </>
   );

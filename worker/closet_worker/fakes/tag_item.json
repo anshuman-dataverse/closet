@@ -1,0 +1,16 @@
+{
+  "name": "Navy oxford shirt",
+  "category": "Tops",
+  "type": "oxford shirt",
+  "color_name": "Navy",
+  "color_hex": "#1f2a48",
+  "secondary_color": null,
+  "pattern": "solid",
+  "formality": 3,
+  "warmth": "light",
+  "occasions": ["office", "college"],
+  "status": "ready",
+  "confidence": 0.82,
+  "model": "fake",
+  "alternatives": [{ "type": "dress shirt", "p": 0.09 }]
+}

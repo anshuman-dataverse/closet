@@ -18,8 +18,10 @@ from typing import Any
 from . import __version__, capabilities, fakes
 from .config import Settings, load_settings
 from .jobs import NotImplementedYet, TransientError, implemented, spec_for
+from .jobs.context import JobContext
 from .queue import Job, Queue, SupabaseQueue
 from .scheduler import Scheduler
+from .store import SupabaseItemStore
 
 log = logging.getLogger("closet_worker")
 
@@ -29,18 +31,20 @@ MAX_TRIES = 3
 BACKOFF_S = (1.0, 2.0, 4.0)
 
 
-def execute(job: Job, *, fake: bool, sleep: Any = time.sleep) -> dict[str, Any]:
+def execute(
+    job: Job, *, fake: bool, ctx: JobContext | None = None, sleep: Any = time.sleep
+) -> dict[str, Any]:
     """Run one job's handler with its timeout and transient retries. Raises on failure."""
     spec = spec_for(job.kind)
     if fake:
-        return fakes.run(job.kind, job.payload)
+        return fakes.run(job.kind, job.payload, ctx)
     if spec.handler is None:
         raise NotImplementedYet(f"'{job.kind}' isn't built yet")
     handler = spec.handler
     for attempt in range(MAX_TRIES):
         pool = ThreadPoolExecutor(max_workers=1)
         try:
-            return pool.submit(handler, job.payload).result(timeout=spec.timeout_s)
+            return pool.submit(handler, job.payload, ctx).result(timeout=spec.timeout_s)
         except FutureTimeout as e:
             raise TimeoutError(f"Timed out after {spec.timeout_s:.0f}s") from e
         except TransientError:
@@ -52,10 +56,10 @@ def execute(job: Job, *, fake: bool, sleep: Any = time.sleep) -> dict[str, Any]:
     raise AssertionError("unreachable")
 
 
-def process(queue: Queue, job: Job, *, fake: bool) -> None:
+def process(queue: Queue, job: Job, *, fake: bool, ctx: JobContext | None = None) -> None:
     log.info("job %s %s (attempt %s)", job.id, job.kind, job.attempts)
     try:
-        result = execute(job, fake=fake)
+        result = execute(job, fake=fake, ctx=ctx)
     except Exception as e:  # report every failure to the app instead of crashing
         msg = str(e) or e.__class__.__name__
         log.warning("job %s failed: %s", job.id, msg)
@@ -66,11 +70,18 @@ def process(queue: Queue, job: Job, *, fake: bool) -> None:
 
 class Worker:
     def __init__(
-        self, settings: Settings, queue: Queue, *, fake: bool, scheduler: Scheduler | None = None
+        self,
+        settings: Settings,
+        queue: Queue,
+        *,
+        fake: bool,
+        scheduler: Scheduler | None = None,
+        ctx: JobContext | None = None,
     ) -> None:
         self.s = settings
         self.queue = queue
         self.fake = fake
+        self.ctx = ctx or JobContext(settings=settings)
         self.stop = threading.Event()
         self.scheduler = scheduler or Scheduler()
 
@@ -102,7 +113,7 @@ class Worker:
         job = self.queue.claim()
         if job is None:
             return False
-        process(self.queue, job, fake=self.fake)
+        process(self.queue, job, fake=self.fake, ctx=self.ctx)
         return True
 
     def run(self, *, once: bool = False) -> None:
@@ -124,8 +135,10 @@ class Worker:
 
 def cli() -> None:
     p = argparse.ArgumentParser(prog="closet-worker")
+    p.add_argument("command", nargs="?", default="run", choices=["run", "export-eval"])
     p.add_argument("--fake", action="store_true", help="return fixtures instead of running models")
     p.add_argument("--once", action="store_true", help="drain the queue once, then exit")
+    p.add_argument("--out", default="~/ClosetPhotos/eval", help="export-eval: output folder")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args()
     logging.basicConfig(
@@ -133,7 +146,17 @@ def cli() -> None:
         format="%(asctime)s %(levelname)s %(message)s",
     )
     settings = load_settings()
-    worker = Worker(settings, SupabaseQueue(settings), fake=args.fake)
+    queue = SupabaseQueue(settings)
+    items = SupabaseItemStore(queue.db, settings.owner)
+
+    if args.command == "export-eval":
+        from .export_eval import export_eval
+
+        zip_path = export_eval(items, args.out)
+        print(f"Wrote {zip_path}. Check labels.csv, then upload the zip to Colab.")
+        return
+
+    worker = Worker(settings, queue, fake=args.fake, ctx=JobContext(settings=settings, items=items))
 
     def _stop(*_: object) -> None:
         log.info("stopping")

@@ -1,0 +1,403 @@
+# Zero-shot clothing types for tagging (SPEC 5.1). Prompt: "a photo of a {type}" unless `prompt` is set.
+# category, default formality (1–5), warmth and default occasions are copied into suggestions.
+
+- type: oxford shirt
+  category: Tops
+  formality: 3
+  warmth: light
+  occasions: [office, college]
+- type: dress shirt
+  category: Tops
+  formality: 4
+  warmth: light
+  occasions: [office, party]
+- type: polo shirt
+  category: Tops
+  formality: 2
+  warmth: light
+  occasions: [college, home]
+- type: t-shirt
+  category: Tops
+  formality: 1
+  warmth: light
+  occasions: [college, home]
+- type: graphic t-shirt
+  category: Tops
+  formality: 1
+  warmth: light
+  occasions: [college, home]
+- type: henley
+  category: Tops
+  formality: 2
+  warmth: light
+  occasions: [college, home]
+- type: flannel shirt
+  category: Tops
+  formality: 2
+  warmth: medium
+  occasions: [college, home]
+- type: short-sleeve shirt
+  category: Tops
+  formality: 2
+  warmth: light
+  occasions: [college, party]
+- type: printed shirt
+  category: Tops
+  formality: 2
+  warmth: light
+  occasions: [party, college]
+- type: striped shirt
+  category: Tops
+  formality: 3
+  warmth: light
+  occasions: [office, college]
+- type: linen shirt
+  category: Tops
+  formality: 2
+  warmth: light
+  occasions: [college, party]
+- type: denim shirt
+  category: Tops
+  formality: 2
+  warmth: medium
+  occasions: [college]
+- type: tank top
+  category: Tops
+  formality: 1
+  warmth: light
+  occasions: [home]
+- type: long-sleeve t-shirt
+  category: Tops
+  formality: 1
+  warmth: medium
+  occasions: [college, home]
+- type: turtleneck
+  category: Tops
+  formality: 3
+  warmth: warm
+  occasions: [office, party]
+- type: rugby shirt
+  category: Tops
+  formality: 2
+  warmth: medium
+  occasions: [college]
+- type: knit polo
+  category: Tops
+  formality: 3
+  warmth: light
+  occasions: [office, party]
+- type: casual button-up shirt
+  category: Tops
+  formality: 2
+  warmth: light
+  occasions: [college, party]
+- type: overshirt
+  category: Layers
+  formality: 2
+  warmth: medium
+  occasions: [college]
+- type: crew neck sweater
+  category: Layers
+  formality: 3
+  warmth: warm
+  occasions: [office, college]
+- type: v-neck sweater
+  category: Layers
+  formality: 3
+  warmth: warm
+  occasions: [office]
+- type: cardigan
+  category: Layers
+  formality: 3
+  warmth: medium
+  occasions: [office, college]
+- type: hoodie
+  category: Layers
+  formality: 1
+  warmth: medium
+  occasions: [college, home]
+- type: zip hoodie
+  category: Layers
+  formality: 1
+  warmth: medium
+  occasions: [college, home]
+- type: sweatshirt
+  category: Layers
+  formality: 1
+  warmth: medium
+  occasions: [college, home]
+- type: quarter-zip sweater
+  category: Layers
+  formality: 2
+  warmth: medium
+  occasions: [college, office]
+- type: blazer
+  category: Layers
+  formality: 4
+  warmth: medium
+  occasions: [office, party]
+- type: suit jacket
+  category: Layers
+  formality: 5
+  warmth: medium
+  occasions: [office, party]
+- type: bomber jacket
+  category: Layers
+  formality: 2
+  warmth: medium
+  occasions: [college, party]
+- type: varsity jacket
+  category: Layers
+  formality: 2
+  warmth: medium
+  occasions: [college]
+- type: denim jacket
+  category: Layers
+  formality: 2
+  warmth: medium
+  occasions: [college, party]
+- type: leather jacket
+  category: Layers
+  formality: 3
+  warmth: medium
+  occasions: [party]
+- type: puffer jacket
+  category: Layers
+  formality: 1
+  warmth: warm
+  occasions: [college, home]
+- type: wool overcoat
+  category: Layers
+  formality: 4
+  warmth: warm
+  occasions: [office]
+- type: trench coat
+  category: Layers
+  formality: 4
+  warmth: medium
+  occasions: [office]
+- type: rain jacket
+  category: Layers
+  formality: 1
+  warmth: medium
+  occasions: [college]
+- type: fleece jacket
+  category: Layers
+  formality: 1
+  warmth: warm
+  occasions: [home, college]
+- type: vest
+  category: Layers
+  formality: 3
+  warmth: medium
+  occasions: [office]
+- type: nehru jacket
+  category: Layers
+  formality: 4
+  warmth: medium
+  occasions: [party, office]
+- type: shacket
+  category: Layers
+  formality: 2
+  warmth: medium
+  occasions: [college]
+- type: chinos
+  category: Bottoms
+  formality: 3
+  warmth: medium
+  occasions: [office, college]
+- type: dress trousers
+  category: Bottoms
+  formality: 4
+  warmth: medium
+  occasions: [office, party]
+- type: jeans
+  category: Bottoms
+  formality: 2
+  warmth: medium
+  occasions: [college, party]
+- type: light wash jeans
+  category: Bottoms
+  formality: 2
+  warmth: medium
+  occasions: [college]
+- type: dark wash jeans
+  category: Bottoms
+  formality: 2
+  warmth: medium
+  occasions: [college, party, office]
+- type: joggers
+  category: Bottoms
+  formality: 1
+  warmth: medium
+  occasions: [home, college]
+- type: sweatpants
+  category: Bottoms
+  formality: 1
+  warmth: medium
+  occasions: [home]
+- type: shorts
+  category: Bottoms
+  formality: 1
+  warmth: light
+  occasions: [home, college]
+- type: cargo trousers
+  category: Bottoms
+  formality: 2
+  warmth: medium
+  occasions: [college]
+- type: linen trousers
+  category: Bottoms
+  formality: 2
+  warmth: light
+  occasions: [party, college]
+- type: corduroy trousers
+  category: Bottoms
+  formality: 3
+  warmth: warm
+  occasions: [college, office]
+- type: track pants
+  category: Bottoms
+  formality: 1
+  warmth: medium
+  occasions: [home]
+- type: pyjama trousers
+  category: Bottoms
+  formality: 1
+  warmth: light
+  occasions: [home]
+- type: sneakers
+  category: Shoes
+  formality: 1
+  warmth: medium
+  occasions: [college, home]
+- type: white sneakers
+  category: Shoes
+  formality: 2
+  warmth: medium
+  occasions: [college, party]
+- type: running shoes
+  category: Shoes
+  formality: 1
+  warmth: medium
+  occasions: [home]
+- type: loafers
+  category: Shoes
+  formality: 4
+  warmth: medium
+  occasions: [office, party]
+- type: oxford shoes
+  category: Shoes
+  formality: 5
+  warmth: medium
+  occasions: [office, party]
+- type: derby shoes
+  category: Shoes
+  formality: 4
+  warmth: medium
+  occasions: [office]
+- type: chelsea boots
+  category: Shoes
+  formality: 3
+  warmth: warm
+  occasions: [office, party]
+- type: boots
+  category: Shoes
+  formality: 2
+  warmth: warm
+  occasions: [college]
+- type: sandals
+  category: Shoes
+  formality: 1
+  warmth: light
+  occasions: [home]
+- type: slides
+  category: Shoes
+  formality: 1
+  warmth: light
+  occasions: [home]
+- type: suede shoes
+  category: Shoes
+  formality: 3
+  warmth: medium
+  occasions: [party, office]
+- type: mojari shoes
+  category: Shoes
+  formality: 4
+  warmth: light
+  occasions: [party]
+- type: belt
+  category: Accessories
+  formality: 3
+  warmth: light
+  occasions: [office, college, party]
+- type: watch
+  category: Accessories
+  formality: 3
+  warmth: light
+  occasions: [office, college, party]
+- type: cap
+  category: Accessories
+  formality: 1
+  warmth: light
+  occasions: [college, home]
+- type: beanie
+  category: Accessories
+  formality: 1
+  warmth: warm
+  occasions: [college]
+- type: scarf
+  category: Accessories
+  formality: 3
+  warmth: warm
+  occasions: [office, college]
+- type: tie
+  category: Accessories
+  formality: 5
+  warmth: light
+  occasions: [office, party]
+- type: backpack
+  category: Accessories
+  formality: 1
+  warmth: light
+  occasions: [college]
+- type: tote bag
+  category: Accessories
+  formality: 1
+  warmth: light
+  occasions: [college]
+- type: sunglasses
+  category: Accessories
+  formality: 2
+  warmth: light
+  occasions: [college, party]
+- type: stole
+  category: Accessories
+  formality: 4
+  warmth: light
+  occasions: [party]
+- type: kurta
+  category: "Sets & suits"
+  formality: 3
+  warmth: light
+  occasions: [party]
+- type: kurta pajama set
+  category: "Sets & suits"
+  formality: 4
+  warmth: light
+  occasions: [party]
+- type: sherwani
+  category: "Sets & suits"
+  formality: 5
+  warmth: medium
+  occasions: [party]
+- type: suit
+  category: "Sets & suits"
+  formality: 5
+  warmth: medium
+  occasions: [office, party]
+- type: tracksuit
+  category: "Sets & suits"
+  formality: 1
+  warmth: medium
+  occasions: [home]

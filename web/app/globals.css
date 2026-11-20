@@ -1666,3 +1666,20 @@ input[type="email"] {
 .ph.lt {
   color: #1a2142;
 }
+/* Cutouts: the transparent piece sits on a panel instead of being cropped to fill. Light mode uses --paper
+   (SPEC 6). Dark mode uses a soft light panel, because dark garments vanish on a near-black one. */
+:root {
+  --cut-bg: var(--paper);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --cut-bg: #c9d1dc;
+  }
+}
+:root[data-theme="dark"] {
+  --cut-bg: #c9d1dc;
+}
+img.cut {
+  object-fit: contain !important;
+  background: var(--cut-bg) !important;
+}

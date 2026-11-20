@@ -63,6 +63,12 @@ launchd/install.sh uninstall
 
 Check it from the app: **Profile → Your Mac → Test your Mac**.
 
+The first photo it reads downloads the models, about 770 MB for FashionCLIP and background removal, into `~/.cache`.
+After that, a photo takes 1–3 seconds on Apple Silicon.
+
+**Tagging accuracy test:** `uv run closet-worker export-eval`, fix `~/ClosetPhotos/eval/labels.csv`, then run
+`colab/tagging_eval.ipynb` on Colab, or `uv run python -m eval.tagging` on the Mac. See `colab/README.md`.
+
 ## 5. SearXNG (deal hunts)
 
 ```sh

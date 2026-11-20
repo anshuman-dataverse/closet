@@ -17,13 +17,33 @@ const Hanger = () => (
  * A piece's picture: the photo (or cutout, once the Mac makes one) or its color swatch.
  * `bare` is for tiles where the name is printed below: empty alt and a hanger icon instead of the name.
  */
-export function PieceCell({ item, bare = false, large = false }: { item: Item; bare?: boolean; large?: boolean }) {
-  const path = item.cutout_path ?? (large ? item.photo_path : item.thumb_path) ?? item.photo_path;
+export function PieceCell({
+  item,
+  bare = false,
+  large = false,
+  prefer = "cutout",
+}: {
+  item: Item;
+  bare?: boolean;
+  large?: boolean;
+  prefer?: "cutout" | "photo";
+}) {
+  const cut = prefer === "cutout" ? item.cutout_path : null;
+  const path = cut ?? (large ? item.photo_path : item.thumb_path) ?? item.photo_path;
   const url = useSignedUrl(path);
   const sw = swatchFor(item);
   const style = (sw ? { "--sw": sw } : undefined) as CSSProperties | undefined;
   if (path && url) {
-    return <img src={url} alt={bare ? "" : item.name} loading="lazy" decoding="async" style={style} />;
+    return (
+      <img
+        src={url}
+        alt={bare ? "" : item.name}
+        className={cut ? "cut" : undefined}
+        loading="lazy"
+        decoding="async"
+        style={style}
+      />
+    );
   }
   return (
     <span className={`ph${sw ? (isDark(sw) ? " dk" : " lt") : ""}`} style={style}>

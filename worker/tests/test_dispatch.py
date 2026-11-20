@@ -42,7 +42,7 @@ def test_ping_round_trip() -> None:
 
 def test_unbuilt_kind_fails_clearly() -> None:
     q = MemoryQueue()
-    process(q, job("tag_item"), fake=False)
+    process(q, job("embed_wish"), fake=False)
     assert "isn't built yet" in q.failed["j1"]
 
 
@@ -54,7 +54,7 @@ def test_fake_mode_returns_fixture_for_every_kind() -> None:
 def test_transient_errors_retry_then_succeed(monkeypatch: pytest.MonkeyPatch) -> None:
     calls = {"n": 0}
 
-    def flaky(_: dict[str, Any]) -> dict[str, Any]:
+    def flaky(_: dict[str, Any], __: Any = None) -> dict[str, Any]:
         calls["n"] += 1
         if calls["n"] < 3:
             raise TransientError("blip")
@@ -67,7 +67,7 @@ def test_transient_errors_retry_then_succeed(monkeypatch: pytest.MonkeyPatch) ->
 
 
 def test_transient_errors_give_up_after_three(monkeypatch: pytest.MonkeyPatch) -> None:
-    def always(_: dict[str, Any]) -> dict[str, Any]:
+    def always(_: dict[str, Any], __: Any = None) -> dict[str, Any]:
         raise TransientError("store down")
 
     monkeypatch.setitem(REGISTRY, "ping", Spec(handler=always, timeout_s=5))
@@ -76,7 +76,7 @@ def test_transient_errors_give_up_after_three(monkeypatch: pytest.MonkeyPatch) -
 
 
 def test_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
-    def slow(_: dict[str, Any]) -> dict[str, Any]:
+    def slow(_: dict[str, Any], __: Any = None) -> dict[str, Any]:
         time.sleep(0.5)
         return {}
 

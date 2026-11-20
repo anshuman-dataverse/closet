@@ -5,10 +5,20 @@ description = "Closet Mac worker: claims jobs from Supabase and runs the local m
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "httpx>=0.28.1",
+    "numpy>=2.5.5",
+    "open-clip-torch>=4.2.2",
+    "opencv-python-headless>=5.1.0.95",
+    "pillow>=13.0.0",
     "pydantic>=2.14.4",
     "pydantic-settings>=2.16.3",
     "pyyaml>=6.0.3",
+    "rembg[cpu]>=2.0.87",
+    "scikit-image>=0.26.0",
+    "scikit-learn>=1.9.1",
     "supabase>=2.34.1",
+    "torch>=2.15.0",
+    "torchvision>=0.29.2",
+    "transformers>=5.23.0",
 ]
 
 [project.scripts]
@@ -35,6 +45,8 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF"]
+# Typographic apostrophes (’) are intentional in user-facing copy (SPEC 7).
+ignore = ["RUF001", "RUF002", "RUF003"]
 
 [tool.mypy]
 python_version = "3.12"
@@ -42,11 +54,31 @@ strict = true
 packages = ["closet_worker"]
 
 [[tool.mypy.overrides]]
-module = ["supabase.*", "postgrest.*"]
+module = ["supabase.*", "postgrest.*", "rembg.*", "sklearn.*", "open_clip.*", "skimage.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# scikit-image has partial annotations
+module = ["closet_worker.vision.*"]
+disallow_untyped_calls = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-markers = ["integration: needs the local Supabase stack (supabase start)"]
+markers = [
+    "integration: needs the local Supabase stack (supabase start)",
+    "models: runs real ML models (downloads weights); opt in with -m models",
+]
+addopts = "-m 'not models'"
 # The supabase client warns about its own internal use of deprecated postgrest args.
 filterwarnings = ["ignore::DeprecationWarning:supabase.*"]
+
+# Linux (CI) gets CPU-only torch; the PyPI Linux wheels pull ~3 GB of CUDA libraries.
+# macOS keeps the default wheels, which include MPS support.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

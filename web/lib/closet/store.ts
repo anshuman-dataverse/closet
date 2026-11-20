@@ -9,6 +9,7 @@ import type { Database } from "@/lib/database.types";
 import { todayIn } from "@/lib/domain/dates";
 import { wearStats, type WearStats } from "@/lib/domain/wear";
 import type { Occasion } from "@/lib/occasions";
+import { enqueueJob, type JobRow, waitForJob } from "@/lib/jobs";
 import { listAllFiles, removePaths } from "@/lib/photos";
 import { dropSignedUrls } from "@/lib/signed-urls";
 import { supabase } from "@/lib/supabase/client";
@@ -124,10 +125,7 @@ const fail = (e: { message?: string } | null | undefined, fallback: string): nev
   throw new Error(e?.message && !/^(JWT|fetch|Failed)/i.test(e.message) ? e.message : fallback);
 };
 
-export type ItemInput = Omit<
-  Database["public"]["Tables"]["items"]["Insert"],
-  "user_id" | "created_at" | "updated_at" | "suggestions" | "tags_status"
->;
+export type ItemInput = Omit<Database["public"]["Tables"]["items"]["Insert"], "user_id" | "created_at" | "updated_at">;
 
 export async function saveItem(
   input: ItemInput & { id: string },
@@ -146,6 +144,14 @@ export async function saveItem(
     void removePaths(db, replacedPaths);
   }
   return item;
+}
+
+/** Updates some fields of a saved piece. */
+export async function patchItem(id: string, fields: Database["public"]["Tables"]["items"]["Update"]): Promise<Item> {
+  const { data, error } = await supabase().from("items").update(fields).eq("id", id).select("*").single();
+  if (error || !data) fail(error, "Couldn’t save that. Try again.");
+  set({ items: state.items.map((i) => (i.id === id ? data! : i)) });
+  return data!;
 }
 
 export async function setItemsStatus(ids: readonly string[], status: ItemStatus): Promise<void> {
@@ -260,4 +266,28 @@ export async function deleteAllData(): Promise<void> {
   if (error) fail(error, "Couldn’t delete everything. Try again.");
   dropSignedUrls(files);
   await loadCloset();
+}
+
+/** Re-reads one piece (after the Mac writes suggestions or a cutout). */
+export async function refreshItem(id: string): Promise<Item | null> {
+  const { data } = await supabase().from("items").select("*").eq("id", id).maybeSingle();
+  if (data) set({ items: state.items.map((i) => (i.id === id ? data : i)) });
+  return data;
+}
+
+/**
+ * Asks the Mac to read a piece's photo (SPEC 5.1). Pass `photoPath` for a new, not-yet-saved photo.
+ * Resolves with the finished job, or null if it's still waiting after `timeoutMs` (it keeps running).
+ */
+export async function requestTagging(itemId: string, photoPath?: string, timeoutMs = 20_000): Promise<JobRow | null> {
+  const db = supabase();
+  const job = await enqueueJob(db, "tag_item", { item_id: itemId, ...(photoPath ? { photo_path: photoPath } : {}) }, 5);
+  set({ items: state.items.map((i) => (i.id === itemId ? { ...i, tags_status: "pending" } : i)) });
+  if (timeoutMs <= 0) return null;
+  const done = await waitForJob(db, job.id, { timeoutMs });
+  if (done && (done.status === "done" || done.status === "failed")) {
+    await refreshItem(itemId);
+    return done;
+  }
+  return null;
 }

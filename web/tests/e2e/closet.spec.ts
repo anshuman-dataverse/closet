@@ -13,7 +13,10 @@ test("add a piece with a photo, then laundry, retire and delete it", async ({ pa
   await page.getByRole("button", { name: "Add your first piece" }).click();
   const sheet = page.getByRole("dialog", { name: "Add clothes" });
   await sheet.getByTestId("photo-input").setInputFiles(FIXTURE);
-  await expect(sheet.getByText("Photo ready.")).toBeVisible();
+  // No worker in this test: the Mac is offline, so the piece is saved now and tagged later.
+  await expect(sheet.getByTestId("photo-hint")).toHaveText(
+    "Save it now, and the details will be suggested when your Mac is back.",
+  );
 
   // Name is required.
   await sheet.getByRole("button", { name: "Add to closet" }).click();

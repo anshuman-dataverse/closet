@@ -1,1 +1,4 @@
-"""Built in a later phase (see SPEC.md section 12)."""
+"""On-device vision: background removal, embeddings, colors and zero-shot tags (SPEC 5.1).
+
+Nothing here talks to Supabase, so the same code runs in the Colab eval.
+"""

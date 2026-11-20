@@ -7,8 +7,10 @@ from typing import Any
 
 from closet_worker import __version__
 
+from .context import JobContext
 
-def run(payload: dict[str, Any]) -> dict[str, Any]:
+
+def run(payload: dict[str, Any], ctx: JobContext | None = None) -> dict[str, Any]:
     return {
         "pong": True,
         "echo": str(payload.get("nonce", ""))[:64],
