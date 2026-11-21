@@ -72,32 +72,43 @@ Upload two files from your repo, unchanged:
 (Or put them in `MyDrive/closet/code/` and this cell picks them up.)
 """)
 code("""
+import re, importlib
 from google.colab import drive, files
 drive.mount("/content/drive")
 code_dir = pathlib.Path("/content/closet_code"); code_dir.mkdir(exist_ok=True)
 need = ["compat_head.py", "embed.py"]
 src = pathlib.Path("/content/drive/MyDrive/closet/code")
+
+def current(n):
+    p = code_dir / n
+    if not p.exists():
+        return False
+    t = p.read_text()
+    return "max_length" in t if n == "embed.py" else "def head_state" in t
+
+def upload():
+    # Colab renames repeat uploads ("embed (1).py"), so map them back to the real names.
+    for got, data in files.upload().items():
+        name = re.sub(r" \\(\\d+\\)(?=\\.py$)", "", got)
+        if name in need:
+            (code_dir / name).write_bytes(data)
+            print("saved", name)
+
 for n in need:
     if (src / n).exists():
         (code_dir / n).write_bytes((src / n).read_bytes())
-if not all((code_dir / n).exists() for n in need):
-    for n, data in files.upload().items():
-        (code_dir / n).write_bytes(data)
-assert all((code_dir / n).exists() for n in need), f"upload {need}"
-# A saved copy (Drive or an earlier upload) can be out of date: check, and ask again if so.
-def current(n):
-    t = (code_dir / n).read_text()
-    return "max_length" in t if n == "embed.py" else "def head_state" in t
+stale = [n for n in need if not current(n)]
+if stale:
+    print("Upload", " and ".join(stale), "from Desktop/closet-colab (missing or out of date).")
+    upload()
+stale = [n for n in need if not current(n)]
+assert not stale, f"still missing or out of date: {stale}"
 for n in need:
-    if not current(n):
-        print(f"{n} is out of date (from Drive or an earlier upload). Upload the new one.")
-        for got, data in files.upload().items():
-            (code_dir / n).write_bytes(data)
-        if (src / n).exists():
-            (src / n).write_bytes((code_dir / n).read_bytes())  # refresh the Drive copy too
-    assert current(n), f"{n} is still out of date"
+    if src.exists():
+        (src / n).write_bytes((code_dir / n).read_bytes())  # keep the Drive copy current
 sys.path.insert(0, str(code_dir))
 import compat_head, embed
+importlib.reload(compat_head); importlib.reload(embed)
 print({n: hashlib.sha256((code_dir / n).read_bytes()).hexdigest()[:12] for n in need})
 """)
 
