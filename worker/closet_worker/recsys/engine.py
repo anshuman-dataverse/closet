@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .candidates import Outfit, apply_note, candidates, candidates_with
 from .model import Context, History, Piece
 from .scoring import Score, harmony, score, weights
 from .select import pick_diverse
+
+if TYPE_CHECKING:
+    from .compat import CompatScorer
 
 CATEGORY_ORDER = ("Tops", "Sets & suits", "Layers", "Bottoms", "Shoes", "Accessories")
 
@@ -20,12 +23,34 @@ def ordered(o: Outfit) -> Outfit:
     )
 
 
-def ideas(
-    pieces: list[Piece], ctx: Context, h: History, k: int = 3, profile: dict[str, Any] | None = None
-) -> list[tuple[Outfit, Score]]:
+def ranked_candidates(
+    pieces: list[Piece],
+    ctx: Context,
+    h: History,
+    profile: dict[str, Any] | None = None,
+    compat: CompatScorer | None = None,
+) -> tuple[Context, list[tuple[Outfit, Score]]]:
+    """Every candidate, best first. With an outfit model, its term is scored in one batch."""
     ctx2, shift = apply_note(ctx)
-    ranked = [(o, score(o, ctx2, h, shift, profile)) for o in candidates(pieces, ctx2)]
+    cands = list(candidates(pieces, ctx2))
+    cs: list[float | None] = compat.scores(cands) if compat else [None] * len(cands)
+    ranked = [
+        (o, score(o, ctx2, h, shift, profile, None if compat is None else (c or 0.0)))
+        for o, c in zip(cands, cs, strict=True)
+    ]
     ranked.sort(key=lambda x: x[1].total, reverse=True)
+    return ctx2, ranked
+
+
+def ideas(
+    pieces: list[Piece],
+    ctx: Context,
+    h: History,
+    k: int = 3,
+    profile: dict[str, Any] | None = None,
+    compat: CompatScorer | None = None,
+) -> list[tuple[Outfit, Score]]:
+    ctx2, ranked = ranked_candidates(pieces, ctx, h, profile, compat)
     out = []
     for o, s in pick_diverse(ranked, k):
         acc = accessory_for(o, pieces, ctx2, h)

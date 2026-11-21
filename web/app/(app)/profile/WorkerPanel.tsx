@@ -5,7 +5,7 @@ import { useToast } from "@/components/Toast";
 import { useWorkerStatus } from "@/components/WorkerStatus";
 import { enqueueJob, waitForJob } from "@/lib/jobs";
 import { supabase } from "@/lib/supabase/client";
-import { seenAgo } from "@/lib/worker-status";
+import { compatText, seenAgo } from "@/lib/worker-status";
 
 export function WorkerPanel() {
   const s = useWorkerStatus();
@@ -54,6 +54,8 @@ export function WorkerPanel() {
           <dd>{caps.searxng ? "Ready" : "Not running"}</dd>
           <dt>Local phrasing</dt>
           <dd>{caps.ollama ? "Ready" : "Off"}</dd>
+          <dt>Outfit model</dt>
+          <dd data-testid="compat-state">{compatText(caps.compat)}</dd>
           <dt>Last backup</dt>
           <dd>{s.lastBackupAt ? seenAgo(s.lastBackupAt) : "None yet"}</dd>
         </dl>

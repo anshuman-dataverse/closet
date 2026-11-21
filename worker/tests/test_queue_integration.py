@@ -79,3 +79,31 @@ def test_claim_only_owner_jobs(q: SupabaseQueue) -> None:
         assert q.claim() is None
     finally:
         q.db.auth.admin.delete_user(other.id)
+
+
+def test_compat_reads_embeddings_and_events(q: SupabaseQueue) -> None:
+    from closet_worker.recsys.compat import EMBEDDER, status
+    from closet_worker.store import SupabaseItemStore
+
+    store = SupabaseItemStore(q.db, q.s.owner)
+    item = (
+        q.db.table("items")
+        .insert({"user_id": q.s.owner, "name": "Navy chinos", "category": "Bottoms"})
+        .execute()
+        .data[0]
+    )
+    vec = [0.0] * 512
+    vec[3] = 1.0
+    store.upsert_embedding(item["id"], EMBEDDER, vec)
+    got = store.list_embeddings(EMBEDDER)
+    assert list(got) == [item["id"]] and got[item["id"]][3] == 1.0 and len(got[item["id"]]) == 512
+    assert store.list_embeddings("other-model") == {}
+    store.insert_events(
+        [{"occasion": "office", "item_ids": [item["id"]], "context": {}, "action": "worn"}]
+    )
+    evs = store.list_suggestion_events()
+    assert [e["action"] for e in evs] == ["worn"] and evs[0]["item_ids"] == [item["id"]]
+    # The heartbeat accepts the nested outfit model status.
+    q.heartbeat("test", {"searxng": False, "compat": status(q.s.compat_model_dir)})
+    w = q.db.table("workers").select("capabilities").eq("id", q.s.worker_id).single().execute()
+    assert w.data["capabilities"]["compat"]["need"] == 30

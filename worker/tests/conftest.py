@@ -41,7 +41,7 @@ class MemoryQueue:
     def fail(self, job: Job, error: str) -> None:
         self.failed[job.id] = error
 
-    def heartbeat(self, version: str, capabilities: dict[str, bool]) -> None:
+    def heartbeat(self, version: str, capabilities: dict[str, Any]) -> None:
         self.beats.append(capabilities)
 
     def requeue_stale(self) -> int:

@@ -4,6 +4,7 @@ palette: 0.6      # only counts once you have a style profile
 formality: 1.0
 weather: 0.8
 freshness: 1.2
+compat: 0.8       # outfit model; counts only while its gate is open (recsys/compat.py)
 # An outfit counts as "good" (for unlocks and What's missing) at or above this total.
 good_threshold: 1.2
 # Near-duplicate cosine thresholds for "Do I need this?" (SPEC 5.6). Calibrate against your eval.

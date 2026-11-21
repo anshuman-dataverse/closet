@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any, Protocol
 
 from supabase import Client
@@ -29,6 +30,8 @@ class ItemStore(Protocol):
     ) -> list[dict[str, Any]]: ...
     def list_style_photos(self) -> list[dict[str, Any]]: ...
     def update_profile(self, fields: dict[str, Any]) -> None: ...
+    def list_embeddings(self, model: str) -> dict[str, list[float]]: ...
+    def list_suggestion_events(self) -> list[dict[str, Any]]: ...
 
 
 class SupabaseItemStore:
@@ -166,3 +169,31 @@ class SupabaseItemStore:
 
     def update_profile(self, fields: dict[str, Any]) -> None:
         self.db.table("profiles").update(fields).eq("user_id", self.owner).execute()
+
+    def list_embeddings(self, model: str) -> dict[str, list[float]]:
+        """item_id → vector, for one embedding model (pgvector comes back as text "[…]")."""
+        res = (
+            self.db.table("item_embeddings")
+            .select("item_id, embedding")
+            .eq("user_id", self.owner)
+            .eq("model", model)
+            .execute()
+        )
+        out: dict[str, list[float]] = {}
+        for r in self._rows(res):
+            v = r.get("embedding")
+            if isinstance(v, str):
+                v = json.loads(v)
+            if isinstance(v, list):
+                out[str(r["item_id"])] = [float(x) for x in v]
+        return out
+
+    def list_suggestion_events(self) -> list[dict[str, Any]]:
+        res = (
+            self.db.table("suggestion_events")
+            .select("occasion, item_ids, context, action, created_at")
+            .eq("user_id", self.owner)
+            .order("created_at")
+            .execute()
+        )
+        return self._rows(res)

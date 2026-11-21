@@ -9,11 +9,28 @@ export function isOffline(lastSeenAt: string | null | undefined, now: number = D
   return now - t > OFFLINE_AFTER_MS;
 }
 
-export type Capabilities = { searxng: boolean; ollama: boolean; openai: boolean };
+export type CompatStatus = { installed: boolean; on: boolean; n: number; need: number };
+export type Capabilities = { searxng: boolean; ollama: boolean; openai: boolean; compat: CompatStatus };
+
+const count = (v: unknown, fallback: number) => (typeof v === "number" && Number.isInteger(v) && v >= 0 ? v : fallback);
 
 export function readCapabilities(raw: unknown): Capabilities {
   const o = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-  return { searxng: o.searxng === true, ollama: o.ollama === true, openai: o.openai === true };
+  const c = o.compat && typeof o.compat === "object" ? (o.compat as Record<string, unknown>) : {};
+  return {
+    searxng: o.searxng === true,
+    ollama: o.ollama === true,
+    openai: o.openai === true,
+    compat: { installed: c.installed === true, on: c.on === true, n: count(c.n, 0), need: count(c.need, 30) },
+  };
+}
+
+/** The outfit model line in Your Mac (SPEC 5.11). It's on only after beating the rules on your picks. */
+export function compatText(c: CompatStatus): string {
+  if (!c.installed) return "Not installed";
+  if (c.on) return "On";
+  if (c.n >= c.need) return "Off: it didn’t beat the rules on your logged outfits";
+  return `Off until it beats the rules on ${c.need} of your logged outfits (${c.n} so far)`;
 }
 
 /** "just now", "3 minutes ago", "2 hours ago", or a short date. */

@@ -67,6 +67,9 @@ Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Ve
 - Unlock counts (check_wish, find_gaps) ignore wear history on purpose. Fake mode runs the real
   suggest_outfits and find_gaps; check_wish and tag_item use fixtures.
 - Duplicate search: `nearest_items` RPC (pgvector, service role). Wishlist in web: `app/(app)/shop/*`, store `saveWish`/`checkWish`.
+- Outfit model (SPEC 5.11): `recsys/compat_head.py` (torch-only, also run by `colab/outfit_compat.ipynb`) and `compat.py`
+  (safetensors + SHA-256, `COMPAT_MODEL_DIR`). The `compat` term exists only while `gate.json` is open; `closet-worker compat-eval`
+  opens it only if rules+model beat rules on ≥30 logged picks. With it closed, scores are unchanged. Never add reason text for it.
 
 ## Style profile (Phase 4)
 - `analyze_profile`: MediaPipe Face and Pose (`vision/landmarks.py`; models cached in ~/.cache/closet) → `skin.py`

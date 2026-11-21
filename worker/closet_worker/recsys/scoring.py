@@ -216,16 +216,24 @@ class Score:
 
 
 def score(
-    o: Outfit, ctx: Context, h: History, shift: int = 0, profile: dict[str, Any] | None = None
+    o: Outfit,
+    ctx: Context,
+    h: History,
+    shift: int = 0,
+    profile: dict[str, Any] | None = None,
+    compat: float | None = None,
 ) -> Score:
+    """`compat` is the outfit model's term; pass it only while its gate is open (compat.py)."""
     w = weights()
-    parts = {
+    parts: dict[str, tuple[float, list[Reason]]] = {
         "harmony": harmony(o),
         "palette": palette_fit(o, profile),
         "formality": formality(o, ctx, shift),
         "weather": weather(o, ctx),
         "freshness": freshness(o, ctx, h),
     }
+    if compat is not None:
+        parts["compat"] = (compat, [])  # no reason text: the model can't say why
     terms = {k: round(v[0], 4) for k, v in parts.items()}
     total = sum(w.get(k, 0.0) * v for k, v in terms.items())
     reasons = [

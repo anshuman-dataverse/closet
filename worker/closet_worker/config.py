@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     openai_model: str = ""
     paid_monthly_cap_usd: float = Field(default=0.0, ge=0)
     backup_dir: Path = Path("~/ClosetBackups")
+    # Outfit compatibility model files from colab/outfit_compat.ipynb (SPEC 5.11). Optional.
+    compat_model_dir: Path = Path("~/.cache/closet/compat")
 
     @field_validator("supabase_url")
     @classmethod
@@ -51,7 +53,7 @@ class Settings(BaseSettings):
             raise ValueError("SearXNG and Ollama must be on 127.0.0.1 or localhost")
         return v
 
-    @field_validator("backup_dir")
+    @field_validator("backup_dir", "compat_model_dir")
     @classmethod
     def _expand(cls, v: Path) -> Path:
         return v.expanduser()

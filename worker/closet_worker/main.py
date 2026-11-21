@@ -87,7 +87,12 @@ class Worker:
 
     def beat(self) -> None:
         caps = (
-            {"searxng": True, "ollama": False, "openai": False}
+            {
+                "searxng": True,
+                "ollama": False,
+                "openai": False,
+                "compat": {"installed": False, "on": False, "n": 0, "need": 30},
+            }
             if self.fake
             else capabilities.detect(self.s)
         )
@@ -135,7 +140,9 @@ class Worker:
 
 def cli() -> None:
     p = argparse.ArgumentParser(prog="closet-worker")
-    p.add_argument("command", nargs="?", default="run", choices=["run", "export-eval"])
+    p.add_argument(
+        "command", nargs="?", default="run", choices=["run", "export-eval", "compat-eval"]
+    )
     p.add_argument("--fake", action="store_true", help="return fixtures instead of running models")
     p.add_argument("--once", action="store_true", help="drain the queue once, then exit")
     p.add_argument("--out", default="~/ClosetPhotos/eval", help="export-eval: output folder")
@@ -159,6 +166,10 @@ def cli() -> None:
         print(f"Wrote {zip_path}. Check labels.csv, then upload the zip to Colab.")
         return
 
+    if args.command == "compat-eval":
+        _compat_eval(settings, items)
+        return
+
     worker = Worker(settings, queue, fake=args.fake, ctx=JobContext(settings=settings, items=items))
 
     def _stop(*_: object) -> None:
@@ -171,6 +182,28 @@ def cli() -> None:
         "closet-worker %s as %s%s", __version__, settings.worker_id, " (fake)" if args.fake else ""
     )
     worker.run(once=args.once)
+
+
+def _compat_eval(settings: Settings, items: SupabaseItemStore) -> None:
+    from .jobs.suggest_outfits import scorer_for
+    from .recsys.compat_eval import evaluate, summary, write_gate
+    from .recsys.model import Piece
+
+    scorer = scorer_for(JobContext(settings=settings, items=items), require_gate=False)
+    if scorer is None:
+        print(
+            f"No outfit model in {settings.compat_model_dir}. Copy compat_head.safetensors and "
+            "compat_config.json there from the Colab run (colab/README.md)."
+        )
+        return
+    r = evaluate(
+        [Piece.from_row(x) for x in items.list_items()],
+        items.list_suggestion_events(),
+        items.list_wear_logs(),
+        (items.get_profile() or {}).get("analysis"),
+        scorer,
+    )
+    print(summary(r, write_gate(settings.compat_model_dir, r)))
 
 
 if __name__ == "__main__":

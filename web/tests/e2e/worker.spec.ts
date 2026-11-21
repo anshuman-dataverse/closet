@@ -27,6 +27,7 @@ test("Mac offline → queued work waits → Mac back → ping round trip → Mac
   worker = startFakeWorker();
   await expect(pill).toBeHidden({ timeout: 30_000 });
   await expect(page.getByTestId("worker-state")).toHaveText("Online");
+  await expect(page.getByTestId("compat-state")).toHaveText("Not installed");
   await expect
     .poll(async () => (await admin.from("jobs").select("status").eq("user_id", OWNER.id)).data?.[0]?.status, {
       timeout: 20_000,

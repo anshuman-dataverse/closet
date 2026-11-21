@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isOffline, OFFLINE_AFTER_MS, readCapabilities, seenAgo } from "./worker-status";
+import { compatText, isOffline, OFFLINE_AFTER_MS, readCapabilities, seenAgo } from "./worker-status";
 
 const NOW = Date.parse("2026-11-20T12:00:00Z");
 const ago = (ms: number) => new Date(NOW - ms).toISOString();
@@ -18,8 +18,31 @@ describe("isOffline", () => {
 
 describe("readCapabilities", () => {
   it("only trusts literal true", () => {
-    expect(readCapabilities({ searxng: true, ollama: "yes" })).toEqual({ searxng: true, ollama: false, openai: false });
-    expect(readCapabilities(null)).toEqual({ searxng: false, ollama: false, openai: false });
+    const off = { installed: false, on: false, n: 0, need: 30 };
+    expect(readCapabilities({ searxng: true, ollama: "yes" })).toEqual({
+      searxng: true,
+      ollama: false,
+      openai: false,
+      compat: off,
+    });
+    expect(readCapabilities(null)).toEqual({ searxng: false, ollama: false, openai: false, compat: off });
+    expect(readCapabilities({ compat: { installed: true, on: "yes", n: -2, need: 30 } }).compat).toEqual({
+      ...off,
+      installed: true,
+    });
+  });
+});
+
+describe("compatText", () => {
+  it("says off until the model has earned it", () => {
+    expect(compatText({ installed: false, on: false, n: 0, need: 30 })).toBe("Not installed");
+    expect(compatText({ installed: true, on: false, n: 12, need: 30 })).toBe(
+      "Off until it beats the rules on 30 of your logged outfits (12 so far)",
+    );
+    expect(compatText({ installed: true, on: false, n: 45, need: 30 })).toBe(
+      "Off: it didn’t beat the rules on your logged outfits",
+    );
+    expect(compatText({ installed: true, on: true, n: 45, need: 30 })).toBe("On");
   });
 });
 
