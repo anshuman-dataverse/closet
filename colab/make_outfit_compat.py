@@ -191,7 +191,7 @@ rows = [items[row_of[i]] for i in sample]
 imgs = [r["image"].convert("RGB") for r in rows]
 txts = [r["url_name"] or "" for r in rows]
 cos_i = (E.image(imgs) * ref_image(imgs)).sum(1)
-cos_t = (E.text(txts) * ref_text(txts)).sum(1)
+cos_t = (E.text(txts, max_length=64) * ref_text(txts)).sum(1)  # the author's encoder cuts at 64
 PARITY = {"image_min_cos": float(cos_i.min()), "text_min_cos": float(cos_t.min())}
 print(PARITY)
 assert cos_i.min() >= 0.999 and cos_t.min() >= 0.999, "embeddings differ: stop and investigate"
@@ -212,7 +212,7 @@ for s in tqdm(range(0, len(ids), B)):
     chunk = ids[s:s + B]
     rs = [items[row_of[i]] for i in chunk]
     iv = E.image([r["image"].convert("RGB") for r in rs])
-    tv = E.text([r["url_name"] or "" for r in rs])
+    tv = E.text([r["url_name"] or "" for r in rs], max_length=64)  # as in training
     cv = E.text([r["category"] or "" for r in rs])
     for i, a, b, c in zip(chunk, iv, tv, cv):
         IMG[i], TXT[i], CAT[i] = a, b, c

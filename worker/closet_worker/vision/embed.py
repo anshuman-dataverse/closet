@@ -17,6 +17,7 @@ from PIL import Image
 FASHION_CLIP = "patrickjohncyh/fashion-clip"
 MARQO_SIGLIP = "Marqo/marqo-fashionSigLIP"
 MODELS = (FASHION_CLIP, MARQO_SIGLIP)
+CLIP_MAX_TOKENS = 77  # CLIP text position limit
 
 
 class Embedder(Protocol):
@@ -73,11 +74,16 @@ class HfClipEmbedder:
             f = _features(self.model.get_image_features(**x))
         return l2(f.detach().float().cpu().numpy())
 
-    def text(self, prompts: list[str]) -> NDArray[np.float32]:
+    def text(self, prompts: list[str], max_length: int = CLIP_MAX_TOKENS) -> NDArray[np.float32]:
+        """`truncation` alone doesn't cut: this tokenizer has no length set, so pass it."""
         with self._torch.no_grad():
-            x = self.proc(text=prompts, return_tensors="pt", padding=True, truncation=True).to(
-                self.device
-            )
+            x = self.proc(
+                text=prompts,
+                return_tensors="pt",
+                padding=True,
+                truncation=True,
+                max_length=max_length,
+            ).to(self.device)
             f = _features(self.model.get_text_features(**x))
         return l2(f.detach().float().cpu().numpy())
 

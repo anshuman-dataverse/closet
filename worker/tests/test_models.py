@@ -28,3 +28,15 @@ def test_real_pipeline_tags_a_shirt(model_id: str) -> None:
     assert s.status != "not_clothing"
     assert len(vec) == emb.dim
     print(model_id, s.name, s.type, round(s.confidence, 3), [a["type"] for a in s.alternatives])
+
+
+@pytest.mark.models
+def test_long_text_is_truncated_not_an_error() -> None:
+    from closet_worker.vision.embed import FASHION_CLIP, load_embedder
+
+    emb = load_embedder(FASHION_CLIP, "cpu")
+    long = " ".join(["very long product name"] * 60)  # well past 77 tokens
+    v = emb.text([long, "navy chinos"])
+    assert v.shape == (2, 512)
+    short = emb.text([long], max_length=64)  # type: ignore[call-arg]
+    assert short.shape == (1, 512)
