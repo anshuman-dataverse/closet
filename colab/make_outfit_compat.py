@@ -84,6 +84,18 @@ if not all((code_dir / n).exists() for n in need):
     for n, data in files.upload().items():
         (code_dir / n).write_bytes(data)
 assert all((code_dir / n).exists() for n in need), f"upload {need}"
+# A saved copy (Drive or an earlier upload) can be out of date: check, and ask again if so.
+def current(n):
+    t = (code_dir / n).read_text()
+    return "max_length" in t if n == "embed.py" else "def head_state" in t
+for n in need:
+    if not current(n):
+        print(f"{n} is out of date (from Drive or an earlier upload). Upload the new one.")
+        for got, data in files.upload().items():
+            (code_dir / n).write_bytes(data)
+        if (src / n).exists():
+            (src / n).write_bytes((code_dir / n).read_bytes())  # refresh the Drive copy too
+    assert current(n), f"{n} is still out of date"
 sys.path.insert(0, str(code_dir))
 import compat_head, embed
 print({n: hashlib.sha256((code_dir / n).read_bytes()).hexdigest()[:12] for n in need})
