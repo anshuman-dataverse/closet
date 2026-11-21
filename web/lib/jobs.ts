@@ -7,6 +7,7 @@ export type JobStatus = Database["public"]["Enums"]["job_status"];
 export type JobKind =
   | "ping"
   | "tag_item"
+  | "read_label"
   | "embed_wish"
   | "analyze_profile"
   | "suggest_outfits"

@@ -53,14 +53,17 @@ class MemoryStore:
     def upsert_embedding(self, item_id: str, model: str, vec: list[float]) -> None:
         self.embeddings[item_id] = (model, vec)
 
+    def get_profile(self) -> dict[str, Any]:
+        return {"wears": "menswear"}
+
 
 @pytest.fixture
 def ctx(settings: Settings) -> JobContext:
     return JobContext(settings=settings, items=MemoryStore())
 
 
-def vision() -> Vision:
-    emb = StubEmbedder("a photo of a oxford shirt")
+def vision(emb: StubEmbedder | None = None) -> Vision:
+    emb = emb or StubEmbedder("a photo of a oxford shirt")
     v = load_vocab()
     return Vision(StubCutter(), emb, TextBank(emb, v), Palette.from_dict(v.colors))  # type: ignore[arg-type]
 
@@ -113,3 +116,35 @@ def test_fake_mode_writes_fixture(ctx: JobContext) -> None:
     store: MemoryStore = ctx.items  # type: ignore[assignment]
     assert out["suggestions"]["name"] == "Navy oxford shirt"
     assert store.items[ITEM]["tags_status"] == "ready"
+
+
+def _gate(ctx: JobContext, *keys: str) -> None:
+    import json
+
+    p = ctx.settings.fit_gate_path
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps({"per_fit": {k: {"suggested": 9, "precision": 0.9} for k in keys}}))
+
+
+def _bottoms(ctx: JobContext) -> None:
+    assert ctx.items is not None
+    ctx.items.items[ITEM].update(category="Bottoms", type="jeans")  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize(
+    ("target", "gate", "want"),
+    [
+        ("a photo of baggy wide leg jeans", [], None),  # gate closed: never suggested
+        ("a photo of baggy wide leg jeans", ["bottoms/wide"], "wide"),  # both reads agree
+        ("a photo of flared jeans", ["bottoms/flare"], None),  # outline says wide: no guess
+        ("a photo of baggy wide leg jeans", ["bottoms/flare"], None),  # wide not measured yet
+    ],
+)
+def test_fit_only_when_measured_and_agreed(
+    ctx: JobContext, target: str, gate: list[str], want: str | None
+) -> None:
+    _bottoms(ctx)
+    if gate:
+        _gate(ctx, *gate)
+    out = tag_item.run({"item_id": ITEM}, ctx, vision(StubEmbedder(target=target)))
+    assert out["suggestions"].get("fit") == want

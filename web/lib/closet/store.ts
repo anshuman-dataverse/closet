@@ -191,13 +191,15 @@ export async function setItemsStatus(ids: readonly string[], status: ItemStatus)
 }
 
 /** Deletes the piece, its files, and removes it from outfits (cascade). */
+export const labelThumb = (p: string | null | undefined) => (p ? p.replace(/\.jpg$/, "_thumb.jpg") : null);
+
 export async function deleteItem(id: string): Promise<void> {
   const db = supabase();
   const it = state.items.find((i) => i.id === id);
   if (!it) return;
   const { error } = await db.from("items").delete().eq("id", id);
   if (error) fail(error, "Couldn’t delete that piece. Try again.");
-  const files = [it.photo_path, it.thumb_path, it.cutout_path];
+  const files = [it.photo_path, it.thumb_path, it.cutout_path, it.label_path, labelThumb(it.label_path)];
   dropSignedUrls(files);
   void removePaths(db, files);
   set({
@@ -311,6 +313,19 @@ export async function requestTagging(itemId: string, photoPath?: string, timeout
   const db = supabase();
   const job = await enqueueJob(db, "tag_item", { item_id: itemId, ...(photoPath ? { photo_path: photoPath } : {}) }, 5);
   set({ items: state.items.map((i) => (i.id === itemId ? { ...i, tags_status: "pending" } : i)) });
+  if (timeoutMs <= 0) return null;
+  const done = await waitForJob(db, job.id, { timeoutMs });
+  if (done && (done.status === "done" || done.status === "failed")) {
+    await refreshItem(itemId);
+    return done;
+  }
+  return null;
+}
+
+/** Asks the Mac to read the piece's label photo. Same waiting rules as requestTagging. */
+export async function requestLabelRead(itemId: string, labelPath: string, timeoutMs = 20_000): Promise<JobRow | null> {
+  const db = supabase();
+  const job = await enqueueJob(db, "read_label", { item_id: itemId, label_path: labelPath }, 5);
   if (timeoutMs <= 0) return null;
   const done = await waitForJob(db, job.id, { timeoutMs });
   if (done && (done.status === "done" || done.status === "failed")) {

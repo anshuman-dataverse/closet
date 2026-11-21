@@ -30,10 +30,28 @@ The notebook is generated from `colab/make_outfit_compat.py`. Edit that file, th
    in `MyDrive/closet/code/` (or upload them when the notebook asks).
 2. Open `colab/outfit_compat.ipynb` in Colab with a T4 GPU. Run all cells once with `QUICK = 500`
    to check that everything works, then set `QUICK = 0` and run again for the real numbers (1–2 hours).
-3. If the verdict says OK, it writes `compat_head.safetensors`, `compat_config.json` and
-   `MODEL_CARD.md` to `MyDrive/closet/compat/`. Copy them to `~/.cache/closet/compat/` on the Mac.
+3. If the verdict says OK, it saves the files to `MyDrive/closet/compat/` and downloads
+   `closet-outfit-model-<date>.zip`. Put the zip in `colab/outputs/`, then on the Mac run
+   `cd worker && uv run closet-worker import ../colab/outputs/closet-outfit-model-<date>.zip`.
 4. On the Mac, run `cd worker && uv run closet-worker compat-eval`. It replays your logged outfits
    and turns the model on only if it beats rules alone on at least 30 of them. Rerun it as you log more.
 
 Safety: the author’s `.pth` checkpoint is a pickle, so it’s opened only in Colab, with
 `weights_only=True`. The Mac loads only the safetensors head, after a SHA-256 check.
+
+## Importing results (`closet-worker import`)
+
+Every notebook ends with one zip containing a `manifest.json` that lists each file's SHA-256.
+`closet-worker import <zip>` checks those checksums, refuses unexpected files, and installs:
+- the outfit model → `~/.cache/closet/compat/`. A new model starts off: rerun `compat-eval`.
+- fit results → `~/.cache/closet/fit/gate.json`. It turns on only the fits that passed.
+
+The worker reads these on its next job, so no restart is needed. `colab/outputs/` is gitignored.
+
+## Fit labels
+
+`export-eval` adds a `fit` column to `labels.csv`, filled from what you set in the app, and adds it
+to an older file without touching your edits. Use the ids or labels from
+`worker/closet_worker/vocab/fits.yaml`, for example `slim`, `oversized`, `flare`, or
+`Wide or baggy`. Leave it blank when you're not sure. The eval also runs on the Mac, no Colab:
+`cd worker && uv run python -m eval.tagging --data ~/ClosetPhotos/eval`.

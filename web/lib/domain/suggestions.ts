@@ -3,6 +3,7 @@
 import type { Category } from "@/lib/closet/types";
 import { CATEGORIES } from "@/lib/closet/types";
 import { isOccasion, type Occasion } from "@/lib/occasions";
+import { fitLabel, keepFit } from "./fit";
 
 export type TagStatus = "ready" | "unsure" | "not_clothing";
 
@@ -16,6 +17,8 @@ export type Suggestion = {
   formality: number | null;
   warmth: "light" | "medium" | "warm" | null;
   occasions: Occasion[];
+  /** Only present when the Mac's fit check passed for this fit on your own photos. */
+  fit: string;
   status: TagStatus;
 };
 
@@ -40,6 +43,7 @@ export function parseSuggestion(raw: unknown): Suggestion | null {
     formality: Number.isInteger(f) && f >= 1 && f <= 5 ? f : null,
     warmth,
     occasions: Array.isArray(r.occasions) ? r.occasions.filter(isOccasion) : [],
+    fit: typeof r.fit === "string" && category ? keepFit(category, r.fit) : "",
     status,
   };
 }
@@ -54,6 +58,7 @@ export type SuggestableForm = {
   occasions: Occasion[];
   formality: string;
   warmth: string;
+  fit: string;
 };
 export type SuggestableKey = keyof SuggestableForm;
 export const SUGGESTABLE: readonly SuggestableKey[] = [
@@ -65,6 +70,7 @@ export const SUGGESTABLE: readonly SuggestableKey[] = [
   "occasions",
   "formality",
   "warmth",
+  "fit",
 ];
 
 const asForm = (s: Suggestion): SuggestableForm => ({
@@ -76,6 +82,7 @@ const asForm = (s: Suggestion): SuggestableForm => ({
   occasions: s.occasions,
   formality: s.formality ? String(s.formality) : "",
   warmth: s.warmth ?? "",
+  fit: s.fit,
 });
 
 /** Fill only the fields you haven't touched. Not-clothing suggestions change nothing. */
@@ -94,6 +101,11 @@ export function mergeSuggestions<F extends SuggestableForm>(
     if (touched.has(k) || empty) continue;
     (next as SuggestableForm)[k] = v as never;
     filled.push(k);
+  }
+  // A suggested fit only stands if it belongs to the category the form ended up with.
+  if (filled.includes("fit") && !keepFit(next.category, next.fit)) {
+    next.fit = form.fit;
+    filled.splice(filled.indexOf("fit"), 1);
   }
   return { form: next, filled };
 }
@@ -125,6 +137,7 @@ const LABEL: Record<SuggestableKey, string> = {
   occasions: "Good for",
   formality: "Formality",
   warmth: "Warmth",
+  fit: "Fit",
 };
 
 export type SuggestionChange = { key: SuggestableKey; label: string; value: string; current: string; empty: boolean };
@@ -133,10 +146,11 @@ export type SuggestionChange = { key: SuggestableKey; label: string; value: stri
 export function suggestionChanges(current: SuggestableForm, s: Suggestion): SuggestionChange[] {
   if (s.status === "not_clothing") return [];
   const src = asForm(s);
-  const show = (k: SuggestableKey, v: SuggestableForm[SuggestableKey]) => (Array.isArray(v) ? v.join(", ") : String(v));
+  const show = (k: SuggestableKey, v: SuggestableForm[SuggestableKey], c: SuggestableForm) =>
+    Array.isArray(v) ? v.join(", ") : k === "fit" ? fitLabel(c.category, String(v)) : String(v);
   return SUGGESTABLE.flatMap((k) => {
-    const v = show(k, src[k]);
-    const c = show(k, current[k]);
+    const v = show(k, src[k], src);
+    const c = show(k, current[k], current);
     if (!v || v.toLowerCase() === c.toLowerCase()) return [];
     return [{ key: k, label: LABEL[k], value: v, current: c, empty: !c }];
   });

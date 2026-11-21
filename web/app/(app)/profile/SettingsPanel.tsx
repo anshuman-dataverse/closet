@@ -7,6 +7,7 @@ import { useToast } from "@/components/Toast";
 import { deleteAllData, saveProfile, useCloset } from "@/lib/closet/store";
 import type { Profile } from "@/lib/closet/types";
 import { centsToInput, parseDollars } from "@/lib/domain/money";
+import { isWears, WEARS } from "@/lib/domain/fit";
 import { findPlaces, type Place } from "@/lib/geocode";
 
 type Sizes = { top?: string; waist?: string; inseam?: string; shoe?: string };
@@ -27,6 +28,7 @@ function formFrom(p: Profile) {
     inseam: sz.inseam ?? "",
     shoe: sz.shoe ?? "",
     fit: p.fit_pref,
+    wears: p.wears ?? "",
     budget: centsToInput(p.monthly_budget_cents),
     cap: centsToInput(p.paid_monthly_cap_cents),
     stores: p.favorite_stores.join(", "),
@@ -69,6 +71,7 @@ function SettingsForm({ profile }: { profile: Profile }) {
       await saveProfile({
         sizes: { top: f.top.trim(), waist: f.waist.trim(), inseam: f.inseam.trim(), shoe: f.shoe.trim() },
         fit_pref: f.fit,
+        wears: isWears(f.wears) ? f.wears : null,
         monthly_budget_cents: budget,
         paid_monthly_cap_cents: cap,
         favorite_stores: [
@@ -173,6 +176,18 @@ function SettingsForm({ profile }: { profile: Profile }) {
           />
         </label>
       </div>
+      <label className="field">
+        <span>Clothes I mostly wear</span>
+        <select value={f.wears} onChange={(e) => set("wears", e.target.value)} data-testid="wears">
+          <option value="">Not set (show every fit)</option>
+          {WEARS.map((w) => (
+            <option key={w.id} value={w.id}>
+              {w.label}
+            </option>
+          ))}
+        </select>
+        <span className="hint">Only changes which fit choices you see when adding clothes.</span>
+      </label>
       <label className="field">
         <span>Fit preference</span>
         <select value={f.fit} onChange={(e) => set("fit", e.target.value)}>

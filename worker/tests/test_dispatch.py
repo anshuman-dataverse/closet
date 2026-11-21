@@ -17,6 +17,7 @@ from .conftest import MemoryQueue, job
 SCHEMA_KINDS = {
     "ping",
     "tag_item",
+    "read_label",
     "embed_wish",
     "analyze_profile",
     "suggest_outfits",

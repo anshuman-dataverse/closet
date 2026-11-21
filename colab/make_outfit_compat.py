@@ -31,7 +31,8 @@ really works before Closet uses it. It reports what it measures, nothing copied 
    parity check against the author's encoder.
 3. Measures compatibility AUC and fill-in-the-blank accuracy on the Polyvore test splits,
    plus two "closer to Closet" variants (short text; cut-out photos).
-4. Exports `compat_head.safetensors`, `compat_config.json` and `MODEL_CARD.md` to Drive.
+4. Exports `compat_head.safetensors`, `compat_config.json` and `MODEL_CARD.md` to Drive, plus
+   one zip to download for `closet-worker import`.
 
 **Data:** only the public Polyvore Outfits dataset (research use). No style photos and no keys
 are used here. Whether the model helps *you* is measured on the Mac by
@@ -370,7 +371,21 @@ FITB by compatibility scoring, so it isn't the same number).
 SHA-256 of compat_head.safetensors: {sha}
 \"\"\"
 (out / "MODEL_CARD.md").write_text(card)
-print("wrote", sorted(p.name for p in out.iterdir()), sha)
+
+# One zip for the Mac (same format as worker/closet_worker/bundle.py): download it, put it in
+# colab/outputs/, then run: cd worker && uv run closet-worker import ../colab/outputs/<zip>
+import zipfile, datetime
+names = ["compat_head.safetensors", "compat_config.json", "MODEL_CARD.md"]
+manifest = {"kind": "compat", "version": 1,
+            "created_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "files": {n: hashlib.sha256((out / n).read_bytes()).hexdigest() for n in names}}
+zip_path = out / f"closet-outfit-model-{datetime.date.today().isoformat()}.zip"
+with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+    z.writestr("manifest.json", json.dumps(manifest, indent=2) + "\\n")
+    for n in names:
+        z.write(out / n, n)
+print("wrote", zip_path, f"{zip_path.stat().st_size / 1e6:.0f} MB", sha)
+files.download(str(zip_path))
 """)
 
 

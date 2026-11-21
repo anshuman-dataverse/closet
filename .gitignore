@@ -35,3 +35,6 @@ Photos-*/
 *.MP4
 *.mov
 *.MOV
+
+# Colab result zips (import with closet-worker import)
+colab/outputs/

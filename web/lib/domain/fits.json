@@ -1,0 +1,224 @@
+{
+ "groups": {
+  "tops": {
+   "categories": [
+    "Tops",
+    "Layers"
+   ],
+   "fits": [
+    {
+     "id": "slim",
+     "label": "Slim",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "slim fit",
+     "shape": "narrow"
+    },
+    {
+     "id": "regular",
+     "label": "Regular",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "regular fit",
+     "shape": "regular"
+    },
+    {
+     "id": "relaxed",
+     "label": "Relaxed",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "relaxed fit",
+     "shape": null
+    },
+    {
+     "id": "oversized",
+     "label": "Oversized",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "oversized",
+     "shape": "wide"
+    },
+    {
+     "id": "fitted",
+     "label": "Fitted",
+     "wears": [
+      "womenswear"
+     ],
+     "prompt": "fitted",
+     "shape": "narrow"
+    },
+    {
+     "id": "cropped",
+     "label": "Cropped",
+     "wears": [
+      "womenswear"
+     ],
+     "prompt": "cropped",
+     "shape": "short"
+    }
+   ]
+  },
+  "bottoms": {
+   "categories": [
+    "Bottoms"
+   ],
+   "fits": [
+    {
+     "id": "skinny",
+     "label": "Skinny",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "skinny",
+     "shape": "taper"
+    },
+    {
+     "id": "slim",
+     "label": "Slim",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "slim fit",
+     "shape": "taper"
+    },
+    {
+     "id": "straight",
+     "label": "Straight",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "straight leg",
+     "shape": "straight"
+    },
+    {
+     "id": "relaxed",
+     "label": "Relaxed",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "relaxed fit",
+     "shape": null
+    },
+    {
+     "id": "wide",
+     "label": "Wide or baggy",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "baggy wide leg",
+     "shape": "wide"
+    },
+    {
+     "id": "bootcut",
+     "label": "Bootcut",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "bootcut",
+     "shape": "flare"
+    },
+    {
+     "id": "flare",
+     "label": "Flared",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "flared",
+     "shape": "flare"
+    },
+    {
+     "id": "barrel",
+     "label": "Barrel",
+     "wears": [
+      "womenswear"
+     ],
+     "prompt": "barrel leg",
+     "shape": null
+    }
+   ]
+  },
+  "sets": {
+   "categories": [
+    "Sets & suits"
+   ],
+   "fits": [
+    {
+     "id": "slim",
+     "label": "Slim",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "slim fit",
+     "shape": null
+    },
+    {
+     "id": "regular",
+     "label": "Regular",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "regular fit",
+     "shape": null
+    },
+    {
+     "id": "relaxed",
+     "label": "Relaxed",
+     "wears": [
+      "menswear",
+      "womenswear"
+     ],
+     "prompt": "relaxed fit",
+     "shape": null
+    },
+    {
+     "id": "bodycon",
+     "label": "Bodycon",
+     "wears": [
+      "womenswear"
+     ],
+     "prompt": "bodycon",
+     "shape": null
+    },
+    {
+     "id": "a-line",
+     "label": "A-line",
+     "wears": [
+      "womenswear"
+     ],
+     "prompt": "a-line",
+     "shape": null
+    },
+    {
+     "id": "shift",
+     "label": "Shift",
+     "wears": [
+      "womenswear"
+     ],
+     "prompt": "shift",
+     "shape": null
+    }
+   ]
+  }
+ },
+ "gate": {
+  "min_precision": 0.7,
+  "min_n": 5
+ }
+}

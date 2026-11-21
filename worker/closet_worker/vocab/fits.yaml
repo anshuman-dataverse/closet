@@ -1,0 +1,42 @@
+# Fit choices (one tap in Add clothes / Edit). Which list you see depends on the piece's category
+# and on "Clothes I mostly wear" in your profile. Fit never applies to shoes or accessories.
+# `prompt` is the phrase the photo check puts before the type ("flared" → "flared jeans").
+# `shape` names the outline rule in vision/fit.py that can confirm it (null = photo model only).
+# Exported to web/lib/domain/fits.json by scripts/export-style-data.py.
+
+groups:
+  tops:
+    categories: [Tops, Layers]
+    fits:
+      - {id: slim, label: Slim, wears: [menswear, womenswear], prompt: "slim fit", shape: narrow}
+      - {id: regular, label: Regular, wears: [menswear, womenswear], prompt: "regular fit", shape: regular}
+      - {id: relaxed, label: Relaxed, wears: [menswear, womenswear], prompt: "relaxed fit", shape: null}
+      - {id: oversized, label: Oversized, wears: [menswear, womenswear], prompt: "oversized", shape: wide}
+      - {id: fitted, label: Fitted, wears: [womenswear], prompt: "fitted", shape: narrow}
+      - {id: cropped, label: Cropped, wears: [womenswear], prompt: "cropped", shape: short}
+  bottoms:
+    categories: [Bottoms]
+    fits:
+      - {id: skinny, label: Skinny, wears: [menswear, womenswear], prompt: "skinny", shape: taper}
+      - {id: slim, label: Slim, wears: [menswear, womenswear], prompt: "slim fit", shape: taper}
+      - {id: straight, label: Straight, wears: [menswear, womenswear], prompt: "straight leg", shape: straight}
+      - {id: relaxed, label: Relaxed, wears: [menswear, womenswear], prompt: "relaxed fit", shape: null}
+      - {id: wide, label: Wide or baggy, wears: [menswear, womenswear], prompt: "baggy wide leg", shape: wide}
+      - {id: bootcut, label: Bootcut, wears: [menswear, womenswear], prompt: "bootcut", shape: flare}
+      - {id: flare, label: Flared, wears: [menswear, womenswear], prompt: "flared", shape: flare}
+      - {id: barrel, label: Barrel, wears: [womenswear], prompt: "barrel leg", shape: null}
+  sets:
+    categories: ["Sets & suits"]
+    fits:
+      - {id: slim, label: Slim, wears: [menswear, womenswear], prompt: "slim fit", shape: null}
+      - {id: regular, label: Regular, wears: [menswear, womenswear], prompt: "regular fit", shape: null}
+      - {id: relaxed, label: Relaxed, wears: [menswear, womenswear], prompt: "relaxed fit", shape: null}
+      - {id: bodycon, label: Bodycon, wears: [womenswear], prompt: "bodycon", shape: null}
+      - {id: a-line, label: A-line, wears: [womenswear], prompt: "a-line", shape: null}
+      - {id: shift, label: Shift, wears: [womenswear], prompt: "shift", shape: null}
+
+# A suggested fit is shown only after the tagging eval measured it on your own labeled photos:
+# right at least this often, over at least `min_n` suggestions (see eval/tagging.py).
+gate:
+  min_precision: 0.70
+  min_n: 5

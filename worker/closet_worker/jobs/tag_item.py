@@ -12,6 +12,7 @@ from PIL import Image
 from closet_worker.vision.color import Palette
 from closet_worker.vision.cutout import Cutter
 from closet_worker.vision.embed import Embedder, load_embedder
+from closet_worker.vision.fit import gate_key, guess_fit, read_gate
 from closet_worker.vision.tagger import TextBank, tag
 from closet_worker.vocab import load_vocab
 
@@ -71,8 +72,35 @@ def run(
     sug, vec = tag(cut.crop, cut.rgb, cut.mask, v.emb, v.bank, v.palette)
     ctx.items.upsert_embedding(item_id, v.emb.model_id, [float(x) for x in vec])
 
-    fields: dict[str, Any] = {"suggestions": sug.to_json(), "tags_status": sug.status}
+    sug_json = sug.to_json()
+    if isinstance(item.get("suggestions"), dict) and "label" in item["suggestions"]:
+        sug_json["label"] = item["suggestions"]["label"]  # keep the label read
+    fit = suggested_fit(ctx, item, sug_json, vec, cut.mask, v.emb)
+    if fit:
+        sug_json["fit"] = fit
+    fields: dict[str, Any] = {"suggestions": sug_json, "tags_status": sug.status}
     if photo == item.get("photo_path"):  # the saved photo: the cutout belongs to the item now
         fields["cutout_path"] = cut_path
     ctx.items.update_item(item_id, fields)
-    return {"suggestions": sug.to_json(), "cutout_path": cut_path, "photo_path": photo}
+    return {"suggestions": sug_json, "cutout_path": cut_path, "photo_path": photo}
+
+
+def suggested_fit(
+    ctx: JobContext,
+    item: dict[str, Any],
+    sug: dict[str, Any],
+    vec: Any,
+    mask: Any,
+    emb: Embedder,
+) -> str | None:
+    """A fit only when the eval measured that fit as reliable on your photos; else nothing."""
+    enabled = read_gate(ctx.settings.fit_gate_path, emb.model_id)
+    if not enabled or sug.get("status") == "not_clothing" or ctx.items is None:
+        return None
+    category = item.get("category") or sug.get("category")
+    kind = str(item.get("type") or sug.get("type") or "")
+    wears = (ctx.items.get_profile() or {}).get("wears")
+    g = guess_fit(vec, mask, category, kind, wears, emb)
+    if g is None or g.fit is None or gate_key(category, g.fit) not in enabled:
+        return None
+    return g.fit

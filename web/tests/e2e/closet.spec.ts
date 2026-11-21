@@ -90,3 +90,57 @@ test("a photo that can't be decoded explains what to do", async ({ page, signIn 
     .setInputFiles({ name: "x.jpg", mimeType: "image/jpeg", buffer: Buffer.from("nope") });
   await expect(sheet.getByRole("alert").first()).toHaveText("That photo couldn’t be opened. Try a JPEG or PNG.");
 });
+
+test("fit choices follow the category and what you wear", async ({ page, signIn }) => {
+  await signIn("/closet");
+  await page.getByRole("button", { name: "Add your first piece" }).click();
+  const sheet = page.getByRole("dialog", { name: "Add clothes" });
+  // Take photo opens the camera on a phone; Choose photo opens the library.
+  await expect(sheet.getByTestId("camera-input")).toHaveAttribute("capture", "environment");
+  await expect(sheet.getByRole("button", { name: "Take photo" })).toBeVisible();
+  await expect(sheet.getByRole("button", { name: "Choose photo" })).toBeVisible();
+
+  await sheet.getByLabel("Name").fill("Wide jeans");
+  await sheet.getByLabel("Category").selectOption("Bottoms");
+  const fit = sheet.getByRole("group", { name: "Fit" });
+  await expect(fit.getByRole("button", { name: "Not sure" })).toHaveAttribute("aria-pressed", "true");
+  await expect(fit.getByRole("button", { name: "Barrel" })).toBeVisible(); // no answer yet: every choice
+  await fit.getByRole("button", { name: "Wide or baggy" }).click();
+  await expect(fit.getByRole("button", { name: "Wide or baggy" })).toHaveAttribute("aria-pressed", "true");
+  await sheet.getByRole("button", { name: "Add to closet" }).click();
+  await expect(sheet).toBeHidden();
+  const row = await admin.from("items").select("fit").eq("user_id", OWNER.id).single();
+  expect(row.data?.fit).toBe("wide");
+
+  // Shoes have no fit; switching away drops a fit that no longer applies.
+  await page.getByRole("button", { name: /Wide jeans/ }).click();
+  const edit = page.getByRole("dialog", { name: "Wide jeans" });
+  await expect(edit.getByRole("group", { name: "Fit" }).getByRole("button", { name: "Wide or baggy" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await edit.getByLabel("Category").selectOption("Shoes");
+  await expect(edit.getByRole("group", { name: "Fit" })).toBeHidden();
+  await edit.getByLabel("Category").selectOption("Tops");
+  await expect(edit.getByRole("group", { name: "Fit" }).getByRole("button", { name: "Not sure" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await edit.getByRole("button", { name: "Save changes" }).click();
+  await expect(edit).toBeHidden();
+  const after = await admin.from("items").select("fit, category").eq("user_id", OWNER.id).single();
+  expect(after.data).toEqual({ fit: null, category: "Tops" });
+
+  // "Clothes I mostly wear: Menswear" hides womenswear-only choices.
+  await page.goto("/profile");
+  const settings = page.getByRole("region", { name: "Settings" });
+  await settings.getByLabel("Clothes I mostly wear").selectOption("menswear");
+  await settings.getByRole("button", { name: "Save settings" }).click();
+  await expect(page.getByRole("status").filter({ hasText: /saved/i })).toBeVisible();
+  await page.goto("/closet?add=1");
+  const add = page.getByRole("dialog", { name: "Add clothes" });
+  await add.getByLabel("Category").selectOption("Bottoms");
+  const menswear = add.getByRole("group", { name: "Fit" });
+  await expect(menswear.getByRole("button", { name: "Flared" })).toBeVisible();
+  await expect(menswear.getByRole("button", { name: "Barrel" })).toBeHidden();
+});

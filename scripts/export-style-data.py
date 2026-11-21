@@ -1,7 +1,8 @@
 """Export the worker's style tables and golden values for the web palette checker.
 
 Run from the repo root:  (cd worker && uv run python ../scripts/export-style-data.py)
-Writes web/lib/style/data.json (tables) and web/lib/style/golden.json (expected outputs from the Python code).
+Writes web/lib/style/data.json (tables), web/lib/style/golden.json (expected outputs from the
+Python code) and web/lib/domain/fits.json (fit choices from vocab/fits.yaml).
 """
 
 from __future__ import annotations
@@ -74,7 +75,11 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "data.json").write_text(json.dumps(tables(), indent=1, ensure_ascii=False) + "\n")
     (OUT / "golden.json").write_text(json.dumps(golden(), indent=1, ensure_ascii=False) + "\n")
-    print("wrote", OUT / "data.json", "and golden.json")
+    fits = load("fits.yaml")
+    (ROOT / "web" / "lib" / "domain" / "fits.json").write_text(
+        json.dumps(fits, indent=1, ensure_ascii=False) + "\n"
+    )
+    print("wrote", OUT / "data.json", "golden.json and web/lib/domain/fits.json")
 
 
 if __name__ == "__main__":

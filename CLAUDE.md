@@ -27,7 +27,7 @@ Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Ve
   except that the owner may insert queued jobs and delete queued ones. Views use `security_invoker`.
 - `claim_job` / `requeue_stale_jobs` are service-role only. The worker filters every query by OWNER_USER_ID.
 - Job kinds are listed in 3 places that must match: the `jobs.kind` check, `worker/closet_worker/jobs/__init__.py` REGISTRY,
-  and `web/lib/jobs.ts` JobKind. `ping` is extra (the round-trip test).
+  and `web/lib/jobs.ts` JobKind. `ping` is extra (the round-trip test). Also `KIND_LABEL` in WorkerStatus.tsx.
 - `wishlist_items.check` from the spec is named `check_result` (CHECK is reserved).
 - Next 16 with `cacheComponents`. Read `web/node_modules/next/dist/docs/` before using Next APIs. Middleware is `proxy.ts`.
   Don't call `Date.now()` or `new Date()` during render (it breaks the prerender). Use effects, `useSyncExternalStore`, or event handlers.
@@ -59,6 +59,15 @@ Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Ve
 - Web flow: picking a photo in Add clothes saves a draft row ("New piece"), queues `tag_item`, and waits 20 s. The draft is
   deleted on cancel. Suggestions fill only untouched fields (`lib/domain/suggestions.ts`). Saved pieces show `SuggestionBox`.
 - Keep sheets at a stable spot in the tree (one return with `{body}{sheet}`), or switching branches remounts them.
+
+## Fit and labels
+- Fit ids: `vocab/fits.yaml` (per category group, menswear/womenswear) → `web/lib/domain/fits.json` via
+  `scripts/export-style-data.py` (CI checks it's fresh). `items.fit` is a short id; `profiles.wears` only filters choices.
+- `vision/fit.py`: outline ratios (flat-lay mask) + FashionCLIP zero-shot; a guess only when they agree or the shape is silent.
+  tag_item suggests a fit only if `~/.cache/closet/fit/gate.json` (from the tagging eval, same embed model) passed it.
+- Labels: `read_label` job, Apple Vision OCR on the Mac (`vision/label.py`, PyObjC, darwin-only dep). Report only printed
+  facts: one size, one fit word, fibers summing to 100%. Writes `suggestions.label`; the web fills empty, untouched fields.
+- Colab results come back as zips with a SHA-256 manifest: `closet-worker import <zip>` (`bundle.py`). `colab/outputs/` is gitignored.
 
 ## Recommender (worker `recsys/`, no ML)
 - `candidates.py` (structure rules), `scoring.py` (harmony, palette=0 until Phase 4, formality, weather, freshness),

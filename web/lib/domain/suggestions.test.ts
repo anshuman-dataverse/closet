@@ -31,6 +31,7 @@ const blank: SuggestableForm = {
   occasions: [],
   formality: "",
   warmth: "",
+  fit: "",
 };
 
 describe("parseSuggestion", () => {
@@ -84,5 +85,28 @@ describe("review box", () => {
     const f = applyChanges({ ...blank, color_name: "Blue" }, s, ["type"]);
     expect(f.type).toBe("Oxford shirt");
     expect(f.color_name).toBe("Blue");
+  });
+});
+
+describe("fit suggestions", () => {
+  it("only fills a fit that belongs to the category", () => {
+    const s = parseSuggestion({ ...RAW, category: "Bottoms", type: "jeans", fit: "flare" })!;
+    expect(s.fit).toBe("flare");
+    expect(parseSuggestion({ ...RAW, fit: "flare" })!.fit).toBe(""); // flare isn't a top fit
+    expect(parseSuggestion({ ...RAW, fit: 7 })!.fit).toBe("");
+    const merged = mergeSuggestions({ ...blank, category: "Bottoms" }, new Set(["category"]), s);
+    expect(merged.form.fit).toBe("flare");
+    // You set Tops: the suggested pants fit doesn't carry over.
+    const kept = mergeSuggestions({ ...blank, category: "Tops" }, new Set(["category"]), s);
+    expect(kept.form.fit).toBe("");
+    expect(kept.filled).not.toContain("fit");
+    // A fit you picked is never replaced.
+    const mine = mergeSuggestions({ ...blank, category: "Bottoms", fit: "wide" }, new Set(["category", "fit"]), s);
+    expect(mine.form.fit).toBe("wide");
+  });
+  it("shows the fit label in the review box", () => {
+    const s = parseSuggestion({ ...RAW, category: "Bottoms", type: "jeans", fit: "wide" })!;
+    const ch = suggestionChanges({ ...blank, category: "Bottoms" }, s).find((c) => c.key === "fit");
+    expect(ch).toMatchObject({ label: "Fit", value: "Wide or baggy", empty: true });
   });
 });

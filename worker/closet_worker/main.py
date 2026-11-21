@@ -141,11 +141,12 @@ class Worker:
 def cli() -> None:
     p = argparse.ArgumentParser(prog="closet-worker")
     p.add_argument(
-        "command", nargs="?", default="run", choices=["run", "export-eval", "compat-eval"]
+        "command", nargs="?", default="run", choices=["run", "export-eval", "compat-eval", "import"]
     )
     p.add_argument("--fake", action="store_true", help="return fixtures instead of running models")
     p.add_argument("--once", action="store_true", help="drain the queue once, then exit")
     p.add_argument("--out", default="~/ClosetPhotos/eval", help="export-eval: output folder")
+    p.add_argument("zip", nargs="?", help="import: a results zip from Colab")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args()
     logging.basicConfig(
@@ -156,6 +157,9 @@ def cli() -> None:
         for name in ("httpx", "httpcore", "hpack"):
             logging.getLogger(name).setLevel(logging.WARNING)
     settings = load_settings()
+    if args.command == "import":
+        _import(settings, args.zip)
+        return
     queue = SupabaseQueue(settings)
     items = SupabaseItemStore(queue.db, settings.owner)
 
@@ -204,6 +208,29 @@ def _compat_eval(settings: Settings, items: SupabaseItemStore) -> None:
         scorer,
     )
     print(summary(r, write_gate(settings.compat_model_dir, r)))
+
+
+def _import(settings: Settings, zip_path: str | None) -> None:
+    from pathlib import Path
+
+    from .bundle import BundleError, install, read_bundle
+
+    if not zip_path:
+        raise SystemExit("Give the zip: closet-worker import colab/outputs/<file>.zip")
+    try:
+        b = read_bundle(Path(zip_path).expanduser())
+    except BundleError as e:
+        raise SystemExit(f"Not imported: {e}") from e
+    for p in install(b, settings.compat_model_dir, settings.fit_gate_path):
+        print("installed", p)
+    if b.kind == "compat":
+        print("The outfit model stays off until it’s measured: run closet-worker compat-eval.")
+    else:
+        from .vision.fit import read_gate
+
+        on = sorted(read_gate(settings.fit_gate_path))
+        print("Fit suggestions on for:", ", ".join(on) if on else "none yet (none passed)")
+    print("The worker reads these files on its next job: no restart needed.")
 
 
 if __name__ == "__main__":

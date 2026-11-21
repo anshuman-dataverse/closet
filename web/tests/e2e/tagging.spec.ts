@@ -104,3 +104,42 @@ test("closing Add clothes after picking a photo removes the draft and its files"
   const { count } = await admin.from("items").select("*", { count: "exact", head: true }).eq("user_id", OWNER.id);
   expect(count).toBe(0);
 });
+
+test("a label photo fills brand, size, fit and materials you left empty", async ({ page, signIn }) => {
+  test.setTimeout(90_000);
+  worker = startFakeWorker();
+  await waitForHeartbeat();
+  await signIn("/closet?add=1");
+  await macOnline(page);
+  const sheet = page.getByRole("dialog", { name: "Add clothes" });
+  await sheet.getByLabel("Name").fill("Work jeans");
+  await sheet.getByLabel("Category").selectOption("Bottoms");
+  await sheet.getByLabel("Size").fill("33"); // typed: the label won't replace it
+  await expect(sheet.getByRole("button", { name: "Take label photo" })).toBeVisible();
+  await expect(sheet.getByTestId("label-camera-input")).toHaveAttribute("capture", "environment");
+  await sheet.getByTestId("label-input").setInputFiles(FIXTURE);
+  await expect(sheet.getByTestId("label-hint")).toHaveText(
+    "Filled from the label: brand, fit (Relaxed) and materials. Check them.",
+    { timeout: 25_000 },
+  );
+  await expect(sheet.getByLabel("Brand")).toHaveValue("Levi's");
+  await expect(sheet.getByLabel("Size")).toHaveValue("33");
+  await expect(sheet.getByLabel("Notes")).toHaveValue("98% cotton, 2% elastane");
+  await expect(sheet.getByRole("group", { name: "Fit" }).getByRole("button", { name: "Relaxed" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await sheet.getByRole("button", { name: "Add to closet" }).click();
+  await expect(sheet).toBeHidden();
+  const row = await admin.from("items").select("brand, size, fit, notes, label_path").eq("user_id", OWNER.id).single();
+  expect(row.data).toMatchObject({ brand: "Levi's", size: "33", fit: "relaxed", notes: "98% cotton, 2% elastane" });
+  expect(row.data?.label_path).toMatch(new RegExp(`^${OWNER.id}/items/.+\\.jpg$`));
+
+  // Deleting the piece removes the label photo too.
+  await page.getByRole("button", { name: /Work jeans/ }).click();
+  const edit = page.getByRole("dialog", { name: "Work jeans" });
+  await expect(edit.getByTestId("label-hint")).toHaveText("Label photo saved.");
+  await edit.getByRole("button", { name: "Delete" }).click();
+  await edit.getByRole("button", { name: "Tap again to delete" }).click();
+  await expect.poll(ownerFiles).toEqual([]);
+});

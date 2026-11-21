@@ -1,7 +1,7 @@
 """`--fake` mode: no models. Jobs that need ML return fixtures; rule-only jobs run for real.
 
-`tag_item` and `check_wish` write their fixtures to the database like the real handlers,
-so the whole app flow runs in e2e tests.
+`tag_item` and `check_wish` write their fixtures to the database like the real handlers, and
+`read_label` parses fixed label text, so the whole app flow runs in e2e tests.
 """
 
 from __future__ import annotations
@@ -11,9 +11,20 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from closet_worker.jobs import analyze_profile, find_gaps, ping, suggest_outfits
+from closet_worker.jobs import analyze_profile, find_gaps, ping, read_label, suggest_outfits
 from closet_worker.jobs.context import JobContext
+from closet_worker.vision.label import Line
 from closet_worker.vision.style import build
+
+
+class FixtureLabelReader:
+    """Fixed label text instead of Apple's text recognition; the real parser still runs."""
+
+    LINES = ("W32 L30", "Relaxed fit", "98% Cotton 2% Elastane", "Machine wash cold")
+
+    def read(self, image: bytes) -> list[Line]:
+        return [Line("Levi's", 0.99, 0.15), *(Line(t, 0.95, 0.05) for t in self.LINES)]
+
 
 FIXTURES = Path(__file__).parent
 
@@ -53,6 +64,8 @@ def run(kind: str, payload: dict[str, Any], ctx: JobContext | None = None) -> di
                 item_id, {"suggestions": sug, "tags_status": sug.get("status", "ready")}
             )
         return {"suggestions": sug, "cutout_path": None, "photo_path": payload.get("photo_path")}
+    if kind == "read_label" and ctx and ctx.items:
+        return read_label.run(payload, ctx, FixtureLabelReader())
     if kind == "check_wish":
         res = _fixture("check_wish") or {}
         wish_id = str(payload.get("wish_id", ""))

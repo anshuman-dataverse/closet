@@ -42,6 +42,7 @@ export async function resetOwnerData() {
       monthly_budget_cents: 15000,
       sizes: {},
       fit_pref: "",
+      wears: null,
       favorite_stores: [],
       city_name: null,
       latitude: null,

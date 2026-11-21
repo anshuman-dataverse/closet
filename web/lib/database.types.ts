@@ -193,8 +193,10 @@ export type Database = {
           color_name: string | null;
           created_at: string;
           cutout_path: string | null;
+          fit: string | null;
           formality: number | null;
           id: string;
+          label_path: string | null;
           name: string;
           notes: string | null;
           occasions: Database["public"]["Enums"]["occasion"][];
@@ -222,8 +224,10 @@ export type Database = {
           color_name?: string | null;
           created_at?: string;
           cutout_path?: string | null;
+          fit?: string | null;
           formality?: number | null;
           id?: string;
+          label_path?: string | null;
           name: string;
           notes?: string | null;
           occasions?: Database["public"]["Enums"]["occasion"][];
@@ -250,8 +254,10 @@ export type Database = {
           color_name?: string | null;
           created_at?: string;
           cutout_path?: string | null;
+          fit?: string | null;
           formality?: number | null;
           id?: string;
+          label_path?: string | null;
           name?: string;
           notes?: string | null;
           occasions?: Database["public"]["Enums"]["occasion"][];
@@ -535,6 +541,7 @@ export type Database = {
           undertone_override: string | null;
           updated_at: string;
           user_id: string;
+          wears: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -555,6 +562,7 @@ export type Database = {
           undertone_override?: string | null;
           updated_at?: string;
           user_id?: string;
+          wears?: string | null;
         };
         Update: {
           analysis?: Json | null;
@@ -574,6 +582,7 @@ export type Database = {
           undertone_override?: string | null;
           updated_at?: string;
           user_id?: string;
+          wears?: string | null;
         };
         Relationships: [];
       };

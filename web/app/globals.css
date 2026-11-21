@@ -1417,6 +1417,17 @@ dialog.sheet::backdrop {
   border: 1px solid var(--line);
   font-size: 13px;
 }
+.photo-pick.label-pick {
+  grid-template-columns: 72px minmax(0, 1fr);
+  margin-top: 4px;
+}
+.photo-pick.label-pick.empty {
+  grid-template-columns: minmax(0, 1fr);
+}
+.photo-box.sm {
+  width: 72px;
+  height: 72px;
+}
 .photo-box img {
   width: 100%;
   height: 100%;

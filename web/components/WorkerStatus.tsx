@@ -8,6 +8,7 @@ import { type Capabilities, isOffline, readCapabilities } from "@/lib/worker-sta
 export const KIND_LABEL: Record<JobKind, string> = {
   ping: "Connection test",
   tag_item: "Reading a clothing photo",
+  read_label: "Reading a clothing label",
   embed_wish: "Reading a wishlist photo",
   analyze_profile: "Analyzing your style photos",
   suggest_outfits: "Outfit ideas",

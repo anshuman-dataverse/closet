@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -11,13 +12,15 @@ OWNER = "11111111-1111-1111-1111-111111111111"
 
 
 @pytest.fixture
-def settings(monkeypatch: pytest.MonkeyPatch) -> Settings:
-    # Isolate from any real worker/.env on this Mac.
+def settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Settings:
+    # Isolate from any real worker/.env and installed model files on this Mac.
     return Settings(
         _env_file=None,  # type: ignore[call-arg]
         supabase_url="http://127.0.0.1:55421",
         supabase_service_role_key="test",  # type: ignore[arg-type]
         owner_user_id=OWNER,  # type: ignore[arg-type]
+        compat_model_dir=tmp_path / "compat",
+        fit_gate_path=tmp_path / "fit" / "gate.json",
     )
 
 

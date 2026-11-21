@@ -13,6 +13,8 @@ import { useWorkerStatus } from "@/components/WorkerStatus";
 import {
   deleteItem,
   type ItemInput,
+  labelThumb,
+  requestLabelRead,
   requestTagging,
   saveItem,
   setItemsStatus,
@@ -22,6 +24,8 @@ import {
 import { CATEGORIES, type Category, type Item } from "@/lib/closet/types";
 import { NAMED, safeHex, swatchFor } from "@/lib/domain/colors";
 import { isYmd, lastWornText } from "@/lib/domain/dates";
+import { fitOptions, keepFit } from "@/lib/domain/fit";
+import { labelMessage, mergeLabel, parseLabel } from "@/lib/domain/label";
 import { centsToInput, formatCents, parseDollars } from "@/lib/domain/money";
 import { STARTERS, type Starter } from "@/lib/domain/starters";
 import {
@@ -34,7 +38,7 @@ import {
 } from "@/lib/domain/suggestions";
 import { costPerWear, NO_WEAR } from "@/lib/domain/wear";
 import { type Occasion, OCCASIONS } from "@/lib/occasions";
-import { preparePhoto, removePaths, uploadItemPhoto } from "@/lib/photos";
+import { preparePhoto, removePaths, uploadItemPhoto, uploadPhotoTo } from "@/lib/photos";
 import { supabase } from "@/lib/supabase/client";
 
 const FORMALITY = ["", "1 · Lounge", "2 · Casual", "3 · Smart casual", "4 · Business", "5 · Formal"];
@@ -49,6 +53,7 @@ export type Form = {
   occasions: Occasion[];
   formality: string;
   warmth: string;
+  fit: string;
   price: string;
   bought_on: string;
   brand: string;
@@ -66,6 +71,7 @@ const blank = (occ: Occasion[] = []): Form => ({
   occasions: occ,
   formality: "",
   warmth: "",
+  fit: "",
   price: "",
   bought_on: "",
   brand: "",
@@ -83,6 +89,7 @@ export const fromItem = (i: Item): Form => ({
   occasions: [...i.occasions],
   formality: i.formality ? String(i.formality) : "",
   warmth: i.warmth ?? "",
+  fit: i.fit ?? "",
   price: centsToInput(i.price_cents),
   bought_on: i.bought_on ?? "",
   brand: i.brand ?? "",
@@ -141,6 +148,7 @@ export function ItemSheet({
 
   const [dr, setDr] = useState<Draft>(() => fresh(null));
   const form = dr.form;
+  const fits = fitOptions(form.category, s.profile?.wears);
   const [upload, setUpload] = useState<Upload | null>(null);
   const [hint, setHint] = useState("");
   const [err, setErr] = useState("");
@@ -148,6 +156,12 @@ export function ItemSheet({
   const [reading, setReading] = useState(false);
   const [view, setView] = useState<"photo" | "cutout">("cutout");
   const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const labelFileRef = useRef<HTMLInputElement>(null);
+  const labelCameraRef = useRef<HTMLInputElement>(null);
+  const [label, setLabel] = useState<{ path: string; preview: string } | null>(null);
+  const [labelHint, setLabelHint] = useState("");
+  const [labelBusy, setLabelBusy] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const session = useRef(0);
   const uid = useId();
@@ -160,6 +174,9 @@ export function ItemSheet({
     if (open) {
       setDr(fresh(item, prefill));
       setUpload(null);
+      setLabel(null);
+      setLabelHint("");
+      setLabelBusy(false);
       setHint("");
       setErr("");
       setBusy(false);
@@ -177,7 +194,8 @@ export function ItemSheet({
     if (dr.mode === "add" && dr.saved === "draft") void deleteItem(dr.id).catch(() => {});
     if (dr.mode === "edit" && upload)
       void upload.promise.then((p) => removePaths(supabase(), [p.photo_path, p.thumb_path])).catch(() => {});
-  }, [open, dr.mode, dr.saved, dr.id, upload]);
+    if (dr.mode === "edit" && label) void removePaths(supabase(), [label.path, labelThumb(label.path)]).catch(() => {});
+  }, [open, dr.mode, dr.saved, dr.id, upload, label]);
 
   const set = <K extends keyof Form>(k: K, v: Form[K]) =>
     setDr((x) => ({
@@ -319,6 +337,62 @@ export function ItemSheet({
     }
   };
 
+  /** Label photo (optional): upload, make sure the piece exists, then let the Mac read it. */
+  const pickLabel = async (file: File | undefined) => {
+    if (!file || !s.userId) return;
+    const mine = session.current;
+    const uidNow = s.userId;
+    setLabelHint("Preparing the label photo…");
+    setErr("");
+    try {
+      const prepared = await preparePhoto(file);
+      const paths = await uploadPhotoTo(supabase(), `${uidNow}/items/${dr.id}`, prepared);
+      if (session.current !== mine) {
+        void removePaths(supabase(), [paths.photo_path, paths.thumb_path]);
+        return;
+      }
+      if (label) void removePaths(supabase(), [label.path, labelThumb(label.path)]); // replaced before saving
+      setLabel({ path: paths.photo_path, preview: prepared.previewUrl });
+      if (dr.mode === "add") {
+        const old = s.items.find((i) => i.id === dr.id);
+        await saveItem({
+          id: dr.id,
+          name: old?.name ?? (dr.form.name.trim() || "New piece"),
+          category: old?.category ?? dr.form.category,
+          occasions: old?.occasions ?? dr.form.occasions,
+          label_path: paths.photo_path,
+        });
+        setDr((x) => ({ ...x, saved: x.saved === "none" ? "draft" : x.saved }));
+      }
+      if (worker.offline) {
+        void requestLabelRead(dr.id, paths.photo_path, 0).catch(() => {});
+        return setLabelHint("Saved. Your Mac will read the label when it’s back.");
+      }
+      setLabelBusy(true);
+      setLabelHint("Reading the label…");
+      const job = await requestLabelRead(dr.id, paths.photo_path);
+      if (session.current !== mine) return;
+      if (!job) return setLabelHint("Still reading. Check the details again in a minute.");
+      if (job.status === "failed")
+        return setLabelHint("Your Mac couldn’t read this label. Fill in the details yourself.");
+      const read = parseLabel((job.result as { label?: unknown } | null)?.label);
+      if (!read) return setLabelHint("");
+      setDr((x) => {
+        const { form: merged, filled } = mergeLabel(x.form, new Set<string>(x.touched), read);
+        // The label is printed fact: what it filled counts as set, so a photo guess won't replace it.
+        setLabelHint(labelMessage(read, filled, x.form.category)); // idempotent, safe in an updater
+        return { ...x, form: merged, touched: [...new Set([...x.touched, ...(filled as SuggestableKey[])])] };
+      });
+    } catch (e) {
+      if (session.current === mine) {
+        setLabelHint("");
+        setErr((e as Error).message);
+      }
+    } finally {
+      if (session.current === mine) setLabelBusy(false);
+    }
+  };
+
   const save = async (again: boolean) => {
     const name = form.name.trim();
     if (!name) {
@@ -349,23 +423,28 @@ export function ItemSheet({
         occasions: form.occasions,
         formality: form.formality ? Number(form.formality) : null,
         warmth: (form.warmth || null) as ItemInput["warmth"],
+        fit: keepFit(form.category, form.fit) || null,
         price_cents: price,
         bought_on: isYmd(form.bought_on) ? form.bought_on : null,
         brand: form.brand.trim() || null,
         size: form.size.trim() || null,
         store: form.store.trim() || null,
         notes: form.notes.trim() || null,
+        label_path: label?.path ?? item?.label_path ?? null,
         ...(dr.mode === "edit" && photo ? { ...photo, cutout_path: newPhotoCutout } : {}),
         ...(dr.merged ? { suggestions: null } : {}),
       };
       const replaced = dr.mode === "edit" && photo && item ? [item.photo_path, item.thumb_path, item.cutout_path] : [];
+      if (dr.mode === "edit" && label && item?.label_path) replaced.push(item.label_path, labelThumb(item.label_path));
       const saved = await saveItem(input, replaced);
       setUpload(null);
+      setLabel(null);
       if (again) {
         toast("Added to your closet");
         session.current += 1;
         setDr((x) => ({ ...fresh(null), form: blank(x.form.occasions) }));
         setHint("");
+        setLabelHint("");
         setReading(false);
         nameRef.current?.focus();
       } else {
@@ -528,9 +607,30 @@ export function ItemSheet({
               e.target.value = "";
             }}
           />
-          <button type="button" className="btn sm" onClick={() => fileRef.current?.click()} disabled={reading}>
-            {preview || item?.photo_path ? "Change photo" : "Take or choose a photo"}
-          </button>
+          {/* capture opens the camera straight away on a phone; desktops show the file picker */}
+          <input
+            ref={cameraRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            hidden
+            data-testid="camera-input"
+            onChange={(e) => {
+              void pickPhoto(e.target.files?.[0]);
+              e.target.value = "";
+            }}
+          />
+          <div className="row">
+            <button type="button" className="btn sm" onClick={() => cameraRef.current?.click()} disabled={reading}>
+              Take photo
+            </button>
+            <button type="button" className="btn sm" onClick={() => fileRef.current?.click()} disabled={reading}>
+              Choose photo
+            </button>
+          </div>
+          {!preview && !item?.photo_path && (
+            <p className="hint">Lay it flat in daylight, whole piece in the frame, so fit can be read too.</p>
+          )}
           {editing && item!.photo_path && !preview && (
             <button
               type="button"
@@ -558,6 +658,71 @@ export function ItemSheet({
         </div>
       </div>
 
+      <fieldset className="field" aria-describedby={`${uid}-label-hint`}>
+        <legend>Label (optional)</legend>
+        <div className={`photo-pick label-pick${label ? "" : " empty"}`}>
+          {label ? (
+            <div className="photo-box sm">
+              <img src={label.preview} alt="Label photo" />
+            </div>
+          ) : null}
+          <div className="col">
+            <input
+              ref={labelFileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              data-testid="label-input"
+              onChange={(e) => {
+                void pickLabel(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <input
+              ref={labelCameraRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              hidden
+              data-testid="label-camera-input"
+              onChange={(e) => {
+                void pickLabel(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
+            <div className="row">
+              <button
+                type="button"
+                className="btn sm"
+                onClick={() => labelCameraRef.current?.click()}
+                disabled={labelBusy}
+              >
+                Take label photo
+              </button>
+              <button
+                type="button"
+                className="btn sm"
+                onClick={() => labelFileRef.current?.click()}
+                disabled={labelBusy}
+              >
+                Choose label photo
+              </button>
+            </div>
+            <p
+              id={`${uid}-label-hint`}
+              className={`hint${labelBusy ? " thinking" : ""}`}
+              aria-live="polite"
+              data-testid="label-hint"
+            >
+              {labelHint ||
+                (label || item?.label_path
+                  ? "Label photo saved."
+                  : "Brand, size, materials and fit are read from the label, if it has them.")}
+            </p>
+          </div>
+        </div>
+      </fieldset>
+
       <label className="field">
         <span>Name</span>
         <input
@@ -574,7 +739,18 @@ export function ItemSheet({
       <div className="field-row">
         <label className="field">
           <span>Category</span>
-          <select value={form.category} onChange={(e) => set("category", e.target.value as Category)}>
+          <select
+            value={form.category}
+            onChange={(e) => {
+              // A fit that doesn't fit the new category is dropped, without counting as your choice.
+              const c = e.target.value as Category;
+              setDr((x) => ({
+                ...x,
+                form: { ...x.form, category: c, fit: keepFit(c, x.form.fit) },
+                touched: x.touched.includes("category") ? x.touched : [...x.touched, "category"],
+              }));
+            }}
+          >
             {CATEGORIES.map((c) => (
               <option key={c}>{c}</option>
             ))}
@@ -592,6 +768,18 @@ export function ItemSheet({
           />
         </label>
       </div>
+      {fits.length > 0 && (
+        <fieldset className="field">
+          <legend>Fit</legend>
+          <Chips
+            label="Fit"
+            wrap
+            options={[...fits, { id: "", label: "Not sure" }]}
+            value={form.fit}
+            onChange={(id) => set("fit", id === form.fit ? "" : id)}
+          />
+        </fieldset>
+      )}
       <div className="field-row">
         <label className="field">
           <span>Color</span>
