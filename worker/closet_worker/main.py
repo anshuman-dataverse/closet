@@ -145,6 +145,9 @@ def cli() -> None:
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
     )
+    if not args.verbose:  # the claim loop polls every 3 s; keep routine HTTP lines out of the log
+        for name in ("httpx", "httpcore", "hpack"):
+            logging.getLogger(name).setLevel(logging.WARNING)
     settings = load_settings()
     queue = SupabaseQueue(settings)
     items = SupabaseItemStore(queue.db, settings.owner)
