@@ -38,6 +38,10 @@ The first model run (Phase 2) downloads about 1 GB.
 6. Note these down: the Project URL, the **publishable** key (for the web app), the **secret / service-role**
    key (worker only), and your user's id (Users list, for `OWNER_USER_ID`).
 
+**Email (set up):** production sends through Resend SMTP (`[remotes.production.auth.email.smtp]` in
+`supabase/config.toml`), so sign-in emails include the 6-digit code. The key lives only in `~/.closet/resend_smtp_key`.
+Apply config changes with `RESEND_SMTP_PASS="$(cat ~/.closet/resend_smtp_key)" supabase config push`.
+
 **Free-tier email note:** Supabase's built-in email sender only delivers to your Supabase organization's team
 addresses, a few times per hour, and won't accept a custom template. Without the template, emails carry only the
 link, not the 6-digit code. To get the code (needed inside the installed iPhone app), add custom SMTP under

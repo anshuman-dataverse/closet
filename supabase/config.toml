@@ -253,11 +253,11 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
-# Magic link + 6-digit code (the code works inside the installed iPhone app). Local stack only:
-# Supabase's free tier rejects custom templates unless the project uses its own SMTP (see README).
-# [auth.email.template.magic_link]
-# subject = "Your Closet sign-in code"
-# content_path = "./supabase/templates/magic_link.html"
+# Magic link + 6-digit code (the code works inside the installed iPhone app).
+# Production sends through Resend SMTP (below), which the free tier needs for custom templates.
+[auth.email.template.magic_link]
+subject = "Your Closet sign-in code"
+content_path = "./supabase/templates/magic_link.html"
 
 # Uncomment to customize email template
 # [auth.email.template.invite]
@@ -448,3 +448,14 @@ max_frequency = "1m0s"    # production keeps Supabase's 1-minute resend limit
 
 [remotes.production.storage.vector]
 enabled = false
+
+# Resend SMTP. The key is read from the environment at push time and never committed:
+#   RESEND_SMTP_PASS="$(cat ~/.closet/resend_smtp_key)" supabase config push
+[remotes.production.auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_SMTP_PASS)"
+admin_email = "onboarding@resend.dev"
+sender_name = "Closet"
