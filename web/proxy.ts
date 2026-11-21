@@ -6,7 +6,7 @@ import { sameHostUrl } from "@/lib/redirect";
 // Refreshes the Supabase session on every request, sends signed-out visitors to /login,
 // and signs out anyone whose email isn't ALLOWED_EMAIL (the server-side check from SPEC 9).
 
-const PUBLIC = ["/login", "/auth/"];
+const PUBLIC = ["/login", "/auth/", "/colors"];
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -51,7 +51,8 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     {
-      source: "/((?!_next/static|_next/image|favicon.ico|icon|apple-icon|manifest.webmanifest|icons/|robots.txt).*)",
+      source:
+        "/((?!_next/static|_next/image|favicon.ico|icon|apple-icon|manifest.webmanifest|icons/|mediapipe/|robots.txt).*)",
       // Router prefetches only fetch static shells (no user data: everything loads in the browser under RLS).
       // Redirecting them to /login during sign-out produced 404s, so they skip the proxy.
       missing: [

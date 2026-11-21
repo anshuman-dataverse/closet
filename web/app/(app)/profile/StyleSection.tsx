@@ -3,6 +3,7 @@
 
 import { useRef, useState } from "react";
 import { Chips } from "@/components/Chips";
+import { Swatches } from "@/components/Swatches";
 import { useToast } from "@/components/Toast";
 import { useWorkerStatus } from "@/components/WorkerStatus";
 import { addStylePhoto, removeStylePhoto, requestAnalysis, saveProfile, useCloset } from "@/lib/closet/store";
@@ -41,26 +42,6 @@ function Photo({ p }: { p: StylePhoto }) {
         {armed ? "Remove?" : "×"}
       </button>
     </li>
-  );
-}
-
-function Swatches({ title, items, id }: { title: string; items: Analysis["best"]; id: string }) {
-  if (!items.length) return null;
-  return (
-    <>
-      <h3 id={id}>{title}</h3>
-      <ul className="swatches" aria-labelledby={id}>
-        {items.map((c) => (
-          <li key={c.name} className="swatch">
-            <span className="sw-wrap" aria-hidden="true">
-              <span className="chip-sw" style={{ "--sw": c.hex } as React.CSSProperties} />
-            </span>
-            <span>{c.name}</span>
-            {c.why && <span className="sw-why">{c.why}</span>}
-          </li>
-        ))}
-      </ul>
-    </>
   );
 }
 

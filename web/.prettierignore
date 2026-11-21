@@ -4,3 +4,5 @@ playwright-report
 test-results
 pnpm-lock.yaml
 next-env.d.ts
+public/mediapipe
+lib/style/*.json

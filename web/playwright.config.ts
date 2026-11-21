@@ -24,6 +24,6 @@ export default defineConfig({
     url: `http://127.0.0.1:${PORT}/login`,
     timeout: 180_000,
     reuseExistingServer: !process.env.CI,
-    env: { ALLOWED_EMAIL: "owner@closet.test" },
+    env: { ALLOWED_EMAIL: "owner@closet.test", NEXT_PUBLIC_FAKE_DETECTOR: "1" }, // fake detector: e2e build only
   },
 });

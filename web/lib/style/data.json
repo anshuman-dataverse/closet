@@ -1,0 +1,1394 @@
+{
+ "thresholds": {
+  "undertone": {
+   "warm_min_hue": 58,
+   "cool_max_hue": 45,
+   "olive_max_a": 9,
+   "olive_b": [
+    12,
+    22
+   ]
+  },
+  "depth": {
+   "light_min_ita": 41,
+   "deep_max_ita": 10
+  },
+  "contrast": {
+   "low_below": 25,
+   "high_above": 45
+  },
+  "lighting": {
+   "dark_face_L": 35,
+   "cast_a": 8,
+   "warm_cast_b": 15,
+   "cool_cast_b": -10,
+   "blown_share": 0.05
+  },
+  "face_shape": {
+   "oblong_min_length": 1.45,
+   "round_max_length": 1.18,
+   "square_max_length": 1.3,
+   "wide_jaw": 0.88,
+   "round_jaw": 0.8,
+   "narrow_jaw": 0.78,
+   "wide_forehead": 0.92,
+   "narrow_forehead": 0.82,
+   "max_yaw": 0.12
+  },
+  "body": {
+   "broad_shoulders": 2.0,
+   "narrow_shoulders": 1.4,
+   "long_legs": 1.7,
+   "short_legs": 1.25,
+   "min_visibility": 0.5
+  },
+  "borderline": 3
+ },
+ "palettes": {
+  "warm/light/low": {
+   "best": [
+    "light blue",
+    "mint",
+    "rust",
+    "mustard",
+    "olive",
+    "camel",
+    "terracotta",
+    "teal"
+   ],
+   "neutrals": [
+    "camel",
+    "chocolate",
+    "cream",
+    "khaki",
+    "navy"
+   ],
+   "careful": [
+    {
+     "name": "lavender",
+     "why": "Cool pastels can look washed out next to warm skin."
+    },
+    {
+     "name": "silver",
+     "why": "Icy greys can flatten warm coloring near the face."
+    },
+    {
+     "name": "pink",
+     "why": "Cool pinks can fight a warm undertone."
+    },
+    {
+     "name": "black",
+     "why": "Pure black can overpower low contrast; charcoal or navy is softer."
+    }
+   ]
+  },
+  "warm/light/medium": {
+   "best": [
+    "light blue",
+    "mint",
+    "rust",
+    "mustard",
+    "olive",
+    "camel",
+    "terracotta",
+    "teal"
+   ],
+   "neutrals": [
+    "camel",
+    "chocolate",
+    "cream",
+    "khaki",
+    "navy"
+   ],
+   "careful": [
+    {
+     "name": "lavender",
+     "why": "Cool pastels can look washed out next to warm skin."
+    },
+    {
+     "name": "silver",
+     "why": "Icy greys can flatten warm coloring near the face."
+    },
+    {
+     "name": "pink",
+     "why": "Cool pinks can fight a warm undertone."
+    }
+   ]
+  },
+  "warm/light/high": {
+   "best": [
+    "light blue",
+    "mint",
+    "rust",
+    "mustard",
+    "olive",
+    "camel",
+    "terracotta",
+    "teal"
+   ],
+   "neutrals": [
+    "camel",
+    "chocolate",
+    "cream",
+    "khaki",
+    "navy"
+   ],
+   "careful": [
+    {
+     "name": "lavender",
+     "why": "Cool pastels can look washed out next to warm skin."
+    },
+    {
+     "name": "silver",
+     "why": "Icy greys can flatten warm coloring near the face."
+    },
+    {
+     "name": "pink",
+     "why": "Cool pinks can fight a warm undertone."
+    }
+   ]
+  },
+  "warm/medium/low": {
+   "best": [
+    "rust",
+    "mustard",
+    "olive",
+    "camel",
+    "terracotta",
+    "teal",
+    "forest green",
+    "cream"
+   ],
+   "neutrals": [
+    "camel",
+    "chocolate",
+    "cream",
+    "khaki",
+    "navy"
+   ],
+   "careful": [
+    {
+     "name": "lavender",
+     "why": "Cool pastels can look washed out next to warm skin."
+    },
+    {
+     "name": "silver",
+     "why": "Icy greys can flatten warm coloring near the face."
+    },
+    {
+     "name": "pink",
+     "why": "Cool pinks can fight a warm undertone."
+    },
+    {
+     "name": "black",
+     "why": "Pure black can overpower low contrast; charcoal or navy is softer."
+    }
+   ]
+  },
+  "warm/medium/medium": {
+   "best": [
+    "rust",
+    "mustard",
+    "olive",
+    "camel",
+    "terracotta",
+    "teal",
+    "forest green",
+    "cream"
+   ],
+   "neutrals": [
+    "camel",
+    "chocolate",
+    "cream",
+    "khaki",
+    "navy"
+   ],
+   "careful": [
+    {
+     "name": "lavender",
+     "why": "Cool pastels can look washed out next to warm skin."
+    },
+    {
+     "name": "silver",
+     "why": "Icy greys can flatten warm coloring near the face."
+    },
+    {
+     "name": "pink",
+     "why": "Cool pinks can fight a warm undertone."
+    }
+   ]
+  },
+  "warm/medium/high": {
+   "best": [
+    "rust",
+    "mustard",
+    "olive",
+    "camel",
+    "terracotta",
+    "teal",
+    "forest green",
+    "cream"
+   ],
+   "neutrals": [
+    "camel",
+    "chocolate",
+    "cream",
+    "khaki",
+    "navy"
+   ],
+   "careful": [
+    {
+     "name": "lavender",
+     "why": "Cool pastels can look washed out next to warm skin."
+    },
+    {
+     "name": "silver",
+     "why": "Icy greys can flatten warm coloring near the face."
+    },
+    {
+     "name": "pink",
+     "why": "Cool pinks can fight a warm undertone."
+    }
+   ]
+  },
+  "warm/deep/low": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "rust",
+    "mustard",
+    "olive",
+    "camel",
+    "terracotta"
+   ],
+   "neutrals": [
+    "camel",
+    "chocolate",
+    "cream",
+    "khaki",
+    "navy"
+   ],
+   "careful": [
+    {
+     "name": "lavender",
+     "why": "Cool pastels can look washed out next to warm skin."
+    },
+    {
+     "name": "silver",
+     "why": "Icy greys can flatten warm coloring near the face."
+    },
+    {
+     "name": "pink",
+     "why": "Cool pinks can fight a warm undertone."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  },
+  "warm/deep/medium": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "rust",
+    "mustard",
+    "olive",
+    "camel",
+    "terracotta"
+   ],
+   "neutrals": [
+    "camel",
+    "chocolate",
+    "cream",
+    "khaki",
+    "navy"
+   ],
+   "careful": [
+    {
+     "name": "lavender",
+     "why": "Cool pastels can look washed out next to warm skin."
+    },
+    {
+     "name": "silver",
+     "why": "Icy greys can flatten warm coloring near the face."
+    },
+    {
+     "name": "pink",
+     "why": "Cool pinks can fight a warm undertone."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  },
+  "warm/deep/high": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "rust",
+    "mustard",
+    "olive",
+    "camel",
+    "terracotta"
+   ],
+   "neutrals": [
+    "camel",
+    "chocolate",
+    "cream",
+    "khaki",
+    "navy"
+   ],
+   "careful": [
+    {
+     "name": "lavender",
+     "why": "Cool pastels can look washed out next to warm skin."
+    },
+    {
+     "name": "silver",
+     "why": "Icy greys can flatten warm coloring near the face."
+    },
+    {
+     "name": "pink",
+     "why": "Cool pinks can fight a warm undertone."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  },
+  "cool/light/low": {
+   "best": [
+    "light blue",
+    "mint",
+    "navy",
+    "burgundy",
+    "teal",
+    "sky blue",
+    "purple",
+    "pink"
+   ],
+   "neutrals": [
+    "charcoal",
+    "navy",
+    "grey",
+    "white"
+   ],
+   "careful": [
+    {
+     "name": "orange",
+     "why": "Warm oranges can clash with a cool undertone."
+    },
+    {
+     "name": "mustard",
+     "why": "Yellow-based shades can look muddy next to cool skin."
+    },
+    {
+     "name": "camel",
+     "why": "Warm beiges near the face can look flat; keep them on trousers."
+    },
+    {
+     "name": "black",
+     "why": "Pure black can overpower low contrast; charcoal or navy is softer."
+    }
+   ]
+  },
+  "cool/light/medium": {
+   "best": [
+    "light blue",
+    "mint",
+    "navy",
+    "burgundy",
+    "teal",
+    "sky blue",
+    "purple",
+    "pink"
+   ],
+   "neutrals": [
+    "charcoal",
+    "navy",
+    "grey",
+    "white"
+   ],
+   "careful": [
+    {
+     "name": "orange",
+     "why": "Warm oranges can clash with a cool undertone."
+    },
+    {
+     "name": "mustard",
+     "why": "Yellow-based shades can look muddy next to cool skin."
+    },
+    {
+     "name": "camel",
+     "why": "Warm beiges near the face can look flat; keep them on trousers."
+    }
+   ]
+  },
+  "cool/light/high": {
+   "best": [
+    "light blue",
+    "mint",
+    "navy",
+    "burgundy",
+    "teal",
+    "sky blue",
+    "purple",
+    "pink"
+   ],
+   "neutrals": [
+    "charcoal",
+    "navy",
+    "grey",
+    "white",
+    "black"
+   ],
+   "careful": [
+    {
+     "name": "orange",
+     "why": "Warm oranges can clash with a cool undertone."
+    },
+    {
+     "name": "mustard",
+     "why": "Yellow-based shades can look muddy next to cool skin."
+    },
+    {
+     "name": "camel",
+     "why": "Warm beiges near the face can look flat; keep them on trousers."
+    }
+   ]
+  },
+  "cool/medium/low": {
+   "best": [
+    "navy",
+    "burgundy",
+    "teal",
+    "sky blue",
+    "purple",
+    "pink",
+    "charcoal",
+    "white"
+   ],
+   "neutrals": [
+    "charcoal",
+    "navy",
+    "grey",
+    "white"
+   ],
+   "careful": [
+    {
+     "name": "orange",
+     "why": "Warm oranges can clash with a cool undertone."
+    },
+    {
+     "name": "mustard",
+     "why": "Yellow-based shades can look muddy next to cool skin."
+    },
+    {
+     "name": "camel",
+     "why": "Warm beiges near the face can look flat; keep them on trousers."
+    },
+    {
+     "name": "black",
+     "why": "Pure black can overpower low contrast; charcoal or navy is softer."
+    }
+   ]
+  },
+  "cool/medium/medium": {
+   "best": [
+    "navy",
+    "burgundy",
+    "teal",
+    "sky blue",
+    "purple",
+    "pink",
+    "charcoal",
+    "white"
+   ],
+   "neutrals": [
+    "charcoal",
+    "navy",
+    "grey",
+    "white"
+   ],
+   "careful": [
+    {
+     "name": "orange",
+     "why": "Warm oranges can clash with a cool undertone."
+    },
+    {
+     "name": "mustard",
+     "why": "Yellow-based shades can look muddy next to cool skin."
+    },
+    {
+     "name": "camel",
+     "why": "Warm beiges near the face can look flat; keep them on trousers."
+    }
+   ]
+  },
+  "cool/medium/high": {
+   "best": [
+    "navy",
+    "burgundy",
+    "teal",
+    "sky blue",
+    "purple",
+    "pink",
+    "charcoal",
+    "white"
+   ],
+   "neutrals": [
+    "charcoal",
+    "navy",
+    "grey",
+    "white",
+    "black"
+   ],
+   "careful": [
+    {
+     "name": "orange",
+     "why": "Warm oranges can clash with a cool undertone."
+    },
+    {
+     "name": "mustard",
+     "why": "Yellow-based shades can look muddy next to cool skin."
+    },
+    {
+     "name": "camel",
+     "why": "Warm beiges near the face can look flat; keep them on trousers."
+    }
+   ]
+  },
+  "cool/deep/low": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "navy",
+    "burgundy",
+    "teal",
+    "sky blue",
+    "pink"
+   ],
+   "neutrals": [
+    "charcoal",
+    "navy",
+    "grey",
+    "white"
+   ],
+   "careful": [
+    {
+     "name": "orange",
+     "why": "Warm oranges can clash with a cool undertone."
+    },
+    {
+     "name": "mustard",
+     "why": "Yellow-based shades can look muddy next to cool skin."
+    },
+    {
+     "name": "camel",
+     "why": "Warm beiges near the face can look flat; keep them on trousers."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  },
+  "cool/deep/medium": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "navy",
+    "burgundy",
+    "teal",
+    "sky blue",
+    "pink"
+   ],
+   "neutrals": [
+    "charcoal",
+    "navy",
+    "grey",
+    "white"
+   ],
+   "careful": [
+    {
+     "name": "orange",
+     "why": "Warm oranges can clash with a cool undertone."
+    },
+    {
+     "name": "mustard",
+     "why": "Yellow-based shades can look muddy next to cool skin."
+    },
+    {
+     "name": "camel",
+     "why": "Warm beiges near the face can look flat; keep them on trousers."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  },
+  "cool/deep/high": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "navy",
+    "burgundy",
+    "teal",
+    "sky blue",
+    "pink"
+   ],
+   "neutrals": [
+    "charcoal",
+    "navy",
+    "grey",
+    "white",
+    "black"
+   ],
+   "careful": [
+    {
+     "name": "orange",
+     "why": "Warm oranges can clash with a cool undertone."
+    },
+    {
+     "name": "mustard",
+     "why": "Yellow-based shades can look muddy next to cool skin."
+    },
+    {
+     "name": "camel",
+     "why": "Warm beiges near the face can look flat; keep them on trousers."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  },
+  "neutral/light/low": {
+   "best": [
+    "light blue",
+    "mint",
+    "navy",
+    "teal",
+    "dusty pink",
+    "sage",
+    "burgundy",
+    "stone"
+   ],
+   "neutrals": [
+    "navy",
+    "grey",
+    "stone",
+    "white",
+    "camel"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Very bright yellow can overpower a balanced undertone."
+    },
+    {
+     "name": "orange",
+     "why": "Strong orange near the face can dominate; try rust instead."
+    },
+    {
+     "name": "black",
+     "why": "Pure black can overpower low contrast; charcoal or navy is softer."
+    }
+   ]
+  },
+  "neutral/light/medium": {
+   "best": [
+    "light blue",
+    "mint",
+    "navy",
+    "teal",
+    "dusty pink",
+    "sage",
+    "burgundy",
+    "stone"
+   ],
+   "neutrals": [
+    "navy",
+    "grey",
+    "stone",
+    "white",
+    "camel"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Very bright yellow can overpower a balanced undertone."
+    },
+    {
+     "name": "orange",
+     "why": "Strong orange near the face can dominate; try rust instead."
+    }
+   ]
+  },
+  "neutral/light/high": {
+   "best": [
+    "light blue",
+    "mint",
+    "navy",
+    "teal",
+    "dusty pink",
+    "sage",
+    "burgundy",
+    "stone"
+   ],
+   "neutrals": [
+    "navy",
+    "grey",
+    "stone",
+    "white",
+    "camel"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Very bright yellow can overpower a balanced undertone."
+    },
+    {
+     "name": "orange",
+     "why": "Strong orange near the face can dominate; try rust instead."
+    }
+   ]
+  },
+  "neutral/medium/low": {
+   "best": [
+    "navy",
+    "teal",
+    "dusty pink",
+    "sage",
+    "burgundy",
+    "light blue",
+    "stone",
+    "denim"
+   ],
+   "neutrals": [
+    "navy",
+    "grey",
+    "stone",
+    "white",
+    "camel"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Very bright yellow can overpower a balanced undertone."
+    },
+    {
+     "name": "orange",
+     "why": "Strong orange near the face can dominate; try rust instead."
+    },
+    {
+     "name": "black",
+     "why": "Pure black can overpower low contrast; charcoal or navy is softer."
+    }
+   ]
+  },
+  "neutral/medium/medium": {
+   "best": [
+    "navy",
+    "teal",
+    "dusty pink",
+    "sage",
+    "burgundy",
+    "light blue",
+    "stone",
+    "denim"
+   ],
+   "neutrals": [
+    "navy",
+    "grey",
+    "stone",
+    "white",
+    "camel"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Very bright yellow can overpower a balanced undertone."
+    },
+    {
+     "name": "orange",
+     "why": "Strong orange near the face can dominate; try rust instead."
+    }
+   ]
+  },
+  "neutral/medium/high": {
+   "best": [
+    "navy",
+    "teal",
+    "dusty pink",
+    "sage",
+    "burgundy",
+    "light blue",
+    "stone",
+    "denim"
+   ],
+   "neutrals": [
+    "navy",
+    "grey",
+    "stone",
+    "white",
+    "camel"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Very bright yellow can overpower a balanced undertone."
+    },
+    {
+     "name": "orange",
+     "why": "Strong orange near the face can dominate; try rust instead."
+    }
+   ]
+  },
+  "neutral/deep/low": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "navy",
+    "teal",
+    "dusty pink",
+    "sage",
+    "burgundy"
+   ],
+   "neutrals": [
+    "navy",
+    "grey",
+    "stone",
+    "white",
+    "camel"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Very bright yellow can overpower a balanced undertone."
+    },
+    {
+     "name": "orange",
+     "why": "Strong orange near the face can dominate; try rust instead."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    },
+    {
+     "name": "black",
+     "why": "Pure black can overpower low contrast; charcoal or navy is softer."
+    }
+   ]
+  },
+  "neutral/deep/medium": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "navy",
+    "teal",
+    "dusty pink",
+    "sage",
+    "burgundy"
+   ],
+   "neutrals": [
+    "navy",
+    "grey",
+    "stone",
+    "white",
+    "camel"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Very bright yellow can overpower a balanced undertone."
+    },
+    {
+     "name": "orange",
+     "why": "Strong orange near the face can dominate; try rust instead."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  },
+  "neutral/deep/high": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "navy",
+    "teal",
+    "dusty pink",
+    "sage",
+    "burgundy"
+   ],
+   "neutrals": [
+    "navy",
+    "grey",
+    "stone",
+    "white",
+    "camel"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Very bright yellow can overpower a balanced undertone."
+    },
+    {
+     "name": "orange",
+     "why": "Strong orange near the face can dominate; try rust instead."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  },
+  "olive/light/low": {
+   "best": [
+    "light blue",
+    "mint",
+    "olive",
+    "forest green",
+    "teal",
+    "burgundy",
+    "rust",
+    "mustard"
+   ],
+   "neutrals": [
+    "khaki",
+    "olive",
+    "navy",
+    "chocolate",
+    "cream"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Bright yellow can echo the green in olive skin."
+    },
+    {
+     "name": "light grey",
+     "why": "Pale greys can look flat against olive skin."
+    },
+    {
+     "name": "lavender",
+     "why": "Pale cool pastels can look washed out."
+    },
+    {
+     "name": "black",
+     "why": "Pure black can overpower low contrast; charcoal or navy is softer."
+    }
+   ]
+  },
+  "olive/light/medium": {
+   "best": [
+    "light blue",
+    "mint",
+    "olive",
+    "forest green",
+    "teal",
+    "burgundy",
+    "rust",
+    "mustard"
+   ],
+   "neutrals": [
+    "khaki",
+    "olive",
+    "navy",
+    "chocolate",
+    "cream"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Bright yellow can echo the green in olive skin."
+    },
+    {
+     "name": "light grey",
+     "why": "Pale greys can look flat against olive skin."
+    },
+    {
+     "name": "lavender",
+     "why": "Pale cool pastels can look washed out."
+    }
+   ]
+  },
+  "olive/light/high": {
+   "best": [
+    "light blue",
+    "mint",
+    "olive",
+    "forest green",
+    "teal",
+    "burgundy",
+    "rust",
+    "mustard"
+   ],
+   "neutrals": [
+    "khaki",
+    "olive",
+    "navy",
+    "chocolate",
+    "cream"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Bright yellow can echo the green in olive skin."
+    },
+    {
+     "name": "light grey",
+     "why": "Pale greys can look flat against olive skin."
+    },
+    {
+     "name": "lavender",
+     "why": "Pale cool pastels can look washed out."
+    }
+   ]
+  },
+  "olive/medium/low": {
+   "best": [
+    "olive",
+    "forest green",
+    "teal",
+    "burgundy",
+    "rust",
+    "mustard",
+    "cream",
+    "navy"
+   ],
+   "neutrals": [
+    "khaki",
+    "olive",
+    "navy",
+    "chocolate",
+    "cream"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Bright yellow can echo the green in olive skin."
+    },
+    {
+     "name": "light grey",
+     "why": "Pale greys can look flat against olive skin."
+    },
+    {
+     "name": "lavender",
+     "why": "Pale cool pastels can look washed out."
+    },
+    {
+     "name": "black",
+     "why": "Pure black can overpower low contrast; charcoal or navy is softer."
+    }
+   ]
+  },
+  "olive/medium/medium": {
+   "best": [
+    "olive",
+    "forest green",
+    "teal",
+    "burgundy",
+    "rust",
+    "mustard",
+    "cream",
+    "navy"
+   ],
+   "neutrals": [
+    "khaki",
+    "olive",
+    "navy",
+    "chocolate",
+    "cream"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Bright yellow can echo the green in olive skin."
+    },
+    {
+     "name": "light grey",
+     "why": "Pale greys can look flat against olive skin."
+    },
+    {
+     "name": "lavender",
+     "why": "Pale cool pastels can look washed out."
+    }
+   ]
+  },
+  "olive/medium/high": {
+   "best": [
+    "olive",
+    "forest green",
+    "teal",
+    "burgundy",
+    "rust",
+    "mustard",
+    "cream",
+    "navy"
+   ],
+   "neutrals": [
+    "khaki",
+    "olive",
+    "navy",
+    "chocolate",
+    "cream"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Bright yellow can echo the green in olive skin."
+    },
+    {
+     "name": "light grey",
+     "why": "Pale greys can look flat against olive skin."
+    },
+    {
+     "name": "lavender",
+     "why": "Pale cool pastels can look washed out."
+    }
+   ]
+  },
+  "olive/deep/low": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "olive",
+    "forest green",
+    "teal",
+    "burgundy",
+    "rust"
+   ],
+   "neutrals": [
+    "khaki",
+    "olive",
+    "navy",
+    "chocolate",
+    "cream"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Bright yellow can echo the green in olive skin."
+    },
+    {
+     "name": "light grey",
+     "why": "Pale greys can look flat against olive skin."
+    },
+    {
+     "name": "lavender",
+     "why": "Pale cool pastels can look washed out."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  },
+  "olive/deep/medium": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "olive",
+    "forest green",
+    "teal",
+    "burgundy",
+    "rust"
+   ],
+   "neutrals": [
+    "khaki",
+    "olive",
+    "navy",
+    "chocolate",
+    "cream"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Bright yellow can echo the green in olive skin."
+    },
+    {
+     "name": "light grey",
+     "why": "Pale greys can look flat against olive skin."
+    },
+    {
+     "name": "lavender",
+     "why": "Pale cool pastels can look washed out."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  },
+  "olive/deep/high": {
+   "best": [
+    "purple",
+    "red",
+    "white",
+    "olive",
+    "forest green",
+    "teal",
+    "burgundy",
+    "rust"
+   ],
+   "neutrals": [
+    "khaki",
+    "olive",
+    "navy",
+    "chocolate",
+    "cream"
+   ],
+   "careful": [
+    {
+     "name": "yellow",
+     "why": "Bright yellow can echo the green in olive skin."
+    },
+    {
+     "name": "light grey",
+     "why": "Pale greys can look flat against olive skin."
+    },
+    {
+     "name": "lavender",
+     "why": "Pale cool pastels can look washed out."
+    },
+    {
+     "name": "beige",
+     "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+    }
+   ]
+  }
+ },
+ "faceTips": {
+  "oval": {
+   "why": "Balanced proportions, so most shapes work.",
+   "frames": [
+    "Most frame shapes work: wayfarers and soft rectangles are easy picks",
+    "Aviators for sunglasses"
+   ],
+   "hair": [
+    "Most cuts work: a textured crop or a side part keeps it simple",
+    "Medium length with a little texture on top"
+   ]
+  },
+  "round": {
+   "why": "Angles and a little height add structure to softer curves.",
+   "frames": [
+    "Rectangular or angular frames",
+    "Wayfarer-style sunglasses",
+    "Frames slightly wider than the cheekbones"
+   ],
+   "hair": [
+    "Some height on top with shorter sides (a quiff or textured top)",
+    "A side part or an off-center sweep"
+   ]
+  },
+  "square": {
+   "why": "Curves and softer lines balance a strong jaw.",
+   "frames": [
+    "Round or oval frames",
+    "Aviators or round sunglasses",
+    "Finer rims rather than heavy square ones"
+   ],
+   "hair": [
+    "A textured, slightly longer top",
+    "A side part or soft fringe that breaks up straight lines"
+   ]
+  },
+  "oblong": {
+   "why": "Width and a fringe balance a longer shape.",
+   "frames": [
+    "Deeper frames with a strong top line",
+    "Oversized square or wayfarer sunglasses",
+    "Decorative or contrasting temples"
+   ],
+   "hair": [
+    "Medium length with some volume at the sides",
+    "A fringe or textured top that isn't very tall"
+   ]
+  },
+  "heart": {
+   "why": "Detail lower on the face balances a wider forehead.",
+   "frames": [
+    "Bottom-heavy or rimless frames",
+    "Aviators or round sunglasses",
+    "Light, fine rims"
+   ],
+   "hair": [
+    "Medium length with fullness near the ears",
+    "A side-swept fringe; a beard adds balance at the jaw"
+   ]
+  },
+  "diamond": {
+   "why": "Frames and hair that add width at the brow and chin balance strong cheekbones.",
+   "frames": [
+    "Oval or browline frames",
+    "Round or cat-eye sunglasses",
+    "Frames with detail on the top line"
+   ],
+   "hair": [
+    "A fuller top or a fringe",
+    "Some length at the sides; a beard adds width at the chin"
+   ]
+  }
+ },
+ "colors": {
+  "black": "#1c1c1e",
+  "charcoal": "#3c3f47",
+  "grey": "#8a8f98",
+  "light grey": "#c4c7cc",
+  "silver": "#c0c4ca",
+  "white": "#f6f6f3",
+  "off-white": "#ece9e0",
+  "ivory": "#f1ead8",
+  "cream": "#ede3c8",
+  "beige": "#d6c3a1",
+  "stone": "#cfc6b4",
+  "khaki": "#b5a273",
+  "tan": "#c19f72",
+  "camel": "#c0955f",
+  "brown": "#6a4a33",
+  "chocolate": "#4a3022",
+  "navy": "#1f2a48",
+  "indigo": "#27365a",
+  "blue": "#3a5aa4",
+  "light blue": "#a9c4e4",
+  "sky blue": "#86b4df",
+  "denim": "#5a7aa6",
+  "teal": "#2c7a7a",
+  "forest green": "#2c4a33",
+  "olive": "#6a6a39",
+  "green": "#3e7a4a",
+  "sage": "#9aab8c",
+  "mint": "#b8dcc6",
+  "maroon": "#6c1f2a",
+  "burgundy": "#6d1f30",
+  "red": "#b2261e",
+  "rust": "#a54a2a",
+  "terracotta": "#b5583b",
+  "orange": "#d8722a",
+  "mustard": "#c79a2d",
+  "yellow": "#e6c446",
+  "pink": "#e6a2b6",
+  "dusty pink": "#c99a9e",
+  "lavender": "#b7a8d8",
+  "purple": "#6a4b99"
+ }
+}

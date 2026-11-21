@@ -16,9 +16,12 @@
     "db:types": "supabase gen types typescript --local > lib/database.types.ts && prettier --write lib/database.types.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
     "dev:user": "node scripts/dev-user.mjs",
-    "seed": "node scripts/seed.mjs"
+    "seed": "node scripts/seed.mjs",
+    "predev": "node scripts/copy-mediapipe.mjs",
+    "prebuild": "node scripts/copy-mediapipe.mjs"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "1.2.2",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.119.2",
     "next": "16.4.6",

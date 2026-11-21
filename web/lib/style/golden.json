@@ -1,0 +1,704 @@
+{
+ "lab": [
+  {
+   "rgb": [
+    255,
+    255,
+    255
+   ],
+   "lab": [
+    100.0,
+    -0.0025,
+    0.0047
+   ]
+  },
+  {
+   "rgb": [
+    0,
+    0,
+    0
+   ],
+   "lab": [
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  {
+   "rgb": [
+    255,
+    0,
+    0
+   ],
+   "lab": [
+    53.2406,
+    80.0923,
+    67.2028
+   ]
+  },
+  {
+   "rgb": [
+    214,
+    170,
+    140
+   ],
+   "lab": [
+    72.8533,
+    11.952,
+    21.6074
+   ]
+  },
+  {
+   "rgb": [
+    120,
+    80,
+    60
+   ],
+   "lab": [
+    37.9454,
+    14.2767,
+    18.5747
+   ]
+  },
+  {
+   "rgb": [
+    31,
+    42,
+    72
+   ],
+   "lab": [
+    17.5294,
+    5.3988,
+    -20.1964
+   ]
+  }
+ ],
+ "tones": [
+  {
+   "lab": [
+    62,
+    12,
+    22
+   ],
+   "undertone": "warm",
+   "depth": "medium",
+   "hue": 61.3895,
+   "ita": 28.6105
+  },
+  {
+   "lab": [
+    62,
+    15,
+    11
+   ],
+   "undertone": "cool",
+   "depth": "light",
+   "hue": 36.2538,
+   "ita": 47.4896
+  },
+  {
+   "lab": [
+    50,
+    7,
+    16
+   ],
+   "undertone": "olive",
+   "depth": "deep",
+   "hue": 66.3706,
+   "ita": 0.0
+  },
+  {
+   "lab": [
+    75,
+    13,
+    16
+   ],
+   "undertone": "neutral",
+   "depth": "light",
+   "hue": 50.9061,
+   "ita": 57.3808
+  },
+  {
+   "lab": [
+    45,
+    10,
+    15
+   ],
+   "undertone": "neutral",
+   "depth": "deep",
+   "hue": 56.3099,
+   "ita": -18.4349
+  },
+  {
+   "lab": [
+    59.77,
+    12.77,
+    10.28
+   ],
+   "undertone": "cool",
+   "depth": "light",
+   "hue": 38.8345,
+   "ita": 43.5429
+  }
+ ],
+ "contrast": [
+  {
+   "skin": 60,
+   "hair": 40,
+   "out": "low"
+  },
+  {
+   "skin": 60,
+   "hair": 25,
+   "out": "medium"
+  },
+  {
+   "skin": 70,
+   "hair": 15,
+   "out": "high"
+  },
+  {
+   "skin": 60,
+   "hair": null,
+   "out": null
+  }
+ ],
+ "faceShape": [
+  {
+   "ratios": {
+    "length": 1.5,
+    "jaw": 0.8,
+    "forehead": 0.9,
+    "yaw": 0.0
+   },
+   "shape": "oblong"
+  },
+  {
+   "ratios": {
+    "length": 1.1,
+    "jaw": 0.85,
+    "forehead": 0.85,
+    "yaw": 0.0
+   },
+   "shape": "round"
+  },
+  {
+   "ratios": {
+    "length": 1.25,
+    "jaw": 0.92,
+    "forehead": 0.9,
+    "yaw": 0.0
+   },
+   "shape": "square"
+  },
+  {
+   "ratios": {
+    "length": 1.3,
+    "jaw": 0.72,
+    "forehead": 0.95,
+    "yaw": 0.0
+   },
+   "shape": "heart"
+  },
+  {
+   "ratios": {
+    "length": 1.3,
+    "jaw": 0.72,
+    "forehead": 0.78,
+    "yaw": 0.0
+   },
+   "shape": "diamond"
+  },
+  {
+   "ratios": {
+    "length": 1.3,
+    "jaw": 0.83,
+    "forehead": 0.86,
+    "yaw": 0.0
+   },
+   "shape": "oval"
+  },
+  {
+   "ratios": {
+    "length": 1.3,
+    "jaw": 0.83,
+    "forehead": 0.86,
+    "yaw": 0.2
+   },
+   "shape": null
+  }
+ ],
+ "fitNotes": [
+  {
+   "ratios": null,
+   "notes": [
+    {
+     "area": "Shirts",
+     "advice": "Shoulder seam right on the shoulder point; sleeves ending at the wrist bone."
+    },
+    {
+     "area": "Photo",
+     "advice": "Add a front photo that shows you head to ankles for more fit notes."
+    }
+   ]
+  },
+  {
+   "ratios": {
+    "shoulder_hip": 2.2,
+    "leg_torso": 1.1
+   },
+   "notes": [
+    {
+     "area": "Shirts",
+     "advice": "Shoulder seam right on the shoulder point; sleeves ending at the wrist bone."
+    },
+    {
+     "area": "Jackets",
+     "advice": "Soft or natural shoulders sit well; straight or slightly tapered trousers keep the line balanced."
+    },
+    {
+     "area": "Trousers",
+     "advice": "A minimal break and a mid rise keep a clean line; shirts work well tucked or cropped at the hip."
+    },
+    {
+     "area": "Shoes",
+     "advice": "Match the shoe to the trouser: sleek profiles with tapered legs, chunkier soles with wider ones."
+    }
+   ]
+  },
+  {
+   "ratios": {
+    "shoulder_hip": 1.2,
+    "leg_torso": 1.9
+   },
+   "notes": [
+    {
+     "area": "Shirts",
+     "advice": "Shoulder seam right on the shoulder point; sleeves ending at the wrist bone."
+    },
+    {
+     "area": "Jackets",
+     "advice": "A little structure at the shoulder gives a clean line; straight-leg trousers pair well."
+    },
+    {
+     "area": "Trousers",
+     "advice": "A slight break at the shoe looks natural; tucked or untucked shirts both work."
+    },
+    {
+     "area": "Shoes",
+     "advice": "Match the shoe to the trouser: sleek profiles with tapered legs, chunkier soles with wider ones."
+    }
+   ]
+  },
+  {
+   "ratios": {
+    "shoulder_hip": 1.7,
+    "leg_torso": 1.45
+   },
+   "notes": [
+    {
+     "area": "Shirts",
+     "advice": "Shoulder seam right on the shoulder point; sleeves ending at the wrist bone."
+    },
+    {
+     "area": "Jackets",
+     "advice": "Most cuts work. Choose by how the shoulder seam and the waist sit."
+    },
+    {
+     "area": "Trousers",
+     "advice": "A slight taper with a minimal break is an easy default."
+    },
+    {
+     "area": "Shoes",
+     "advice": "Match the shoe to the trouser: sleek profiles with tapered legs, chunkier soles with wider ones."
+    }
+   ]
+  }
+ ],
+ "build": {
+  "measurements": {
+   "skin_lab": [
+    59.77,
+    12.77,
+    10.28
+   ],
+   "hair_L": 33.11,
+   "hue": 38.83,
+   "ita": 43.57,
+   "face_shape": "round",
+   "face_shape_votes": [
+    "round",
+    "round",
+    "oval"
+   ],
+   "body_ratios": null,
+   "lighting_note": null
+  },
+  "cases": [
+   {
+    "overrides": {},
+    "out": {
+     "computed": {
+      "undertone": "cool",
+      "depth": "light",
+      "contrast": "medium"
+     },
+     "effective": {
+      "undertone": "cool",
+      "depth": "light",
+      "contrast": "medium"
+     },
+     "summary": "Cool undertone, light depth and medium contrast. Light blue, mint and navy sit well near your face; charcoal, navy and grey are easy neutrals.",
+     "best": [
+      {
+       "name": "Light blue",
+       "hex": "#a9c4e4"
+      },
+      {
+       "name": "Mint",
+       "hex": "#b8dcc6"
+      },
+      {
+       "name": "Navy",
+       "hex": "#1f2a48"
+      },
+      {
+       "name": "Burgundy",
+       "hex": "#6d1f30"
+      },
+      {
+       "name": "Teal",
+       "hex": "#2c7a7a"
+      },
+      {
+       "name": "Sky blue",
+       "hex": "#86b4df"
+      },
+      {
+       "name": "Purple",
+       "hex": "#6a4b99"
+      },
+      {
+       "name": "Pink",
+       "hex": "#e6a2b6"
+      }
+     ],
+     "neutrals": [
+      {
+       "name": "Charcoal",
+       "hex": "#3c3f47"
+      },
+      {
+       "name": "Navy",
+       "hex": "#1f2a48"
+      },
+      {
+       "name": "Grey",
+       "hex": "#8a8f98"
+      },
+      {
+       "name": "White",
+       "hex": "#f6f6f3"
+      }
+     ],
+     "careful": [
+      {
+       "name": "Orange",
+       "hex": "#d8722a",
+       "why": "Warm oranges can clash with a cool undertone."
+      },
+      {
+       "name": "Mustard",
+       "hex": "#c79a2d",
+       "why": "Yellow-based shades can look muddy next to cool skin."
+      },
+      {
+       "name": "Camel",
+       "hex": "#c0955f",
+       "why": "Warm beiges near the face can look flat; keep them on trousers."
+      }
+     ],
+     "fit_notes": [
+      {
+       "area": "Shirts",
+       "advice": "Shoulder seam right on the shoulder point; sleeves ending at the wrist bone."
+      },
+      {
+       "area": "Photo",
+       "advice": "Add a front photo that shows you head to ankles for more fit notes."
+      }
+     ],
+     "occasion_tips": {
+      "office": "Charcoal or navy layers over crisp shirts, with light blue as the accent.",
+      "college": "Overshirts and knits in light blue or mint with dark denim or charcoal trousers.",
+      "party": "Deeper navy or burgundy with one statement piece; charcoal keeps the rest calm.",
+      "home": "Soft knits in charcoal and navy."
+     },
+     "face": {
+      "shape": "round",
+      "why": "Angles and a little height add structure to softer curves.",
+      "frames": [
+       "Rectangular or angular frames",
+       "Wayfarer-style sunglasses",
+       "Frames slightly wider than the cheekbones"
+      ],
+      "hair": [
+       "Some height on top with shorter sides (a quiff or textured top)",
+       "A side part or an off-center sweep"
+      ]
+     },
+     "borderline": [
+      "Your depth read is close to the next band, so the palette may shift slightly between photos.",
+      "Your face shape reads between oval and round; tips for both can work.",
+      "Your contrast read is close to the next band. Change it below if it feels off."
+     ]
+    }
+   },
+   {
+    "overrides": {
+     "undertone": "neutral"
+    },
+    "out": {
+     "computed": {
+      "undertone": "cool",
+      "depth": "light",
+      "contrast": "medium"
+     },
+     "effective": {
+      "undertone": "neutral",
+      "depth": "light",
+      "contrast": "medium"
+     },
+     "summary": "Neutral undertone, light depth and medium contrast. Light blue, mint and navy sit well near your face; navy, grey and stone are easy neutrals.",
+     "best": [
+      {
+       "name": "Light blue",
+       "hex": "#a9c4e4"
+      },
+      {
+       "name": "Mint",
+       "hex": "#b8dcc6"
+      },
+      {
+       "name": "Navy",
+       "hex": "#1f2a48"
+      },
+      {
+       "name": "Teal",
+       "hex": "#2c7a7a"
+      },
+      {
+       "name": "Dusty pink",
+       "hex": "#c99a9e"
+      },
+      {
+       "name": "Sage",
+       "hex": "#9aab8c"
+      },
+      {
+       "name": "Burgundy",
+       "hex": "#6d1f30"
+      },
+      {
+       "name": "Stone",
+       "hex": "#cfc6b4"
+      }
+     ],
+     "neutrals": [
+      {
+       "name": "Navy",
+       "hex": "#1f2a48"
+      },
+      {
+       "name": "Grey",
+       "hex": "#8a8f98"
+      },
+      {
+       "name": "Stone",
+       "hex": "#cfc6b4"
+      },
+      {
+       "name": "White",
+       "hex": "#f6f6f3"
+      },
+      {
+       "name": "Camel",
+       "hex": "#c0955f"
+      }
+     ],
+     "careful": [
+      {
+       "name": "Yellow",
+       "hex": "#e6c446",
+       "why": "Very bright yellow can overpower a balanced undertone."
+      },
+      {
+       "name": "Orange",
+       "hex": "#d8722a",
+       "why": "Strong orange near the face can dominate; try rust instead."
+      }
+     ],
+     "fit_notes": [
+      {
+       "area": "Shirts",
+       "advice": "Shoulder seam right on the shoulder point; sleeves ending at the wrist bone."
+      },
+      {
+       "area": "Photo",
+       "advice": "Add a front photo that shows you head to ankles for more fit notes."
+      }
+     ],
+     "occasion_tips": {
+      "office": "Navy or grey layers over crisp shirts, with light blue as the accent.",
+      "college": "Overshirts and knits in light blue or mint with dark denim or navy trousers.",
+      "party": "Deeper navy or burgundy with one statement piece; navy keeps the rest calm.",
+      "home": "Soft knits in navy and grey."
+     },
+     "face": {
+      "shape": "round",
+      "why": "Angles and a little height add structure to softer curves.",
+      "frames": [
+       "Rectangular or angular frames",
+       "Wayfarer-style sunglasses",
+       "Frames slightly wider than the cheekbones"
+      ],
+      "hair": [
+       "Some height on top with shorter sides (a quiff or textured top)",
+       "A side part or an off-center sweep"
+      ]
+     },
+     "borderline": [
+      "Your depth read is close to the next band, so the palette may shift slightly between photos.",
+      "Your face shape reads between oval and round; tips for both can work.",
+      "Your contrast read is close to the next band. Change it below if it feels off."
+     ]
+    }
+   },
+   {
+    "overrides": {
+     "undertone": "warm",
+     "contrast": "high"
+    },
+    "out": {
+     "computed": {
+      "undertone": "cool",
+      "depth": "light",
+      "contrast": "medium"
+     },
+     "effective": {
+      "undertone": "warm",
+      "depth": "light",
+      "contrast": "high"
+     },
+     "summary": "Warm undertone, light depth and high contrast. Light blue, mint and rust sit well near your face; camel, chocolate and cream are easy neutrals.",
+     "best": [
+      {
+       "name": "Light blue",
+       "hex": "#a9c4e4"
+      },
+      {
+       "name": "Mint",
+       "hex": "#b8dcc6"
+      },
+      {
+       "name": "Rust",
+       "hex": "#a54a2a"
+      },
+      {
+       "name": "Mustard",
+       "hex": "#c79a2d"
+      },
+      {
+       "name": "Olive",
+       "hex": "#6a6a39"
+      },
+      {
+       "name": "Camel",
+       "hex": "#c0955f"
+      },
+      {
+       "name": "Terracotta",
+       "hex": "#b5583b"
+      },
+      {
+       "name": "Teal",
+       "hex": "#2c7a7a"
+      }
+     ],
+     "neutrals": [
+      {
+       "name": "Camel",
+       "hex": "#c0955f"
+      },
+      {
+       "name": "Chocolate",
+       "hex": "#4a3022"
+      },
+      {
+       "name": "Cream",
+       "hex": "#ede3c8"
+      },
+      {
+       "name": "Khaki",
+       "hex": "#b5a273"
+      },
+      {
+       "name": "Navy",
+       "hex": "#1f2a48"
+      }
+     ],
+     "careful": [
+      {
+       "name": "Lavender",
+       "hex": "#b7a8d8",
+       "why": "Cool pastels can look washed out next to warm skin."
+      },
+      {
+       "name": "Silver",
+       "hex": "#c0c4ca",
+       "why": "Icy greys can flatten warm coloring near the face."
+      },
+      {
+       "name": "Pink",
+       "hex": "#e6a2b6",
+       "why": "Cool pinks can fight a warm undertone."
+      }
+     ],
+     "fit_notes": [
+      {
+       "area": "Shirts",
+       "advice": "Shoulder seam right on the shoulder point; sleeves ending at the wrist bone."
+      },
+      {
+       "area": "Photo",
+       "advice": "Add a front photo that shows you head to ankles for more fit notes."
+      }
+     ],
+     "occasion_tips": {
+      "office": "Camel or chocolate layers over crisp shirts, with light blue as the accent.",
+      "college": "Overshirts and knits in light blue or mint with dark denim or camel trousers.",
+      "party": "Deeper rust or teal with one statement piece; camel keeps the rest calm.",
+      "home": "Soft knits in camel and chocolate."
+     },
+     "face": {
+      "shape": "round",
+      "why": "Angles and a little height add structure to softer curves.",
+      "frames": [
+       "Rectangular or angular frames",
+       "Wayfarer-style sunglasses",
+       "Frames slightly wider than the cheekbones"
+      ],
+      "hair": [
+       "Some height on top with shorter sides (a quiff or textured top)",
+       "A side part or an off-center sweep"
+      ]
+     },
+     "borderline": [
+      "Your depth read is close to the next band, so the palette may shift slightly between photos.",
+      "Your face shape reads between oval and round; tips for both can work."
+     ]
+    }
+   }
+  ]
+ }
+}
