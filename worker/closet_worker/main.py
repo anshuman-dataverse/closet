@@ -221,10 +221,16 @@ def _import(settings: Settings, zip_path: str | None) -> None:
         b = read_bundle(Path(zip_path).expanduser())
     except BundleError as e:
         raise SystemExit(f"Not imported: {e}") from e
-    for p in install(b, settings.compat_model_dir, settings.fit_gate_path):
+    for p in install(b, settings.compat_model_dir, settings.fit_gate_path, settings.heads_dir):
         print("installed", p)
     if b.kind == "compat":
         print("The outfit model stays off until it’s measured: run closet-worker compat-eval.")
+    elif b.kind == "heads":
+        from .vision.heads import load
+
+        h = load(settings.heads_dir)
+        on = [] if h is None else [k for k, g in h.gate.items() if g.get("use")]
+        print("Heads on (they beat today’s guesses on your photos):", ", ".join(on) or "none")
     else:
         from .vision.fit import read_gate
 

@@ -4,6 +4,8 @@ Kinds and where they go on the Mac:
 - `compat`: the outfit model head (colab/outfit_compat.ipynb) → COMPAT_MODEL_DIR. Installing a
   new model removes the old gate, so it stays off until `compat-eval` measures it again.
 - `fit_gate`: which fits the tagging eval measured as reliable (eval/tagging.py) → FIT_GATE_PATH.
+- `heads`: trained garment heads (colab/garment_heads.ipynb) → HEADS_DIR. Each head carries its
+  own gate from your labeled photos; vision/heads.py re-checks it.
 
 Import refuses anything it doesn't expect: unknown kinds or names, paths, a missing or
 mismatched checksum, or very large files. Nothing in a zip is ever run.
@@ -25,10 +27,12 @@ MAX_BYTES = 600 * 1024 * 1024
 KINDS: dict[str, frozenset[str]] = {
     "compat": frozenset({"compat_head.safetensors", "compat_config.json", "MODEL_CARD.md"}),
     "fit_gate": frozenset({"fit_gate.json", "report.json"}),
+    "heads": frozenset({"heads.safetensors", "heads.json", "MODEL_CARD.md"}),
 }
 REQUIRED: dict[str, frozenset[str]] = {
     "compat": frozenset({"compat_head.safetensors", "compat_config.json"}),
     "fit_gate": frozenset({"fit_gate.json"}),
+    "heads": frozenset({"heads.safetensors", "heads.json"}),
 }
 
 
@@ -112,7 +116,9 @@ def _write_atomic(path: Path, data: bytes) -> None:
         raise
 
 
-def install(b: Bundle, compat_dir: Path, fit_gate_path: Path) -> list[Path]:
+def install(
+    b: Bundle, compat_dir: Path, fit_gate_path: Path, heads_dir: Path | None = None
+) -> list[Path]:
     """Write the files where the worker reads them. Returns what was written."""
     written: list[Path] = []
     if b.kind == "compat":
@@ -122,6 +128,13 @@ def install(b: Bundle, compat_dir: Path, fit_gate_path: Path) -> list[Path]:
         for n in sorted(b.files, key=lambda n: n == "compat_config.json"):
             _write_atomic(compat_dir / n, b.files[n])
             written.append(compat_dir / n)
+    elif b.kind == "heads":
+        if heads_dir is None:
+            raise BundleError("no folder set for garment heads")
+        # heads.json carries the weights' checksum and the gate, so it goes last.
+        for n in sorted(b.files, key=lambda n: n == "heads.json"):
+            _write_atomic(heads_dir / n, b.files[n])
+            written.append(heads_dir / n)
     elif b.kind == "fit_gate":
         _write_atomic(fit_gate_path, b.files["fit_gate.json"])
         written.append(fit_gate_path)

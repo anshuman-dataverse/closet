@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     compat_model_dir: Path = Path("~/.cache/closet/compat")
     # Which fits the tagging eval measured as reliable on your photos (closet-worker import).
     fit_gate_path: Path = Path("~/.cache/closet/fit/gate.json")
+    # Trained garment heads from colab/garment_heads.ipynb (closet-worker import). Optional.
+    heads_dir: Path = Path("~/.cache/closet/heads")
 
     @field_validator("supabase_url")
     @classmethod
@@ -55,7 +57,7 @@ class Settings(BaseSettings):
             raise ValueError("SearXNG and Ollama must be on 127.0.0.1 or localhost")
         return v
 
-    @field_validator("backup_dir", "compat_model_dir", "fit_gate_path")
+    @field_validator("backup_dir", "compat_model_dir", "fit_gate_path", "heads_dir")
     @classmethod
     def _expand(cls, v: Path) -> Path:
         return v.expanduser()

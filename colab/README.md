@@ -6,6 +6,7 @@ Training and evaluation only. Live inference always runs on the Mac worker.
 |---|---|---|
 | `tagging_eval.ipynb` | 2 (ready) | FashionCLIP vs Marqo-FashionSigLIP on your ~50 hand-checked photos; picks `EMBED_MODEL` |
 | `train_ranker.ipynb` | 6 | Trains the personal ranker from `suggestion_events` and embeddings; same guardrail as the Mac (must beat rules-only) |
+| `garment_heads.ipynb` | Fit, type, pattern, sleeve (ready) | Trains small heads on FashionCLIP embeddings from Fashionpedia + the CC0 clothing dataset; your labeled photos decide which are used |
 | `outfit_compat.ipynb` | 5.11 (ready) | Measures the public OutfitTransformer (FashionCLIP) on Polyvore, checks it against Closet’s embedder, exports only its scoring head |
 
 Data flow: the Mac exports a dataset file, which you upload to Colab (or Google Drive).
@@ -55,3 +56,14 @@ to an older file without touching your edits. Use the ids or labels from
 `worker/closet_worker/vocab/fits.yaml`, for example `slim`, `oversized`, `flare`, or
 `Wide or baggy`. Leave it blank when you're not sure. The eval also runs on the Mac, no Colab:
 `cd worker && uv run python -m eval.tagging --data ~/ClosetPhotos/eval`.
+
+## Training garment heads (`garment_heads.ipynb`)
+
+Generated from `colab/make_garment_heads.py`.
+1. On the Mac: `cd worker && uv run closet-worker export-eval`, then fill `labels.csv`
+   (category, type, pattern, fit). About 50 labeled pieces is enough for a real test.
+2. Open `colab/garment_heads.ipynb` in Colab (T4 GPU), Run all, upload `closet-eval.zip`.
+   First time, try `MAX_FP_IMAGES = 3000`; then `0` for all of Fashionpedia (~1 hour).
+3. Download `closet-heads-<date>.zip` into `colab/outputs/` and run
+   `cd worker && uv run closet-worker import ../colab/outputs/closet-heads-<date>.zip`.
+Heads switch on only where they beat today's guesses on your photos; the rest stay off.

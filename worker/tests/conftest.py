@@ -21,6 +21,7 @@ def settings(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Settings:
         owner_user_id=OWNER,  # type: ignore[arg-type]
         compat_model_dir=tmp_path / "compat",
         fit_gate_path=tmp_path / "fit" / "gate.json",
+        heads_dir=tmp_path / "heads",
     )
 
 

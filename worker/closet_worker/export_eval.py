@@ -21,6 +21,8 @@ CODE = [
     "closet_worker/vocab",
     "eval/__init__.py",
     "eval/tagging.py",
+    "train/__init__.py",
+    "train/garment_heads.py",
 ]
 
 

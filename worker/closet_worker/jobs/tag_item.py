@@ -13,6 +13,8 @@ from closet_worker.vision.color import Palette
 from closet_worker.vision.cutout import Cutter
 from closet_worker.vision.embed import Embedder, load_embedder
 from closet_worker.vision.fit import gate_key, guess_fit, read_gate
+from closet_worker.vision.heads import Heads, HeadsError
+from closet_worker.vision.heads import load as load_heads
 from closet_worker.vision.tagger import TextBank, tag
 from closet_worker.vocab import load_vocab
 
@@ -73,9 +75,14 @@ def run(
     ctx.items.upsert_embedding(item_id, v.emb.model_id, [float(x) for x in vec])
 
     sug_json = sug.to_json()
+    heads = heads_for(ctx, v.emb.model_id)
+    if heads is not None and sug.status != "not_clothing":
+        apply_heads(sug_json, vec, heads, v.palette.names)
     if isinstance(item.get("suggestions"), dict) and "label" in item["suggestions"]:
         sug_json["label"] = item["suggestions"]["label"]  # keep the label read
-    fit = suggested_fit(ctx, item, sug_json, vec, cut.mask, v.emb)
+    fit = (heads_fit(heads, item, sug_json, vec) if heads else None) or suggested_fit(
+        ctx, item, sug_json, vec, cut.mask, v.emb
+    )
     if fit:
         sug_json["fit"] = fit
     fields: dict[str, Any] = {"suggestions": sug_json, "tags_status": sug.status}
@@ -104,3 +111,92 @@ def suggested_fit(
     if g is None or g.fit is None or gate_key(category, g.fit) not in enabled:
         return None
     return g.fit
+
+
+GENERIC_NOUN = {
+    "Tops": "top",
+    "Bottoms": "pants",
+    "Layers": "layer",
+    "Shoes": "shoes",
+    "Accessories": "accessory",
+    "Sets & suits": "set",
+}
+_heads: dict[str, tuple[tuple[int, int], Heads | None]] = {}
+
+
+def heads_for(ctx: JobContext, model_id: str) -> Heads | None:
+    """Installed heads for this embedding model, cached until the files change."""
+    folder = ctx.settings.heads_dir
+    try:
+        key = (
+            (folder / "heads.json").stat().st_mtime_ns,
+            (folder / "heads.safetensors").stat().st_mtime_ns,
+        )
+    except OSError:
+        return None
+    hit = _heads.get(str(folder))
+    if hit and hit[0] == key:
+        return hit[1]
+    try:
+        h = load_heads(folder, model_id)
+    except HeadsError as e:
+        import logging
+
+        logging.getLogger(__name__).warning("garment heads not used: %s", e)
+        h = None
+    _heads[str(folder)] = (key, h)
+    return h
+
+
+def apply_heads(
+    sug: dict[str, Any], vec: Any, heads: Heads, palette_names: tuple[str, ...]
+) -> None:
+    """Replace zero-shot guesses only where a head beat them on your photos. Records sources."""
+    vocab = load_vocab()
+    by_type = {t.type: t for t in vocab.types}
+    sources = sug.setdefault("sources", {})
+    t = heads.suggest("type", vec)
+    entry = by_type.get(t) if t else None
+    if entry is not None:
+        from closet_worker.vision.tagger import display_name
+
+        color = str(sug.get("color_name") or "").lower()
+        name = (
+            display_name(color, entry, palette_names)
+            if color
+            else entry.type[0].upper() + entry.type[1:]
+        )
+        sug.update(
+            type=entry.type,
+            category=entry.category,
+            formality=entry.formality,
+            warmth=entry.warmth,
+            occasions=list(entry.occasions),
+            name=name,
+        )
+        sources.update(type="head", category="head")
+    else:
+        c = heads.suggest("category", vec)
+        if c and c != sug.get("category"):
+            # The zero-shot type belongs to another category, so it can't stand: ask for it.
+            color = str(sug.get("color_name") or "")
+            sug.update(category=c, type="", name=f"{color} {GENERIC_NOUN.get(c, 'piece')}".strip())
+            sug["status"] = "unsure"
+            sources["category"] = "head"
+    p = heads.suggest("pattern", vec)
+    if p:
+        sug["pattern"] = p
+        sources["pattern"] = "head"
+
+
+def heads_fit(heads: Heads, item: dict[str, Any], sug: dict[str, Any], vec: Any) -> str | None:
+    from closet_worker.vision.fit import load_fits
+
+    category = item.get("category") or sug.get("category")
+    g = load_fits().group_for(category)
+    if g is None or g.name not in ("tops", "bottoms"):
+        return None
+    f = heads.suggest(f"fit/{g.name}", vec)
+    if f:
+        sug.setdefault("sources", {})["fit"] = "head"
+    return f
