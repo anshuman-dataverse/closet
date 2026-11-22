@@ -6,6 +6,7 @@ Nothing here listens on a port. All traffic is outbound to Supabase.
 from __future__ import annotations
 
 import argparse
+import json
 import logging
 import signal
 import threading
@@ -20,7 +21,7 @@ from .config import Settings, load_settings
 from .jobs import NotImplementedYet, TransientError, implemented, spec_for
 from .jobs.context import JobContext
 from .queue import Job, Queue, SupabaseQueue
-from .scheduler import Scheduler
+from .scheduler import STATE_PATH, Scheduler
 from .store import SupabaseItemStore
 
 log = logging.getLogger("closet_worker")
@@ -83,7 +84,13 @@ class Worker:
         self.fake = fake
         self.ctx = ctx or JobContext(settings=settings)
         self.stop = threading.Event()
-        self.scheduler = scheduler or Scheduler()
+        # Fake mode (e2e) runs no nightly tasks (they'd race the tests) and keeps its own state
+        # file, so a test run can never mark the real worker's nightly backup as done.
+        self.scheduler = scheduler or (
+            Scheduler(STATE_PATH.with_name("scheduler-fake.json"), daily=())
+            if fake
+            else Scheduler(STATE_PATH)
+        )
 
     def beat(self) -> None:
         caps = (
@@ -141,12 +148,18 @@ class Worker:
 def cli() -> None:
     p = argparse.ArgumentParser(prog="closet-worker")
     p.add_argument(
-        "command", nargs="?", default="run", choices=["run", "export-eval", "compat-eval", "import"]
+        "command",
+        nargs="?",
+        default="run",
+        choices=["run", "export-eval", "compat-eval", "import", "backup", "restore"],
     )
     p.add_argument("--fake", action="store_true", help="return fixtures instead of running models")
     p.add_argument("--once", action="store_true", help="drain the queue once, then exit")
     p.add_argument("--out", default="~/ClosetPhotos/eval", help="export-eval: output folder")
-    p.add_argument("zip", nargs="?", help="import: a results zip from Colab")
+    p.add_argument(
+        "zip", nargs="?", help="import: a results zip; restore: a BACKUP_DIR/db/<stamp> folder"
+    )
+    p.add_argument("--yes", action="store_true", help="restore: confirm writing to the target")
     p.add_argument("-v", "--verbose", action="store_true")
     args = p.parse_args()
     logging.basicConfig(
@@ -160,6 +173,9 @@ def cli() -> None:
     if args.command == "import":
         _import(settings, args.zip)
         return
+    if args.command == "restore":
+        _restore(settings, args.zip, args.yes)
+        return
     queue = SupabaseQueue(settings)
     items = SupabaseItemStore(queue.db, settings.owner)
 
@@ -170,6 +186,12 @@ def cli() -> None:
         print(f"Wrote {zip_path}. Check labels.csv, then upload the zip to Colab.")
         return
 
+    if args.command == "backup":
+        from .jobs import backup
+
+        r = backup.run({}, JobContext(settings=settings, items=items))
+        print(json.dumps(r, indent=2))
+        return
     if args.command == "compat-eval":
         _compat_eval(settings, items)
         return
@@ -208,6 +230,43 @@ def _compat_eval(settings: Settings, items: SupabaseItemStore) -> None:
         scorer,
     )
     print(summary(r, write_gate(settings.compat_model_dir, r)))
+
+
+def _restore(settings: Settings, folder: str | None, yes: bool) -> None:
+    """Target comes only from CLOSET_RESTORE_* variables, never from worker/.env, so a restore
+    can't overwrite production by accident."""
+    import os
+    from pathlib import Path
+
+    from supabase import create_client
+
+    from .restore import RestoreError, run_restore
+
+    need = ["CLOSET_RESTORE_DB_URL", "CLOSET_RESTORE_SUPABASE_URL", "CLOSET_RESTORE_SERVICE_KEY"]
+    missing = [n for n in need if not os.environ.get(n)]
+    if not folder or missing:
+        raise SystemExit(
+            "Usage: set CLOSET_RESTORE_DB_URL, CLOSET_RESTORE_SUPABASE_URL and "
+            "CLOSET_RESTORE_SERVICE_KEY, then run "
+            "closet-worker restore ~/ClosetBackups/db/<stamp> --yes  (see README)"
+            + (f"\nMissing: {', '.join(missing)}" if missing else "")
+        )
+    target = os.environ["CLOSET_RESTORE_SUPABASE_URL"]
+    if not yes:
+        raise SystemExit(f"This writes to {target}. Add --yes to go ahead.")
+    db = create_client(target, os.environ["CLOSET_RESTORE_SERVICE_KEY"])
+    try:
+        r = run_restore(
+            Path(folder).expanduser(),
+            settings.backup_dir / "files",
+            os.environ["CLOSET_RESTORE_DB_URL"],
+            db,
+        )
+    except RestoreError as e:
+        raise SystemExit(f"Not restored: {e}") from e
+    print(json.dumps(r, indent=2))
+    if r["mismatch"]:
+        raise SystemExit("Restored, but some row counts differ from the backup (listed above).")
 
 
 def _import(settings: Settings, zip_path: str | None) -> None:

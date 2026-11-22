@@ -116,7 +116,36 @@ supabase test db                            # RLS + queue tests (pgTAP)
 
 ## Backups and restore
 
-Nightly `pg_dump` plus a Storage sync to `BACKUP_DIR` arrive in Phase 5, along with the restore script.
+The Mac worker backs up **your** data every night at 02:00 (or on the next wake), and whenever
+you tap **Back up now** under Your Mac. It needs `pg_dump`/`psql`: `brew install libpq`, and
+`DATABASE_URL` in `worker/.env` (Supabase → Connect → direct connection string).
+
+```
+~/ClosetBackups/            (only your Mac user can open it)
+  db/<UTC stamp>/           your rows from one snapshot: one CSV per table, plus manifest.json
+                            (columns, row counts that were checked, SHA-256 per file); 14 kept
+  files/<your id>/…         every photo, copied once (photo names never change)
+  models/                   installed outfit model, fit gate and garment heads
+```
+
+Run one by hand: `cd worker && uv run closet-worker backup`.
+
+**Restore** (into a project that has Closet's schema and doesn't already have your account, for
+example a new Supabase project after `supabase db push`, or local after `supabase db reset`):
+
+```
+cd worker
+CLOSET_RESTORE_DB_URL='postgresql://…'          \
+CLOSET_RESTORE_SUPABASE_URL='https://<ref>.supabase.co' \
+CLOSET_RESTORE_SERVICE_KEY='…'                  \
+uv run closet-worker restore ~/ClosetBackups/db/<stamp> --yes
+```
+
+It checks every file's checksum, loads your sign-in record and all tables in one transaction
+(triggers off, so nothing is added twice), uploads your photos, then compares row counts with
+the backup. The target comes only from those variables, never from `worker/.env`, so a restore
+can't overwrite production by accident. `tests/test_backup_integration.py` runs this whole
+round trip against local Supabase.
 
 ## Cost
 

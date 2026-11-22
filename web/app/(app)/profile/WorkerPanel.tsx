@@ -5,13 +5,31 @@ import { useToast } from "@/components/Toast";
 import { useWorkerStatus } from "@/components/WorkerStatus";
 import { enqueueJob, waitForJob } from "@/lib/jobs";
 import { supabase } from "@/lib/supabase/client";
-import { compatText, seenAgo } from "@/lib/worker-status";
+import { backupSummary, compatText, seenAgo } from "@/lib/worker-status";
 
 export function WorkerPanel() {
   const s = useWorkerStatus();
   const toast = useToast();
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState("");
+  const [backingUp, setBackingUp] = useState(false);
+
+  const backupNow = async () => {
+    setBackingUp(true);
+    try {
+      const db = supabase();
+      const job = await enqueueJob(db, "backup", {}, 1);
+      toast("Backup started on your Mac.");
+      const done = await waitForJob(db, job.id, { timeoutMs: 180_000 });
+      if (done?.status === "done") toast("Backup done.");
+      else if (done?.status === "failed") toast(`Backup failed: ${done.error ?? "unknown error"}`);
+      s.refresh();
+    } catch {
+      toast("Couldn’t start the backup. Check your connection and try again.");
+    } finally {
+      setBackingUp(false);
+    }
+  };
 
   const test = async () => {
     setTesting(true);
@@ -57,12 +75,19 @@ export function WorkerPanel() {
           <dt>Outfit model</dt>
           <dd data-testid="compat-state">{compatText(caps.compat)}</dd>
           <dt>Last backup</dt>
-          <dd>{s.lastBackupAt ? seenAgo(s.lastBackupAt) : "None yet"}</dd>
+          <dd data-testid="last-backup">
+            {s.lastBackupAt
+              ? [seenAgo(s.lastBackupAt), backupSummary(s.lastBackup)].filter(Boolean).join(" · ")
+              : "None yet"}
+          </dd>
         </dl>
       )}
       <div className="row">
         <button type="button" className="btn" onClick={test} disabled={testing}>
           {testing ? "Testing…" : "Test your Mac"}
+        </button>
+        <button type="button" className="btn" onClick={backupNow} disabled={backingUp || s.offline}>
+          {backingUp ? "Backing up…" : "Back up now"}
         </button>
       </div>
       <p className="hint" role="status" data-testid="ping-result">

@@ -28,13 +28,19 @@ type State = {
   capabilities: Capabilities;
   queued: { kind: string; count: number }[];
   lastBackupAt: string | null;
+  lastBackup: unknown;
   refresh: () => void;
 };
 
 const Ctx = createContext<State | null>(null);
 
 type WorkerRow = { last_seen_at: string; version: string | null; capabilities: unknown };
-type Snapshot = { worker: WorkerRow | null; queued: { kind: string }[]; lastBackupAt: string | null };
+type Snapshot = {
+  worker: WorkerRow | null;
+  queued: { kind: string }[];
+  lastBackupAt: string | null;
+  lastBackup: unknown;
+};
 
 async function fetchSnapshot(): Promise<Snapshot> {
   const db = supabase();
@@ -43,13 +49,18 @@ async function fetchSnapshot(): Promise<Snapshot> {
     db.from("jobs").select("kind").eq("status", "queued").limit(200),
     db
       .from("jobs")
-      .select("finished_at")
+      .select("finished_at,result")
       .eq("kind", "backup")
       .eq("status", "done")
       .order("finished_at", { ascending: false })
       .limit(1),
   ]);
-  return { worker: w.data?.[0] ?? null, queued: q.data ?? [], lastBackupAt: b.data?.[0]?.finished_at ?? null };
+  return {
+    worker: w.data?.[0] ?? null,
+    queued: q.data ?? [],
+    lastBackupAt: b.data?.[0]?.finished_at ?? null,
+    lastBackup: b.data?.[0]?.result ?? null,
+  };
 }
 
 export function useWorkerStatus(): State {
@@ -63,12 +74,14 @@ export function WorkerStatusProvider({ children }: { children: React.ReactNode }
   const [worker, setWorker] = useState<WorkerRow | null>(null);
   const [queuedRows, setQueuedRows] = useState<{ kind: string }[]>([]);
   const [lastBackupAt, setLastBackupAt] = useState<string | null>(null);
+  const [lastBackup, setLastBackup] = useState<unknown>(null);
   const [now, setNow] = useState(0); // set on first load; nothing reads it before then
 
   const apply = useCallback((s: Snapshot) => {
     setWorker(s.worker);
     setQueuedRows(s.queued);
     setLastBackupAt(s.lastBackupAt);
+    setLastBackup(s.lastBackup);
     setNow(Date.now());
     setLoaded(true);
   }, []);
@@ -110,9 +123,10 @@ export function WorkerStatusProvider({ children }: { children: React.ReactNode }
       capabilities: readCapabilities(worker?.capabilities),
       queued: [...counts].map(([kind, count]) => ({ kind, count })),
       lastBackupAt,
+      lastBackup,
       refresh,
     };
-  }, [loaded, worker, queuedRows, lastBackupAt, now, refresh]);
+  }, [loaded, worker, queuedRows, lastBackupAt, lastBackup, now, refresh]);
 
   return <Ctx value={value}>{children}</Ctx>;
 }

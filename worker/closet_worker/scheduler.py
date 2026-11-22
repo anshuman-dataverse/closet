@@ -37,8 +37,9 @@ def daily_due(task: Daily, now: datetime, last_run: date | None) -> bool:
 
 
 class Scheduler:
-    def __init__(self, state_path: Path = STATE_PATH) -> None:
+    def __init__(self, state_path: Path = STATE_PATH, daily: tuple[Daily, ...] = DAILY) -> None:
         self.state_path = state_path
+        self.daily = daily
         self.last_requeue: datetime | None = None
         self.last_daily: dict[str, date] = self._load()
 
@@ -65,7 +66,7 @@ class Scheduler:
         """Job kinds to enqueue now. Kinds whose handler isn't built yet are skipped."""
         out: list[str] = []
         changed = False
-        for task in DAILY:
+        for task in self.daily:
             if daily_due(task, now, self.last_daily.get(task.name)):
                 self.last_daily[task.name] = now.date()
                 changed = True

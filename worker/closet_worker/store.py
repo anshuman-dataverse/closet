@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Protocol
 
+from postgrest.types import CountMethod
 from supabase import Client
 
 BUCKET = "wardrobe"
@@ -32,6 +33,8 @@ class ItemStore(Protocol):
     def update_profile(self, fields: dict[str, Any]) -> None: ...
     def list_embeddings(self, model: str) -> dict[str, list[float]]: ...
     def list_suggestion_events(self) -> list[dict[str, Any]]: ...
+    def list_storage(self) -> list[tuple[str, int]]: ...
+    def count_rows(self, tables: tuple[str, ...]) -> dict[str, int]: ...
 
 
 class SupabaseItemStore:
@@ -197,3 +200,36 @@ class SupabaseItemStore:
             .execute()
         )
         return self._rows(res)
+
+    def list_storage(self) -> list[tuple[str, int]]:
+        """(path, size) of every file under the owner's folder in the bucket, recursively."""
+        bucket = self.db.storage.from_(BUCKET)
+        out: list[tuple[str, int]] = []
+        folders = [self.owner]
+        while folders:
+            folder = folders.pop()
+            offset = 0
+            while True:
+                page = bucket.list(folder, {"limit": 1000, "offset": offset})
+                for e in page:
+                    path = f"{folder}/{e['name']}"
+                    if e.get("id") is None:  # a folder
+                        folders.append(path)
+                    else:
+                        out.append((path, int((e.get("metadata") or {}).get("size") or 0)))
+                if len(page) < 1000:
+                    break
+                offset += 1000
+        return sorted(out)
+
+    def count_rows(self, tables: tuple[str, ...]) -> dict[str, int]:
+        out: dict[str, int] = {}
+        for t in tables:
+            res = (
+                self.db.table(t)
+                .select("*", count=CountMethod.exact, head=True)
+                .eq("user_id", self.owner)
+                .execute()
+            )
+            out[t] = int(res.count or 0)
+        return out

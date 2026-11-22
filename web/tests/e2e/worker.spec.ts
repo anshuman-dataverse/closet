@@ -38,6 +38,11 @@ test("Mac offline → queued work waits → Mac back → ping round trip → Mac
   await page.getByRole("button", { name: "Test your Mac" }).click();
   await expect(page.getByTestId("ping-result")).toHaveText(/Your Mac answered in/, { timeout: 20_000 });
 
+  // "Back up now" runs a backup on the Mac and shows its size.
+  await page.getByRole("button", { name: "Back up now" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Backup done." })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("last-backup")).toContainText("3 photos, 0.9 MB");
+
   // Worker stops and its heartbeat goes stale (>2 min): the pill comes back.
   await stopWorker(worker);
   await backdateWorker(3 * 60_000);

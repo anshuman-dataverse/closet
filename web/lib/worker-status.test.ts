@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compatText, isOffline, OFFLINE_AFTER_MS, readCapabilities, seenAgo } from "./worker-status";
+import { backupSummary, compatText, isOffline, OFFLINE_AFTER_MS, readCapabilities, seenAgo } from "./worker-status";
 
 const NOW = Date.parse("2026-11-20T12:00:00Z");
 const ago = (ms: number) => new Date(NOW - ms).toISOString();
@@ -53,5 +53,13 @@ describe("seenAgo", () => {
     expect(seenAgo(ago(5 * 60_000), NOW)).toBe("5 minutes ago");
     expect(seenAgo(ago(3 * 3_600_000), NOW)).toBe("3 hours ago");
     expect(seenAgo(null, NOW)).toBe("never");
+  });
+});
+
+describe("backupSummary", () => {
+  it("counts photos and total size", () => {
+    expect(backupSummary({ files_total: 15, files_bytes: 4_762_147, db_bytes: 21_179 })).toBe("15 photos, 4.8 MB");
+    expect(backupSummary({ files_total: 1, files_bytes: 2_000_000_000, db_bytes: 0 })).toBe("1 photo, 2.0 GB");
+    expect(backupSummary(null)).toBe("");
   });
 });

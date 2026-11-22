@@ -2,7 +2,7 @@
 
 The spec is **SPEC.md** (read it before planning). The look, copy and interactions are in `design-reference/closet-demo.html`.
 Work phase by phase (SPEC 12). Plan each phase and get an OK first. Ask before adding paid services or deps that need accounts.
-Done: Phases 0–1, 3–4. Phase 2 (vision) counts as done once the Colab eval meets ≥90% category / ≥70% type. Next: Phase 5.
+Done: Phases 0–1, 3–4, plus backups from Phase 5. Phase 2 (vision) counts as done once the Colab eval meets ≥90% category / ≥70% type. Next: Phase 5.
 Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Vercel has no GPUs.
 
 ## Run
@@ -68,6 +68,11 @@ Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Ve
 - Labels: `read_label` job, Apple Vision OCR on the Mac (`vision/label.py`, PyObjC, darwin-only dep). Report only printed
   facts: one size, one fit word, fibers summing to 100%. Writes `suggestions.label`; the web fills empty, untouched fields.
 - Colab results come back as zips with a SHA-256 manifest: `closet-worker import <zip>` (`bundle.py`). `colab/outputs/` is gitignored.
+- Garment heads (`vision/heads.py`, trained by `train/garment_heads.py` in `colab/garment_heads.ipynb`): used per head only
+  where they beat zero-shot on the user's labeled photos; tag_item records `suggestions.sources`.
+- Backups (`jobs/backup.py`): owner-only CSV per table from one snapshot via psql `\copy` (not pg_dump: that would include
+  other users), photos synced, models copied, 14 kept. `closet-worker restore` reads targets only from CLOSET_RESTORE_*.
+  Fake mode runs no nightly tasks and uses `~/.closet/scheduler-fake.json`.
 
 ## Recommender (worker `recsys/`, no ML)
 - `candidates.py` (structure rules), `scoring.py` (harmony, palette=0 until Phase 4, formality, weather, freshness),

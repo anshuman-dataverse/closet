@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
+from closet_worker.config import Settings
 from closet_worker.scheduler import DAILY, Scheduler, daily_due
 
 NIGHTLY = DAILY[0]
@@ -45,3 +46,16 @@ def test_requeue_every_ten_minutes(tmp_path: Path) -> None:
     assert s.requeue_due(t)
     assert not s.requeue_due(t + timedelta(minutes=9))
     assert s.requeue_due(t + timedelta(minutes=10))
+
+
+def test_fake_worker_keeps_its_own_schedule_file(settings: Settings) -> None:
+    from closet_worker.main import Worker
+    from closet_worker.scheduler import STATE_PATH
+
+    from .conftest import MemoryQueue
+
+    assert (
+        Worker(settings, MemoryQueue(), fake=True).scheduler.state_path.name
+        == "scheduler-fake.json"
+    )
+    assert Worker(settings, MemoryQueue(), fake=False).scheduler.state_path == STATE_PATH

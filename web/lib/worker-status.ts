@@ -33,6 +33,17 @@ export function compatText(c: CompatStatus): string {
   return `Off until it beats the rules on ${c.need} of your logged outfits (${c.n} so far)`;
 }
 
+/** "15 photos, 4.8 MB" from a backup job's result, or "" if it isn't one. */
+export function backupSummary(result: unknown): string {
+  const r = result && typeof result === "object" ? (result as Record<string, unknown>) : {};
+  const n = typeof r.files_total === "number" ? r.files_total : null;
+  const bytes =
+    (typeof r.files_bytes === "number" ? r.files_bytes : 0) + (typeof r.db_bytes === "number" ? r.db_bytes : 0);
+  if (n === null) return "";
+  const size = bytes >= 1e9 ? `${(bytes / 1e9).toFixed(1)} GB` : `${(bytes / 1e6).toFixed(1)} MB`;
+  return `${n} ${n === 1 ? "photo" : "photos"}, ${size}`;
+}
+
 /** "just now", "3 minutes ago", "2 hours ago", or a short date. */
 export function seenAgo(iso: string | null | undefined, now: number = Date.now()): string {
   if (!iso) return "never";
