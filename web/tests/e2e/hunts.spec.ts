@@ -21,7 +21,7 @@ test("a deal hunt runs on the Mac, shows picks, adds one to the wishlist, and de
   worker = startFakeWorker();
   await waitForHeartbeat();
   await signIn("/shop?tab=hunts");
-  await expect(page.getByText("Free search reads public product pages.", { exact: false })).toBeVisible();
+  await expect(page.getByText("Some stores block reading, so results vary.", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "New hunt" }).click();
   const sheet = page.getByRole("dialog", { name: "New hunt" });
   await sheet.getByRole("button", { name: "Start hunt" }).click();

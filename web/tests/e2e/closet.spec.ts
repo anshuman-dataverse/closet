@@ -41,19 +41,27 @@ test("add a piece with a photo, then laundry, retire and delete it", async ({ pa
   await tile.click();
   await page.getByRole("dialog", { name: "Navy tee" }).getByRole("button", { name: "In laundry" }).click();
   await expect(page.getByRole("button", { name: /Navy tee/ })).toBeHidden();
-  await page.getByRole("group", { name: "Status" }).getByRole("button", { name: "In laundry (1)" }).click();
+  await page.getByRole("button", { name: "Filters" }).click();
+  const filters = page.getByRole("dialog", { name: "Filters" });
+  await filters.getByRole("group", { name: "Status" }).getByRole("button", { name: "In laundry (1)" }).click();
+  await filters.getByRole("button", { name: "Show 1 piece" }).click();
+  await expect(filters).toBeHidden();
+  await expect(page.getByRole("button", { name: "Filters · 1" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Navy tee/ })).toBeVisible();
-  await page.getByRole("button", { name: "Laundry done" }).click();
+  await page.getByRole("button", { name: "Laundry done (1)" }).click();
   await expect(page.getByRole("button", { name: /Navy tee/ })).toBeHidden();
-  await page.getByRole("group", { name: "Status" }).getByRole("button", { name: "Active" }).click();
+  await page.getByRole("button", { name: "Clear" }).click();
+  await expect(page.getByRole("button", { name: "Filters", exact: true })).toBeVisible();
 
   // Retire → Bring back
   await page.getByRole("button", { name: /Navy tee/ }).click();
   await page.getByRole("dialog", { name: "Navy tee" }).getByRole("button", { name: "Retire" }).click();
-  await page.getByRole("group", { name: "Status" }).getByRole("button", { name: "Retired (1)" }).click();
+  await page.getByRole("button", { name: "Filters" }).click();
+  await filters.getByRole("group", { name: "Status" }).getByRole("button", { name: "Retired (1)" }).click();
+  await filters.getByRole("button", { name: "Show 1 piece" }).click();
   await page.getByRole("button", { name: /Navy tee/ }).click();
   await page.getByRole("dialog", { name: "Navy tee" }).getByRole("button", { name: "Bring back" }).click();
-  await page.getByRole("group", { name: "Status" }).getByRole("button", { name: "Active" }).click();
+  await page.getByRole("button", { name: "Clear" }).click();
 
   // Delete takes two taps and removes the files.
   await page.getByRole("button", { name: /Navy tee/ }).click();
@@ -133,10 +141,9 @@ test("fit choices follow the category and what you wear", async ({ page, signIn 
 
   // "Clothes I mostly wear: Menswear" hides womenswear-only choices.
   await page.goto("/profile");
-  const settings = page.getByRole("region", { name: "Settings" });
+  const settings = page.getByRole("region", { name: "Sizes and fit" });
   await settings.getByLabel("Clothes I mostly wear").selectOption("menswear");
-  await settings.getByRole("button", { name: "Save settings" }).click();
-  await expect(page.getByRole("status").filter({ hasText: /saved/i })).toBeVisible();
+  await expect(settings.getByRole("status")).toHaveText("Saved");
   await page.goto("/closet?add=1");
   const add = page.getByRole("dialog", { name: "Add clothes" });
   await add.getByLabel("Category").selectOption("Bottoms");

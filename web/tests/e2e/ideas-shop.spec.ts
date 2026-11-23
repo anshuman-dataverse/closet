@@ -34,18 +34,30 @@ async function seedOffice() {
   ]);
 }
 
-test("More ideas: save one, wear one, thumbs down one — every action is recorded", async ({ page, signIn }) => {
+test("ideas: they load on their own, then save one, wear one, thumbs down one — every action is recorded", async ({
+  page,
+  signIn,
+}) => {
   test.setTimeout(90_000);
   await seedOffice();
   worker = startFakeWorker();
   await waitForHeartbeat();
   await signIn();
   await page.getByRole("radio", { name: "office" }).click();
-  const ideas = page.getByRole("region", { name: "More ideas" });
-  await ideas.getByLabel("Anything special today?").fill("client meeting at 2");
-  await ideas.getByRole("button", { name: "Get ideas" }).click();
+  // No saved outfits yet, so the Mac's ideas lead Today, and they arrive without asking.
+  await expect(page.getByRole("heading", { name: "Office ideas from your closet" })).toBeVisible();
+  const ideas = page.getByRole("region", { name: /ideas/ }); // "More ideas" once one is saved
   const cards = ideas.locator("article.combo");
   await expect(cards).toHaveCount(3, { timeout: 30_000 });
+  // Coming back to Today doesn't ask again.
+  await page.goto("/closet");
+  await page.goto("/today");
+  await expect(cards).toHaveCount(3);
+  // A note asks again with it.
+  await ideas.getByLabel(/Anything special today/).fill("client meeting at 2");
+  await ideas.getByRole("button", { name: "New ideas" }).click();
+  await expect(ideas.getByRole("status")).toHaveCount(0, { timeout: 30_000 });
+  await expect(cards).toHaveCount(3);
   await expect(cards.first().locator("p")).toHaveText(/\.$/); // a reason sentence
 
   await cards.nth(0).getByRole("button", { name: "Save outfit" }).click();
@@ -57,8 +69,10 @@ test("More ideas: save one, wear one, thumbs down one — every action is record
 
   const { data: events } = await admin.from("suggestion_events").select("action,context").eq("user_id", OWNER.id);
   const actions = (events ?? []).map((e) => e.action).sort();
-  expect(actions).toEqual(["disliked", "saved", "shown", "shown", "shown", "worn"].sort());
-  expect((events ?? []).every((e) => (e.context as { note?: string }).note === "client meeting at 2")).toBe(true);
+  expect(actions).toEqual(["disliked", "saved", "shown", "shown", "shown", "shown", "shown", "shown", "worn"].sort());
+  const note = (e: { context: unknown }) => (e.context as { note?: string }).note;
+  expect((events ?? []).filter((e) => note(e) === "client meeting at 2")).toHaveLength(6); // 3 shown + 3 acted on
+  expect((events ?? []).filter((e) => note(e) === "")).toHaveLength(3); // the first, automatic ideas
   const { data: outfits } = await admin.from("outfits").select("source").eq("user_id", OWNER.id);
   expect(outfits?.map((o) => o.source)).toEqual(["suggested", "suggested"]);
   const { count } = await admin.from("wear_logs").select("*", { count: "exact", head: true }).eq("user_id", OWNER.id);
@@ -68,7 +82,7 @@ test("More ideas: save one, wear one, thumbs down one — every action is record
 test("More ideas when the Mac is offline", async ({ page, signIn }) => {
   await seedOffice();
   await signIn();
-  const ideas = page.getByRole("region", { name: "More ideas" });
+  const ideas = page.getByRole("region", { name: /ideas/ });
   await ideas.getByRole("button", { name: "Get ideas" }).click();
   await expect(ideas.getByRole("status")).toHaveText(
     "Your Mac is offline, so new ideas will appear when it’s back. Your saved outfits still rotate.",

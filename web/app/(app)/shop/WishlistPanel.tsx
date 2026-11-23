@@ -160,9 +160,7 @@ export function WishlistPanel() {
   return (
     <>
       <div className="panel-head">
-        <p className="muted">
-          Things you’re thinking of buying. Check each against what you already own before you spend.
-        </p>
+        <p className="muted">Things you’re thinking of buying.</p>
         <div className="row">
           <button type="button" className="btn primary" onClick={() => setSuits(true)} disabled={s.status !== "ready"}>
             Would it suit me?
@@ -183,8 +181,7 @@ export function WishlistPanel() {
         </ul>
       ) : (
         <EmptyState title="Your wishlist is empty">
-          Add something you’ve seen online or in a store, with the price and link. “Do I need this?” then tells you
-          whether it earns a place in your closet.
+          Add something you’ve seen, or check a link or screenshot with Would it suit me?
         </EmptyState>
       )}
       <WishSheet open={adding} onClose={() => setAdding(false)} />

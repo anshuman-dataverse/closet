@@ -216,7 +216,7 @@ export function SuitsSheet({ open, onClose }: { open: boolean; onClose: () => vo
                   Take photo
                 </button>
               </div>
-              <p className="hint">A link works for most stores. If a store blocks apps, use a screenshot.</p>
+              <p className="hint">If a store blocks the link, use a screenshot.</p>
             </div>
           </div>
           <fieldset className="field">
@@ -230,8 +230,7 @@ export function SuitsSheet({ open, onClose }: { open: boolean; onClose: () => vo
             />
           </fieldset>
           <p className="hint">
-            Your Mac checks the color against your palette, the formality, how many outfits it makes with what you own,
-            whether you already have something like it, and the fit the store states. It can’t show it on you.
+            Checks your colors, formality, outfits with your closet, look-alikes you own and the stated fit.
           </p>
         </>
       )}

@@ -5,6 +5,7 @@ import { Chips } from "@/components/Chips";
 import { EmptyState } from "@/components/EmptyState";
 import { ItemSheet } from "@/components/ItemSheet";
 import { LoadGate } from "@/components/Loading";
+import { Sheet } from "@/components/Sheet";
 import { PieceCell } from "@/components/Piece";
 import { useToast } from "@/components/Toast";
 import { setItemsStatus, useCloset, useDerived } from "@/lib/closet/store";
@@ -38,6 +39,13 @@ export function ClosetView() {
   const [occ, setOcc] = useState<Occasion | "any">("any");
   const [status, setStatus] = useState<ItemStatus>("active");
   const [sort, setSort] = useState<Sort>("recent");
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const changed = (occ !== "any" ? 1 : 0) + (status !== "active" ? 1 : 0) + (sort !== "recent" ? 1 : 0);
+  const reset = () => {
+    setOcc("any");
+    setStatus("active");
+    setSort("recent");
+  };
 
   const itemParam = params.get("item");
   const sheetOpen = params.has("add") || !!itemParam;
@@ -114,44 +122,45 @@ export function ClosetView() {
     body = (
       <>
         <div className="filters">
-          <Chips
-            label="Category"
-            options={[{ id: "all" as const, label: "All" }, ...CATEGORIES.map((c) => ({ id: c, label: c }))]}
-            value={cat}
-            onChange={setCat}
-          />
-          <Chips
-            label="Occasion"
-            options={[{ id: "any" as const, label: "Any occasion" }, ...OCCASIONS]}
-            value={occ}
-            onChange={setOcc}
-          />
-          <Chips
-            label="Status"
-            options={STATUSES.map((x) => ({
-              ...x,
-              label: counts[x.id] && x.id !== "active" ? `${x.label} (${counts[x.id]})` : x.label,
-            }))}
-            value={status}
-            onChange={setStatus}
-          />
-          <div className="row tight">
-            <label className="sort">
-              <span>Sort</span>
-              <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
-                {SORTS.map(([v, l]) => (
-                  <option key={v} value={v}>
-                    {l}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {counts.laundry > 0 && (
-              <button type="button" className="btn sm" onClick={laundryDone}>
-                Laundry done
-              </button>
-            )}
+          <div className="filter-row">
+            <Chips
+              label="Category"
+              options={[{ id: "all" as const, label: "All" }, ...CATEGORIES.map((c) => ({ id: c, label: c }))]}
+              value={cat}
+              onChange={setCat}
+            />
+            <button
+              type="button"
+              className="btn sm filter-btn"
+              aria-haspopup="dialog"
+              onClick={() => setFiltersOpen(true)}
+            >
+              {changed ? `Filters · ${changed}` : "Filters"}
+            </button>
           </div>
+          {(changed > 0 || counts.laundry > 0) && (
+            <div className="row tight">
+              {changed > 0 && (
+                <p className="muted small">
+                  {[
+                    occ !== "any" && OCCASIONS.find((o) => o.id === occ)?.label,
+                    status !== "active" && STATUSES.find((x) => x.id === status)?.label,
+                    sort !== "recent" && SORTS.find(([v]) => v === sort)?.[1],
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}{" "}
+                  <button type="button" className="link" onClick={reset}>
+                    Clear
+                  </button>
+                </p>
+              )}
+              {counts.laundry > 0 && (
+                <button type="button" className="btn sm" onClick={laundryDone}>
+                  Laundry done ({counts.laundry})
+                </button>
+              )}
+            </div>
+          )}
         </div>
         {list.length ? (
           <ul className="grid" aria-label="Your pieces">
@@ -182,10 +191,64 @@ export function ClosetView() {
       </>
     );
 
+  const filters = (
+    <Sheet
+      open={filtersOpen}
+      onClose={() => setFiltersOpen(false)}
+      title="Filters"
+      actions={
+        <>
+          <button type="button" className="btn" onClick={reset} disabled={!changed}>
+            Reset
+          </button>
+          <span className="grow" />
+          <button type="button" className="btn primary" onClick={() => setFiltersOpen(false)}>
+            Show {list.length} {list.length === 1 ? "piece" : "pieces"}
+          </button>
+        </>
+      }
+    >
+      <fieldset className="field">
+        <legend>Occasion</legend>
+        <Chips
+          label="Occasion"
+          wrap
+          options={[{ id: "any" as const, label: "Any occasion" }, ...OCCASIONS]}
+          value={occ}
+          onChange={setOcc}
+        />
+      </fieldset>
+      <fieldset className="field">
+        <legend>Status</legend>
+        <Chips
+          label="Status"
+          wrap
+          options={STATUSES.map((x) => ({
+            ...x,
+            label: counts[x.id] && x.id !== "active" ? `${x.label} (${counts[x.id]})` : x.label,
+          }))}
+          value={status}
+          onChange={setStatus}
+        />
+      </fieldset>
+      <label className="field">
+        <span>Sort</span>
+        <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}>
+          {SORTS.map(([v, l]) => (
+            <option key={v} value={v}>
+              {l}
+            </option>
+          ))}
+        </select>
+      </label>
+    </Sheet>
+  );
+
   return (
     <>
       {head}
       {body}
+      {filters}
       {sheet}
     </>
   );

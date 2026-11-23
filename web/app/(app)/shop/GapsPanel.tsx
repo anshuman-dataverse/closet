@@ -88,7 +88,7 @@ export function GapsPanel() {
   return (
     <>
       <div className="panel-head">
-        <p className="muted">Pick an occasion. Your Mac looks for the staple that would add the most new outfits.</p>
+        <p className="muted">The piece that would add the most new outfits.</p>
       </div>
       <Chips label="Occasion" options={OCCASIONS} value={occ} onChange={setOcc} />
       <div className="row">

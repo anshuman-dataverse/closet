@@ -84,23 +84,8 @@ export function TodayView() {
         </section>
       );
     } else if (!list.length) {
-      card = (
-        <section className="pick empty-pick">
-          <h2 className="pick-name">No {OCC_LABEL[occ].toLowerCase()} outfits saved yet</h2>
-          <p className="muted">Put one together from your closet.</p>
-          <div className="row">
-            {d.active.length >= 2 ? (
-              <button type="button" className="btn primary" onClick={() => open("new", "1")}>
-                Build an outfit
-              </button>
-            ) : (
-              <Link className="btn primary" href="/closet?add=1">
-                Add clothes
-              </Link>
-            )}
-          </div>
-        </section>
-      );
+      // No saved outfits yet: the Mac's ideas below lead; building your own is one tap away.
+      card = null;
     } else {
       const i = pick.index % list.length;
       const o = list[i]!;
@@ -147,7 +132,25 @@ export function TodayView() {
     main = (
       <>
         {card}
-        <MoreIdeas occasion={occ} weather={weather} />
+        <MoreIdeas
+          occasion={occ}
+          weather={weather}
+          title={card ? "More ideas" : `${OCC_LABEL[occ]} ideas from your closet`}
+        />
+        {!card && (
+          <p className="muted small">
+            Prefer to choose yourself?{" "}
+            {d.active.length >= 2 ? (
+              <button type="button" className="link" onClick={() => open("new", "1")}>
+                Build an outfit
+              </button>
+            ) : (
+              <Link className="link" href="/closet?add=1">
+                Add clothes
+              </Link>
+            )}
+          </p>
+        )}
         {recent.length > 0 && (
           <section className="block" aria-labelledby="recent-h">
             <div className="block-head">

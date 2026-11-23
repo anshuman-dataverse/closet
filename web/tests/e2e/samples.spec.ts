@@ -21,7 +21,7 @@ test("sample pieces: add, see them badged and used for ideas, never as spend, re
   worker = startFakeWorker();
   await waitForHeartbeat();
   await signIn("/profile");
-  const settings = page.getByRole("region", { name: "Settings" });
+  const settings = page.getByRole("region", { name: "Shopping and money" });
   await settings.getByRole("button", { name: "Add sample pieces" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Added 21 sample pieces" })).toBeVisible();
   const { count } = await admin
@@ -35,8 +35,7 @@ test("sample pieces: add, see them badged and used for ideas, never as spend, re
   await expect(page.getByRole("button", { name: /Navy blazer/ })).toContainText("Sample");
 
   await page.goto("/today");
-  const ideas = page.getByRole("region", { name: "More ideas" });
-  await ideas.getByRole("button", { name: "Get ideas" }).click();
+  const ideas = page.getByRole("region", { name: /ideas/ });
   await expect(ideas.locator("article.combo").first()).toBeVisible({ timeout: 30_000 }); // samples pass the bar
 
   await page.goto("/spend");

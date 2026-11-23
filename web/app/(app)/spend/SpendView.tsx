@@ -147,7 +147,7 @@ export function SpendView() {
           </>
         ) : (
           <div className="row">
-            <Link className="link" href="/profile#settings">
+            <Link className="link" href="/profile#shopping">
               Set a monthly budget
             </Link>
           </div>

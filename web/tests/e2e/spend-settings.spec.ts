@@ -63,14 +63,16 @@ test("settings: save sizes and budget, find a city, delete everything", async ({
   );
   await seedItems([{ name: "Shirt", category: "Tops" }]);
   await signIn("/profile");
-  const settings = page.getByRole("region", { name: "Settings" });
-  await settings.getByLabel("Waist").fill("32");
-  await settings.getByLabel("Fit preference").selectOption("slim");
-  await settings.getByLabel("Height").fill(`5'9"`);
-  await settings.getByLabel("Monthly clothing budget ($)").fill("200");
-  await settings.getByLabel("Favorite stores").fill("Uniqlo, J.Crew, Uniqlo");
-  await settings.getByRole("button", { name: "Save settings" }).click();
-  await expect(page.locator(".toast")).toContainText("Settings saved");
+  // Settings save on their own a moment after you stop typing.
+  const sizes = page.getByRole("region", { name: "Sizes and fit" });
+  await sizes.getByLabel("Waist").fill("32");
+  await sizes.getByLabel("Fit preference").selectOption("slim");
+  await sizes.getByLabel("Height").fill(`5'9"`);
+  await expect(sizes.getByRole("status")).toHaveText("Saved");
+  const shopping = page.getByRole("region", { name: "Shopping and money" });
+  await shopping.getByLabel("Monthly clothing budget ($)").fill("200");
+  await shopping.getByLabel("Favorite stores").fill("Uniqlo, J.Crew, Uniqlo");
+  await expect(shopping.getByRole("status")).toHaveText("Saved");
   const { data: p } = await admin.from("profiles").select("*").eq("user_id", OWNER.id).single();
   expect(p).toMatchObject({
     fit_pref: "slim",
@@ -80,6 +82,7 @@ test("settings: save sizes and budget, find a city, delete everything", async ({
   });
   expect(p!.sizes).toMatchObject({ waist: "32" });
 
+  const settings = page.getByRole("region", { name: "Place and units" });
   await settings.getByLabel("Home city").fill("Boston");
   await settings.getByRole("button", { name: "Find" }).click();
   await settings.getByRole("button", { name: "Boston, England, United Kingdom" }).click();
@@ -87,7 +90,7 @@ test("settings: save sizes and budget, find a city, delete everything", async ({
   await expect(settings.getByLabel("Time zone")).toHaveValue("Europe/London");
 
   await page.reload();
-  await expect(page.getByRole("region", { name: "Settings" }).getByLabel("Waist")).toHaveValue("32");
+  await expect(page.getByRole("region", { name: "Sizes and fit" }).getByLabel("Waist")).toHaveValue("32");
 
   const confirm = page.getByLabel("Type delete to confirm");
   const del = page.getByRole("button", { name: "Delete everything" });

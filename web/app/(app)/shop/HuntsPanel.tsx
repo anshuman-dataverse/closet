@@ -27,7 +27,7 @@ import { useSheetParam } from "@/lib/use-sheet-param";
 import { seenAgo } from "@/lib/worker-status";
 
 export const PRICES_CHANGE = "Prices change. Check the store page before buying.";
-export const FREE_NOTE = "Free search reads public product pages. Some stores block it, so results vary.";
+export const FREE_NOTE = "Some stores block reading, so results vary.";
 
 /** Hunts need to know whose clothes to search for. Asked once, saved to Settings. */
 function WearsAsk({ value, onChange }: { value: Wears | ""; onChange: (w: Wears) => void }) {
@@ -355,7 +355,7 @@ function HuntSheet({ open, onClose, initial }: { open: boolean; onClose: () => v
         <span>Notes</span>
         <input type="text" value={f.notes} onChange={(e) => set("notes", e.target.value)} maxLength={200} />
       </label>
-      <p className="hint">Your sizes, colors, favorite stores and what you mostly wear are added for you.</p>
+      <p className="hint">Your sizes, colors and stores are used for you.</p>
       {err && (
         <p className="err" role="alert">
           {err}

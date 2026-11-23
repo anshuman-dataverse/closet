@@ -56,7 +56,7 @@ export function WorkerPanel() {
 
   const caps = s.capabilities;
   return (
-    <section className="block" aria-labelledby="worker-h">
+    <section className="block" id="mac" aria-labelledby="worker-h">
       <div className="block-head">
         <h2 id="worker-h">Your Mac</h2>
       </div>
