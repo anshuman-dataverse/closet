@@ -98,6 +98,10 @@ test("shop a look: a complete set with its total, added to the wishlist in one t
   await page.getByRole("button", { name: "Shop a look" }).click();
   const sheet = page.getByRole("dialog", { name: "Shop a look" });
   await sheet.getByRole("group", { name: "Occasion" }).getByRole("button", { name: "College" }).click();
+  // Each piece's type can be picked; untouched slots stay on "Best for my closet".
+  const top = sheet.getByRole("group", { name: "Top", exact: true });
+  await expect(top.getByRole("button", { name: "Best for my closet" })).toHaveAttribute("aria-pressed", "true");
+  await top.getByRole("button", { name: "Henley" }).click();
   await sheet.getByLabel("Total budget ($)").fill("260");
   await sheet
     .getByRole("group", { name: "Clothes I mostly wear" })
@@ -112,8 +116,20 @@ test("shop a look: a complete set with its total, added to the wishlist in one t
   const look = card.getByRole("region", { name: "Look 1" });
   await expect(look.getByRole("heading")).toHaveText("Look 1 · $255.80");
   for (const slot of ["Top", "Layer", "Bottoms", "Shoes"]) await expect(look).toContainText(slot);
-  const row = await admin.from("hunts").select("kind, look_mode, budget_max_cents").eq("user_id", OWNER.id).single();
-  expect(row.data).toEqual({ kind: "look", look_mode: "new", budget_max_cents: 26000 });
+  const row = await admin
+    .from("hunts")
+    .select("kind, look_mode, budget_max_cents, look_types")
+    .eq("user_id", OWNER.id)
+    .single();
+  expect(row.data).toEqual({ kind: "look", look_mode: "new", budget_max_cents: 26000, look_types: { Tops: "henley" } });
+  await expect(card).toContainText("Henley");
+
+  // Change pieces reopens the sheet with this look's choices.
+  await card.getByRole("button", { name: "Change pieces" }).click();
+  await expect(top.getByRole("button", { name: "Henley" })).toHaveAttribute("aria-pressed", "true");
+  await expect(sheet.getByLabel("Total budget ($)")).toHaveValue("260");
+  await sheet.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(sheet).toBeHidden();
 
   await look.getByRole("button", { name: "Add all to wishlist" }).click();
   await expect(look.getByRole("button", { name: "Look is on your wishlist" })).toBeDisabled();

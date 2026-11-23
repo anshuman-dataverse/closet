@@ -43,33 +43,16 @@ SLOT_LABEL = {
     "Shoes": "Shoes",
     "Accessories": "Belt",
 }
-# Each occasion's standard pieces, in order of preference (common menswear guidance).
-PREFERRED: dict[str, dict[str, tuple[str, ...]]] = {
-    "office": {
-        "Tops": ("oxford shirt", "dress shirt"),
-        "Layers": ("blazer", "v-neck sweater"),
-        "Bottoms": ("dress trousers", "chinos"),
-        "Shoes": ("loafers", "derby shoes"),
-        "Accessories": ("belt",),
-    },
-    "college": {
-        "Tops": ("oxford shirt", "henley", "t-shirt"),
-        "Layers": ("crew neck sweater", "overshirt"),
-        "Bottoms": ("chinos", "dark wash jeans"),
-        "Shoes": ("white sneakers", "sneakers"),
-    },
-    "party": {
-        "Tops": ("oxford shirt", "knit polo"),
-        "Layers": ("blazer", "bomber jacket"),
-        "Bottoms": ("dark wash jeans", "chinos"),
-        "Shoes": ("chelsea boots", "loafers"),
-    },
-    "home": {
-        "Tops": ("t-shirt", "henley"),
-        "Bottoms": ("joggers", "shorts"),
-        "Shoes": ("sneakers", "sandals"),
-    },
-}
+LOOKS = Path(__file__).resolve().parent.parent / "vocab" / "looks.yaml"
+
+
+@cache
+def options() -> dict[str, dict[str, tuple[str, ...]]]:
+    """Each occasion's pieces per slot, in order of preference (vocab/looks.yaml)."""
+    raw = yaml.safe_load(LOOKS.read_text())
+    return {o: {c: tuple(ts) for c, ts in cats.items()} for o, cats in raw.items()}
+
+
 # Types that already name their color: the search uses the type alone.
 IMPLIED_COLOR = {
     "dark wash jeans": "indigo",
@@ -83,6 +66,17 @@ NOUNS = {
     "henley": ("henley",),
     "t-shirt": ("t-shirt", "tee"),
     "knit polo": ("polo",),
+    "polo shirt": ("polo",),
+    "turtleneck": ("turtleneck", "roll neck", "mock neck"),
+    "linen shirt": ("linen",),
+    "denim shirt": ("denim shirt", "chambray"),
+    "flannel shirt": ("flannel",),
+    "long-sleeve t-shirt": ("t-shirt", "tee"),
+    "cardigan": ("cardigan",),
+    "quarter-zip sweater": ("quarter-zip", "quarter zip", "1/4 zip", "half-zip", "half zip"),
+    "denim jacket": ("denim jacket", "trucker jacket", "jean jacket"),
+    "light wash jeans": ("jean",),
+    "cargo trousers": ("cargo",),
     "blazer": ("blazer", "sport coat", "sportcoat"),
     "v-neck sweater": ("sweater",),
     "crew neck sweater": ("sweater",),
@@ -130,15 +124,25 @@ def staples() -> tuple[Staple, ...]:
     return tuple(out)
 
 
-def staple_for(category: str, occasion: str) -> Staple | None:
-    """The staple whose formality is closest to the occasion's target, within its range."""
+def owned_count(t: str, owned: list[Piece]) -> int:
+    return sum(1 for p in owned if p.type == t)
+
+
+def staple_for(
+    category: str, occasion: str, owned: list[Piece] | None = None, pick: str | None = None
+) -> Staple | None:
+    """The type you picked; else the occasion's first option you own the fewest of (so a look
+    doesn't buy a fourth oxford shirt); else the staple closest to the occasion's formality."""
     lo, hi = FORMALITY_RANGE.get(occasion, (1, 5))
     target = FORMALITY_TARGET.get(occasion, 3.0)
     pool = [s for s in staples() if s.category == category and lo <= s.formality <= hi]
-    for t in PREFERRED.get(occasion, {}).get(category, ()):
-        hit = next((s for s in staples() if s.category == category and s.type == t), None)
-        if hit is not None:
-            return hit
+    by_type = {s.type: s for s in staples() if s.category == category}
+    opts = [t for t in options().get(occasion, {}).get(category, ()) if t in by_type]
+    if pick and pick in opts:
+        return by_type[pick]
+    if opts:
+        mine = owned or []
+        return by_type[min(opts, key=lambda t: (owned_count(t, mine), opts.index(t)))]
     if category == "Accessories":
         pool = [s for s in pool if s.type == "belt"]
     if category == "Layers":  # a wearable layer, not a winter coat, by default
@@ -185,12 +189,17 @@ def _colors(st: Staple, analysis: dict[str, Any] | None) -> tuple[str, ...]:
 
 
 def plan(
-    occasion: str, analysis: dict[str, Any] | None, owned: list[Piece], mode: str
+    occasion: str,
+    analysis: dict[str, Any] | None,
+    owned: list[Piece],
+    mode: str,
+    picks: dict[str, str] | None = None,
 ) -> list[Slot]:
-    """The slots and colors whose combination scores best on color harmony."""
+    """The slots and colors whose combination scores best on color harmony. `owned` is your
+    whole closet (it steers the types); only "use what I own" puts owned pieces in the set."""
     chosen: dict[str, Staple] = {}
     for c in SLOTS.get(occasion, SLOTS["office"]):
-        st = staple_for(c, occasion)
+        st = staple_for(c, occasion, owned, (picks or {}).get(c))
         if st is not None:
             chosen[c] = st
     cats = tuple(chosen)
@@ -357,8 +366,9 @@ def shop_look(
     owned: list[Piece],
     hunt: Hunter,
     sizes: dict[str, Any] | None = None,
+    picks: dict[str, str] | None = None,
 ) -> LookOutcome:
-    slots = plan(h.occasion or "office", analysis, owned, mode)
+    slots = plan(h.occasion or "office", analysis, owned, mode, picks)
     caps = budgets(slots, h.budget_max_cents)
     found: dict[str, list[Pick]] = {}
     pages = 0

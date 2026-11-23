@@ -10,6 +10,7 @@ import { useToast } from "@/components/Toast";
 import { useWorkerStatus } from "@/components/WorkerStatus";
 import { deleteHunt, rerunHunt, saveProfile, saveWish, startHunt, useCloset } from "@/lib/closet/store";
 import { isWears, type Wears, WEARS } from "@/lib/domain/fit";
+import { cleanPicks, lookSlots, lookTypesText } from "@/lib/domain/looks";
 import {
   foundBySlot,
   type Hunt,
@@ -187,7 +188,7 @@ function LookResults({ h }: { h: Hunt }) {
   );
 }
 
-function HuntCard({ h }: { h: Hunt }) {
+function HuntCard({ h, onChange }: { h: Hunt; onChange: (h: Hunt) => void }) {
   const worker = useWorkerStatus();
   const toast = useToast();
   const [busy, setBusy] = useState(false);
@@ -213,6 +214,7 @@ function HuntCard({ h }: { h: Hunt }) {
   const meta = [
     h.occasion && OCCASIONS.find((o) => o.id === h.occasion)?.label,
     (h.budget_min_cents != null || h.budget_max_cents != null) && budgetRange(h.budget_min_cents, h.budget_max_cents),
+    h.kind === "look" && lookTypesText(h.look_types),
   ].filter(Boolean);
   return (
     <li className="card" aria-label={`Hunt: ${h.query}`}>
@@ -234,6 +236,11 @@ function HuntCard({ h }: { h: Hunt }) {
         <button type="button" className="btn sm" onClick={again} disabled={busy || h.status === "running"}>
           {h.status === "failed" ? "Retry" : "Run again"}
         </button>
+        {h.kind === "look" && (
+          <button type="button" className="btn sm" onClick={() => onChange(h)} disabled={h.status === "running"}>
+            Change pieces
+          </button>
+        )}
         <button type="button" className="btn sm" onClick={remove}>
           Delete
         </button>
@@ -358,13 +365,30 @@ function HuntSheet({ open, onClose, initial }: { open: boolean; onClose: () => v
   );
 }
 
-type LookDraft = { occasion: Occasion; max: string; mode: "new" | "own" };
+type LookDraft = { occasion: Occasion; max: string; mode: "new" | "own"; picks: Record<string, string> };
+const BLANK_LOOK: LookDraft = { occasion: "office", max: "", mode: "new", picks: {} };
 
-function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+function draftFrom(h: Hunt | null): LookDraft {
+  if (!h) return BLANK_LOOK;
+  const occasion = (OCCASIONS.find((o) => o.id === h.occasion)?.id ?? "office") as Occasion;
+  const t = h.look_types;
+  const picks =
+    t && typeof t === "object" && !Array.isArray(t)
+      ? Object.fromEntries(Object.entries(t).filter((e): e is [string, string] => typeof e[1] === "string"))
+      : {};
+  return {
+    occasion,
+    max: centsToInput(h.budget_max_cents),
+    mode: h.look_mode === "own" ? "own" : "new",
+    picks: cleanPicks(occasion, picks) ?? {},
+  };
+}
+
+function LookSheet({ open, onClose, from }: { open: boolean; onClose: () => void; from: Hunt | null }) {
   const toast = useToast();
   const cl = useCloset();
   const [wears, setWears] = useState<Wears | "">("");
-  const [f, setF] = useState<LookDraft>({ occasion: "office", max: "", mode: "new" });
+  const [f, setF] = useState<LookDraft>(BLANK_LOOK);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [openedFor, setOpenedFor] = useState(false);
@@ -373,6 +397,7 @@ function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
     if (open) {
       setErr("");
       setBusy(false);
+      setF(draftFrom(from));
     }
   }
   const go = async () => {
@@ -394,6 +419,7 @@ function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
         notes: null,
         kind: "look",
         look_mode: f.mode,
+        look_types: cleanPicks(f.occasion, f.picks),
       });
       toast("Shopping the look on your Mac");
       onClose();
@@ -421,9 +447,28 @@ function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
           wrap
           options={OCCASIONS}
           value={f.occasion}
-          onChange={(o) => setF((x) => ({ ...x, occasion: o }))}
+          onChange={(o) => setF((x) => ({ ...x, occasion: o, picks: {} }))}
         />
       </fieldset>
+      {lookSlots(f.occasion).map((sl) => (
+        <fieldset key={sl.category} className="field">
+          <legend>{sl.label}</legend>
+          <Chips
+            label={sl.label}
+            wrap
+            options={[{ id: "", label: "Best for my closet" }, ...sl.options]}
+            value={f.picks[sl.category] ?? ""}
+            onChange={(t) =>
+              setF((x) => {
+                const picks = { ...x.picks };
+                if (t) picks[sl.category] = t;
+                else delete picks[sl.category];
+                return { ...x, picks };
+              })
+            }
+          />
+        </fieldset>
+      ))}
       <label className="field">
         <span>Total budget ($)</span>
         <input
@@ -449,8 +494,9 @@ function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
         />
       </fieldset>
       <p className="hint">
-        Your Mac plans every piece (top, layer, trousers, shoes, and a belt for the office) in colors that go together
-        and suit you, then shops each one. A look is shown only when every piece is found within your total.
+        Your Mac plans every piece in colors that go together and suit you, then shops each one. “Best for my closet”
+        picks the type you own the fewest of, so a look doesn’t buy what you already have. A look is shown only when
+        every piece is found within your total.
       </p>
       {err && (
         <p className="err" role="alert">
@@ -464,6 +510,7 @@ function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
 export function HuntsPanel() {
   const s = useCloset();
   const { params, open, close } = useSheetParam();
+  const [lookFrom, setLookFrom] = useState<Hunt | null>(null);
   const sheetOpen = params.get("new") === "hunt";
   const initial: Draft = {
     what: params.get("what") ?? "",
@@ -479,7 +526,14 @@ export function HuntsPanel() {
         <button type="button" className="btn primary" onClick={() => open("new", "hunt")}>
           New hunt
         </button>
-        <button type="button" className="btn" onClick={() => open("new", "look")}>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            setLookFrom(null);
+            open("new", "look");
+          }}
+        >
           Shop a look
         </button>
       </div>
@@ -493,12 +547,19 @@ export function HuntsPanel() {
       ) : (
         <ul className="cards" aria-label="Hunts">
           {s.hunts.map((h) => (
-            <HuntCard key={h.id} h={h} />
+            <HuntCard
+              key={h.id}
+              h={h}
+              onChange={(x) => {
+                setLookFrom(x);
+                open("new", "look");
+              }}
+            />
           ))}
         </ul>
       )}
       <HuntSheet open={sheetOpen} onClose={close} initial={initial} />
-      <LookSheet open={params.get("new") === "look"} onClose={close} />
+      <LookSheet open={params.get("new") === "look"} onClose={close} from={lookFrom} />
     </>
   );
 }

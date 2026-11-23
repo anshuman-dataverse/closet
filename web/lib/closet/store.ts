@@ -385,6 +385,7 @@ export type HuntInput = {
   notes: string | null;
   kind?: "item" | "look";
   look_mode?: "own" | "new" | null;
+  look_types?: Record<string, string> | null;
 };
 
 async function refreshHunt(id: string): Promise<void> {

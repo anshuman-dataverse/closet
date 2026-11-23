@@ -2,7 +2,8 @@
 
 Run from the repo root:  (cd worker && uv run python ../scripts/export-style-data.py)
 Writes web/lib/style/data.json (tables), web/lib/style/golden.json (expected outputs from the
-Python code) and web/lib/domain/fits.json (fit choices from vocab/fits.yaml).
+Python code) web/lib/domain/fits.json (fit choices from vocab/fits.yaml) and
+web/lib/domain/looks.json (Shop a look piece types from vocab/looks.yaml).
 """
 
 from __future__ import annotations
@@ -79,7 +80,10 @@ def main() -> None:
     (ROOT / "web" / "lib" / "domain" / "fits.json").write_text(
         json.dumps(fits, indent=1, ensure_ascii=False) + "\n"
     )
-    print("wrote", OUT / "data.json", "golden.json and web/lib/domain/fits.json")
+    (ROOT / "web" / "lib" / "domain" / "looks.json").write_text(
+        json.dumps(load("looks.yaml"), indent=1, ensure_ascii=False) + "\n"
+    )
+    print("wrote", OUT / "data.json", "golden.json, web/lib/domain/fits.json and looks.json")
 
 
 if __name__ == "__main__":

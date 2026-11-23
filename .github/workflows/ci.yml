@@ -32,7 +32,7 @@ jobs:
       - name: web color and fit tables match the worker's YAML
         run: |
           (cd worker && uv run python ../scripts/export-style-data.py)
-          git diff --exit-code web/lib/style/data.json web/lib/style/golden.json web/lib/domain/fits.json
+          git diff --exit-code web/lib/style/data.json web/lib/style/golden.json web/lib/domain/fits.json web/lib/domain/looks.json
 
       # ---- web (static)
       - uses: pnpm/action-setup@v4

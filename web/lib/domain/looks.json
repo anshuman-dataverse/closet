@@ -1,0 +1,94 @@
+{
+ "office": {
+  "Tops": [
+   "oxford shirt",
+   "dress shirt",
+   "knit polo",
+   "turtleneck"
+  ],
+  "Layers": [
+   "blazer",
+   "v-neck sweater",
+   "crew neck sweater",
+   "cardigan"
+  ],
+  "Bottoms": [
+   "dress trousers",
+   "chinos"
+  ],
+  "Shoes": [
+   "loafers",
+   "derby shoes",
+   "chelsea boots"
+  ],
+  "Accessories": [
+   "belt"
+  ]
+ },
+ "college": {
+  "Tops": [
+   "oxford shirt",
+   "henley",
+   "t-shirt",
+   "polo shirt",
+   "denim shirt",
+   "flannel shirt"
+  ],
+  "Layers": [
+   "crew neck sweater",
+   "overshirt",
+   "quarter-zip sweater",
+   "denim jacket",
+   "bomber jacket"
+  ],
+  "Bottoms": [
+   "chinos",
+   "dark wash jeans",
+   "light wash jeans",
+   "cargo trousers"
+  ],
+  "Shoes": [
+   "white sneakers",
+   "sneakers",
+   "chelsea boots"
+  ]
+ },
+ "party": {
+  "Tops": [
+   "oxford shirt",
+   "knit polo",
+   "turtleneck",
+   "linen shirt"
+  ],
+  "Layers": [
+   "blazer",
+   "bomber jacket",
+   "overshirt"
+  ],
+  "Bottoms": [
+   "dark wash jeans",
+   "chinos",
+   "dress trousers"
+  ],
+  "Shoes": [
+   "chelsea boots",
+   "loafers",
+   "white sneakers"
+  ]
+ },
+ "home": {
+  "Tops": [
+   "t-shirt",
+   "henley",
+   "long-sleeve t-shirt"
+  ],
+  "Bottoms": [
+   "joggers",
+   "shorts"
+  ],
+  "Shoes": [
+   "sneakers",
+   "sandals"
+  ]
+ }
+}

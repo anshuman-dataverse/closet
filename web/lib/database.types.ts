@@ -119,6 +119,7 @@ export type Database = {
           id: string;
           kind: string;
           look_mode: string | null;
+          look_types: Json | null;
           notes: string | null;
           occasion: Database["public"]["Enums"]["occasion"] | null;
           pages_checked: number;
@@ -140,6 +141,7 @@ export type Database = {
           id?: string;
           kind?: string;
           look_mode?: string | null;
+          look_types?: Json | null;
           notes?: string | null;
           occasion?: Database["public"]["Enums"]["occasion"] | null;
           pages_checked?: number;
@@ -160,6 +162,7 @@ export type Database = {
           id?: string;
           kind?: string;
           look_mode?: string | null;
+          look_types?: Json | null;
           notes?: string | null;
           occasion?: Database["public"]["Enums"]["occasion"] | null;
           pages_checked?: number;

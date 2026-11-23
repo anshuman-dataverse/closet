@@ -173,7 +173,9 @@ def run_look(
 
     assert ctx.items is not None
     mode = str(row.get("look_mode") or "new")
-    owned = [Piece.from_row(r) for r in ctx.items.list_items()] if mode == "own" else []
+    owned = [Piece.from_row(r) for r in ctx.items.list_items() if not r.get("is_sample")]
+    raw = row.get("look_types") or {}
+    types = {str(k): str(v) for k, v in raw.items()} if isinstance(raw, dict) else {}
     sizes = dict(profile.get("sizes") or {})
     try:
         out = shop_look(
@@ -183,6 +185,7 @@ def run_look(
             owned,
             lambda sub: hunt(sub, max_queries=7, max_pages=14, top_n=PER_SLOT),
             sizes,
+            types,
         )
     except Exception as e:
         ctx.items.update_hunt(
@@ -228,6 +231,8 @@ def run_look(
             "finished_at": now(),
             "summary": out.summary,
             "pages_checked": out.pages_checked,
+            # The types this run used, so the app shows them and Run again can change them.
+            "look_types": {s.category: s.staple.type for s in out.slots},
         },
     )
     return {"sets": len(out.sets), "summary": out.summary, "pages_checked": out.pages_checked}

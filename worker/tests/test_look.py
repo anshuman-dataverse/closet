@@ -158,3 +158,43 @@ def test_kids_sections_are_dropped() -> None:
     assert not H.keep(listing("Baby Brannan Bear Logo Sneaker"), h)
     assert not H.keep(listing("Canvas Sneaker", crumbs=["Kids", "Shoes"]), h)
     assert H.keep(listing("Canvas Sneaker", crumbs=["Men", "Shoes"]), h)
+
+
+def test_every_look_option_is_a_staple_with_nouns() -> None:
+    types = {(s.category, s.type) for s in L.staples()}
+    for occ, cats in L.options().items():
+        assert set(cats) <= set(L.SLOTS[occ]) | {"Accessories"}, occ
+        for cat, ts in cats.items():
+            for t in ts:
+                assert (cat, t) in types, (occ, cat, t)
+                assert t in L.NOUNS, t
+
+
+def _shirt(i: int, t: str) -> Piece:
+    return Piece(id=f"s{i}", name=f"Shirt {i}", category="Tops", type=t, color_name="white")
+
+
+def test_a_look_doesnt_buy_what_you_already_have() -> None:
+    owned = [_shirt(1, "oxford shirt"), _shirt(2, "oxford shirt")]
+    tops = {s.category: s.staple.type for s in L.plan("office", PROFILE, owned, "new")}
+    assert tops["Tops"] == "dress shirt"  # the next option you own none of
+    owned.append(_shirt(3, "dress shirt"))
+    owned.append(_shirt(4, "dress shirt"))
+    tops = {s.category: s.staple.type for s in L.plan("office", PROFILE, owned, "new")}
+    assert tops["Tops"] == "knit polo"
+    # "All new" never puts owned pieces in the set, even though they steer the type.
+    assert all(s.owned is None for s in L.plan("office", PROFILE, owned, "new"))
+
+
+def test_your_picked_type_wins() -> None:
+    owned = [_shirt(1, "turtleneck")]
+    got = {
+        s.category: s.staple.type
+        for s in L.plan("office", PROFILE, owned, "new", {"Tops": "turtleneck"})
+    }
+    assert got["Tops"] == "turtleneck"
+    # A type that isn't an option for the occasion is ignored, not guessed at.
+    got = {
+        s.category: s.staple.type for s in L.plan("office", PROFILE, [], "new", {"Tops": "hoodie"})
+    }
+    assert got["Tops"] == "oxford shirt"
