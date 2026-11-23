@@ -69,6 +69,26 @@ def process(queue: Queue, job: Job, *, fake: bool, ctx: JobContext | None = None
     queue.complete(job, result)
 
 
+LOCAL_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
+
+
+class FakeModeRefused(SystemExit):
+    pass
+
+
+def require_local(supabase_url: str) -> None:
+    """Fake mode (sample results for automated tests) may only run against the local test
+    database, so it can never write sample data into a real closet."""
+    from urllib.parse import urlsplit
+
+    host = urlsplit(supabase_url).hostname or ""
+    if host not in LOCAL_HOSTS:
+        raise FakeModeRefused(
+            f"Fake mode only runs against local Supabase (127.0.0.1), not {host}. "
+            "It's for automated tests. Start the worker without --fake."
+        )
+
+
 class Worker:
     def __init__(
         self,
@@ -79,6 +99,8 @@ class Worker:
         scheduler: Scheduler | None = None,
         ctx: JobContext | None = None,
     ) -> None:
+        if fake:
+            require_local(settings.supabase_url)
         self.s = settings
         self.queue = queue
         self.fake = fake

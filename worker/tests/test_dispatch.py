@@ -105,3 +105,26 @@ def test_rerun_is_idempotent() -> None:
     first = q.done["j1"]["echo"]
     process(q, job("ping", {"nonce": "x"}), fake=True)
     assert q.done["j1"]["echo"] == first
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://rmrjfznkvjdvsfjuegii.supabase.co",
+        "http://192.168.1.5:54321",
+        "https://localhost.evil.com",
+    ],
+)
+def test_fake_mode_refuses_any_real_database(settings: Settings, url: str) -> None:
+    from closet_worker.main import FakeModeRefused, Worker
+
+    real = settings.model_copy(update={"supabase_url": url})
+    with pytest.raises(FakeModeRefused, match="only runs against local Supabase"):
+        Worker(real, MemoryQueue(), fake=True)
+    Worker(real, MemoryQueue(), fake=False)  # the real worker is unaffected
+
+
+def test_fake_mode_runs_locally(settings: Settings) -> None:
+    from closet_worker.main import Worker
+
+    assert Worker(settings, MemoryQueue(), fake=True).fake  # 127.0.0.1 in the test settings
