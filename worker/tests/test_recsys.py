@@ -239,3 +239,40 @@ def test_context_from_payload_converts_celsius() -> None:
         {"occasion": "party", "date": "2026-11-20", "weather": {"high": 10, "unit": "C"}}
     )
     assert c.temp_high_f == pytest.approx(50.0) and c.temp_text() == "10°C"
+
+
+def test_fit_balance() -> None:
+    from closet_worker.recsys.scoring import fit_balance
+
+    top = piece("t", "Tops", type="t-shirt", fit="oversized")
+    slim = piece("b", "Bottoms", type="jeans", fit="slim")
+    wide = piece("w", "Bottoms", type="jeans", fit="wide")
+    v, r = fit_balance((top, slim), ctx())
+    assert v == 0.6 and r == [{"kind": "fit", "top": "oversized t-shirt", "bottom": "slim jeans"}]
+    assert fit_balance((top, wide), ctx())[0] == -0.6  # loose over loose
+    assert fit_balance((top, wide), ctx(occasion="home"))[0] == 0.0  # fine at home
+    assert fit_balance((piece("x", "Tops"), slim), ctx()) == (0.0, [])  # unknown fit: no claim
+
+
+def test_bar_blocks_a_top_worn_yesterday_but_not_trousers() -> None:
+    from closet_worker.recsys.engine import repeats
+
+    pieces = closet()
+    shirt = next(p for p in pieces if p.id == "navy-oxford")
+    chinos = next(p for p in pieces if p.id == "grey-chinos")
+    yesterday = TODAY - timedelta(days=1)
+    assert repeats((shirt, chinos), ctx(), History(piece_last={"navy-oxford": yesterday}))
+    assert not repeats((shirt, chinos), ctx(), History(piece_last={"grey-chinos": yesterday}))
+    week = TODAY - timedelta(days=6)
+    assert repeats(
+        (shirt, chinos),
+        ctx(),
+        History(outfit_last={frozenset({"navy-oxford", "grey-chinos"}): week}),
+    )
+
+
+def test_fit_reason_text() -> None:
+    from closet_worker.text.templates import render
+
+    t = render([{"kind": "fit", "top": "oversized t-shirt", "bottom": "slim jeans"}])
+    assert "oversized t-shirt" in t.lower() and "slim jeans" in t and t.endswith(".")

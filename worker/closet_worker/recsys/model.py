@@ -37,6 +37,7 @@ class Piece:
     warmth: str | None = None
     occasions: tuple[str, ...] = ()
     status: str = "active"
+    fit: str | None = None
 
     @staticmethod
     def from_row(r: dict[str, Any]) -> Piece:
@@ -51,6 +52,7 @@ class Piece:
             warmth=r.get("warmth"),
             occasions=tuple(r.get("occasions") or ()),
             status=str(r.get("status") or "active"),
+            fit=r.get("fit") or None,
         )
 
     @property

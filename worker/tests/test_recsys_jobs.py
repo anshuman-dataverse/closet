@@ -148,16 +148,29 @@ def test_suggest_outfits_logs_shown_events(jctx: JobContext, store: Store) -> No
             "occasion": "office",
             "date": "2026-11-20",
             "weather": {"high": 45, "unit": "F", "rain_pct": 10},
-            "note": "client meeting",
+            "note": "lunch with the team",
         },
         jctx,
     )
-    assert 1 <= len(out["ideas"]) <= 3
+    assert 1 <= len(out["ideas"]) <= 3 and out["bar"]["message"] is None
     assert [e["action"] for e in store.events] == ["shown"] * len(out["ideas"])
     first = out["ideas"][0]
     assert first["event_id"] == "e0" and first["text"].endswith(".")
     assert store.events[0]["item_ids"] == first["item_ids"]
-    assert store.events[0]["context"]["note"] == "client meeting"
+    assert store.events[0]["context"]["note"] == "lunch with the team"
+
+
+def test_nothing_shown_when_nothing_passes_and_it_says_why(jctx: JobContext, store: Store) -> None:
+    # A client meeting raises the bar; this closet has nothing formal enough.
+    out = suggest_outfits.run(
+        {"occasion": "office", "date": "2026-11-20", "note": "client meeting"}, jctx
+    )
+    assert out["ideas"] == [] and store.events == []
+    assert out["bar"]["top_fail"] == "formality" and out["bar"]["candidates"] > 0
+    assert out["bar"]["message"] == (
+        "No combination from your closet passes every check today: most often, "
+        "the pieces don’t suit the occasion."
+    )
 
 
 def _wish(store: Store, **kw: Any) -> str:

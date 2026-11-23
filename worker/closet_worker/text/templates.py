@@ -19,6 +19,10 @@ PALETTE = (
     "{color} is one of your best colors",
     "the {piece} is in one of your best colors, {color}",
 )
+FIT = (
+    "the {top} over {bottom} keeps the shape balanced",
+    "{top} with {bottom} balances loose and close",
+)
 NEW = ("none of these pieces has been worn yet", "it’s a first outing for all of these")
 WEATHER = (
     "The {piece} handles {temp}.",
@@ -45,6 +49,8 @@ def render(reasons: list[dict[str, Any]], seed: int = 0) -> str:
             clauses.append(rng.choice(PALETTE).format(color=r["color"], piece=r["piece"]))
         elif k == "pair" and len(clauses) < 2:
             clauses.append(rng.choice(PAIR).format(A=_cap(str(r["a"])), b=str(r["b"])))
+        elif k == "fit" and len(clauses) < 2:
+            clauses.append(rng.choice(FIT).format(top=r["top"], bottom=r["bottom"]))
         elif k == "fresh" and len(clauses) < 2:
             clauses.append(rng.choice(FRESH).format(piece=r["piece"], days=r["days"]))
         elif k == "new" and len(clauses) < 2:

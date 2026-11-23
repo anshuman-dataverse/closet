@@ -142,6 +142,31 @@ def palette_fit(o: Outfit, analysis: dict[str, Any] | None) -> tuple[float, list
     return max(-1.0, min(1.0, sum(vals) / len(vals))), reasons
 
 
+# Fit balance (common styling guidance): one loose piece with one close-fitting piece keeps the
+# shape; loose over loose reads shapeless outside home. Unknown fits score 0 and are never named.
+LOOSE_TOP = frozenset({"relaxed", "oversized"})
+CLOSE_TOP = frozenset({"slim", "fitted"})
+LOOSE_BOTTOM = frozenset({"relaxed", "wide", "barrel"})
+CLOSE_BOTTOM = frozenset({"skinny", "slim", "straight"})
+
+
+def fit_balance(o: Outfit, ctx: Context) -> tuple[float, list[Reason]]:
+    tops = [p for p in o if p.category in ("Tops", "Layers") and p.fit]
+    bottoms = [p for p in o if p.category == "Bottoms" and p.fit]
+    if not tops or not bottoms:
+        return 0.0, []
+    top = next((p for p in tops if p.category == "Layers"), tops[0])  # the outer layer shows
+    bottom = bottoms[0]
+    t, b = top.fit or "", bottom.fit or ""
+    if t in LOOSE_TOP and b in CLOSE_BOTTOM:
+        return 0.6, [{"kind": "fit", "top": f"{t} {top.noun}", "bottom": f"{b} {bottom.noun}"}]
+    if t in CLOSE_TOP and b in LOOSE_BOTTOM:
+        return 0.6, [{"kind": "fit", "top": f"{t} {top.noun}", "bottom": f"{b} {bottom.noun}"}]
+    if t in LOOSE_TOP and b in LOOSE_BOTTOM:
+        return (0.0 if ctx.occasion == "home" else -0.6), []
+    return 0.3, []
+
+
 def formality(o: Outfit, ctx: Context, shift: int = 0) -> tuple[float, list[Reason]]:
     fs = [p.formality for p in o if p.formality is not None]
     if not fs:
@@ -231,13 +256,16 @@ def score(
         "formality": formality(o, ctx, shift),
         "weather": weather(o, ctx),
         "freshness": freshness(o, ctx, h),
+        "fit": fit_balance(o, ctx),
     }
     if compat is not None:
         parts["compat"] = (compat, [])  # no reason text: the model can't say why
     terms = {k: round(v[0], 4) for k, v in parts.items()}
     total = sum(w.get(k, 0.0) * v for k, v in terms.items())
     reasons = [
-        r for k in ("palette", "harmony", "freshness", "weather", "formality") for r in parts[k][1]
+        r
+        for k in ("palette", "fit", "harmony", "freshness", "weather", "formality")
+        for r in parts[k][1]
     ]
     return Score(round(total, 4), terms, reasons)
 

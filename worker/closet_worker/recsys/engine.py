@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections import Counter
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from .candidates import Outfit, apply_note, candidates, candidates_with
@@ -42,6 +44,95 @@ def ranked_candidates(
     return ctx2, ranked
 
 
+# The quality bar: an idea is shown only if it passes every check. Checks without data (no
+# colors, no fits, no forecast) pass, since nothing can be said about them.
+BAR_FAILS = {
+    "harmony": "the colors clash",
+    "formality": "the pieces don’t suit the occasion",
+    "weather": "they don’t suit today’s weather",
+    "freshness": "they repeat a top you just wore, or a whole outfit from this week",
+    "palette": "the colors are far from your palette",
+    "fit": "two loose fits together lose their shape",
+}
+
+
+REPEAT_TOP_DAYS = 2  # a visible top or layer worn this recently
+REPEAT_OUTFIT_DAYS = 7  # the exact same outfit
+
+
+def repeats(o: Outfit, ctx: Context, h: History) -> bool:
+    """Wearing the same trousers or shoes two days apart is normal, so only a visible top or
+    layer within 2 days, or the exact outfit within 7, counts as a repeat."""
+    last = h.outfit_last.get(frozenset(p.id for p in o))
+    if last is not None and 0 <= (ctx.day - last).days <= REPEAT_OUTFIT_DAYS:
+        return True
+    for p in o:
+        worn = h.piece_last.get(p.id)
+        visible = p.category in ("Tops", "Layers")
+        if visible and worn is not None and 0 <= (ctx.day - worn).days <= REPEAT_TOP_DAYS:
+            return True
+    return False
+
+
+def failed_checks(
+    o: Outfit,
+    s: Score,
+    profile: dict[str, Any] | None,
+    ctx: Context | None = None,
+    h: History | None = None,
+) -> list[str]:
+    t = s.terms
+    fails = []
+    if t.get("harmony", 0) < 0:
+        fails.append("harmony")
+    if any(p.formality is not None for p in o) and t.get("formality", 0) < 0.5:
+        fails.append("formality")
+    if t.get("weather", 0) < 0 or (0 < t.get("weather", 0) < 0.5):
+        fails.append("weather")
+    if ctx is not None and h is not None and repeats(o, ctx, h):
+        fails.append("freshness")
+    if profile and profile.get("best") and t.get("palette", 0) < 0.25:
+        fails.append("palette")
+    if t.get("fit", 0) < 0:
+        fails.append("fit")
+    return fails
+
+
+@dataclass
+class BarReport:
+    candidates: int
+    passed: int
+    top_fail: str | None  # the check most candidates failed
+
+    @property
+    def message(self) -> str | None:
+        if self.passed or not self.candidates:
+            return None
+        why = BAR_FAILS.get(self.top_fail or "", "none passed every check")
+        return f"No combination from your closet passes every check today: most often, {why}."
+
+
+def ideas_with_report(
+    pieces: list[Piece],
+    ctx: Context,
+    h: History,
+    k: int = 3,
+    profile: dict[str, Any] | None = None,
+    compat: CompatScorer | None = None,
+) -> tuple[list[tuple[Outfit, Score]], BarReport]:
+    ctx2, ranked = ranked_candidates(pieces, ctx, h, profile, compat)
+    fails: Counter[str] = Counter()
+    passing = []
+    for o, s in ranked:
+        f = failed_checks(o, s, profile, ctx2, h)
+        if f:
+            fails.update(f)
+        else:
+            passing.append((o, s))
+    report = BarReport(len(ranked), len(passing), fails.most_common(1)[0][0] if fails else None)
+    return _finish(passing, pieces, ctx2, h, k), report
+
+
 def ideas(
     pieces: list[Piece],
     ctx: Context,
@@ -50,7 +141,12 @@ def ideas(
     profile: dict[str, Any] | None = None,
     compat: CompatScorer | None = None,
 ) -> list[tuple[Outfit, Score]]:
-    ctx2, ranked = ranked_candidates(pieces, ctx, h, profile, compat)
+    return ideas_with_report(pieces, ctx, h, k, profile, compat)[0]
+
+
+def _finish(
+    ranked: list[tuple[Outfit, Score]], pieces: list[Piece], ctx2: Context, h: History, k: int
+) -> list[tuple[Outfit, Score]]:
     out = []
     for o, s in pick_diverse(ranked, k):
         acc = accessory_for(o, pieces, ctx2, h)

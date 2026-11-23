@@ -6,7 +6,7 @@ import zlib
 from typing import Any
 
 from closet_worker.recsys import compat
-from closet_worker.recsys.engine import ideas
+from closet_worker.recsys.engine import ideas_with_report
 from closet_worker.recsys.model import Context, History, Piece
 from closet_worker.text.templates import render
 
@@ -25,7 +25,7 @@ def run(payload: dict[str, Any], ctx: JobContext | None) -> dict[str, Any]:
     analysis = (ctx.items.get_profile() or {}).get("analysis")
     scorer = scorer_for(ctx)
     version = MODEL_VERSION if scorer is None else f"{MODEL_VERSION}+compat-{scorer.cfg.sha256[:8]}"
-    picks = ideas(pieces, c, history, profile=analysis, compat=scorer)
+    picks, bar = ideas_with_report(pieces, c, history, profile=analysis, compat=scorer)
     context = {"weather": payload.get("weather"), "note": c.note, "date": c.day.isoformat()}
     out = []
     for o, s in picks:
@@ -55,7 +55,17 @@ def run(payload: dict[str, Any], ctx: JobContext | None) -> dict[str, Any]:
         )
         for i, eid in zip(out, event_ids, strict=False):
             i["event_id"] = eid
-    return {"ideas": out, "model_version": version, "context": context}
+    return {
+        "ideas": out,
+        "model_version": version,
+        "context": context,
+        "bar": {
+            "candidates": bar.candidates,
+            "passed": bar.passed,
+            "top_fail": bar.top_fail,
+            "message": bar.message,
+        },
+    }
 
 
 def scorer_for(ctx: JobContext, *, require_gate: bool = True) -> compat.CompatScorer | None:

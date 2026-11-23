@@ -23,7 +23,7 @@ type Idea = {
 
 const OFFLINE = "Your Mac is offline, so new ideas will appear when it’s back. Your saved outfits still rotate.";
 
-/** Fresh combos from your closet (SPEC 4.1 More ideas, 5.4). Every tap is training data for Phase 6. */
+/** Fresh combos from your closet (SPEC 4.1 More ideas, 5.4). Only ideas that pass every check are shown. */
 export function MoreIdeas({ occasion, weather }: { occasion: Occasion; weather: Weather | null }) {
   const s = useCloset();
   const d = useDerived(s);
@@ -48,7 +48,9 @@ export function MoreIdeas({ occasion, weather }: { occasion: Occasion; weather: 
       const db = supabase();
       const job = await enqueueJob(db, "suggest_outfits", { occasion, ...context }, 6);
       const done = await waitForJob(db, job.id, { timeoutMs: 30_000 });
-      const ideas = ((done?.result as { ideas?: Idea[] } | null)?.ideas ?? []).filter((i) => i.item_ids.length >= 2);
+      const res = (done?.result ?? null) as { ideas?: Idea[]; bar?: { message?: string | null } } | null;
+      const ideas = (res?.ideas ?? []).filter((i) => i.item_ids.length >= 2);
+      const bar = res?.bar?.message;
       setState((x) =>
         x.occ !== occasion
           ? x
@@ -62,7 +64,9 @@ export function MoreIdeas({ occasion, weather }: { occasion: Occasion; weather: 
                   ? "Your Mac couldn’t put ideas together. Try again."
                   : ideas.length
                     ? ""
-                    : "Not enough pieces for this occasion yet. Add a top, a bottom and shoes you’d wear for it.",
+                    : bar
+                      ? `${bar} Check What’s missing in Shop for the piece that would fix it.`
+                      : "Not enough pieces for this occasion yet. Add a top, a bottom and shoes you’d wear for it.",
             },
       );
     } catch {
