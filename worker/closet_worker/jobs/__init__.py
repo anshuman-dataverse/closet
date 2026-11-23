@@ -20,6 +20,7 @@ from . import (
     read_label,
     run_hunt,
     suggest_outfits,
+    suits_me,
     tag_item,
 )
 from .context import JobContext
@@ -58,6 +59,7 @@ REGISTRY: dict[str, Spec] = {
     "suggest_outfits": Spec(handler=suggest_outfits.run, timeout_s=60),
     "rate_outfit": Spec(handler=rate_outfit.run, timeout_s=30),
     "check_wish": Spec(handler=check_wish.run, timeout_s=180),
+    "suits_me": Spec(handler=suits_me.run, timeout_s=180),
     "find_gaps": Spec(handler=find_gaps.run, timeout_s=120),
     "run_hunt": Spec(handler=run_hunt.run, timeout_s=300),
     "price_check": Spec(handler=price_check.run, timeout_s=300),

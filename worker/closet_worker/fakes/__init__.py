@@ -18,6 +18,7 @@ from closet_worker.jobs import (
     rate_outfit,
     read_label,
     suggest_outfits,
+    suits_me,
 )
 from closet_worker.jobs.context import JobContext
 from closet_worker.vision.label import Line
@@ -93,6 +94,15 @@ def run(kind: str, payload: dict[str, Any], ctx: JobContext | None = None) -> di
         return {"checked": 0, "priced": 0}  # no network in fake mode
     if kind == "read_label" and ctx and ctx.items:
         return read_label.run(payload, ctx, FixtureLabelReader())
+    if kind == "suits_me" and ctx and ctx.items:
+        # The read (link or screenshot → type and color) is a fixture; every check runs for real.
+        wish = ctx.items.get_wish(str(payload.get("wish_id", "")))
+        if wish is None:
+            return {"fake": True}
+        fx = _fixture("suits_me") or {}
+        src = "screenshot" if wish.get("photo_path") else "link"
+        rd = suits_me.Read(**fx, vec=None, source=src)
+        return suits_me.check(wish, payload, ctx, rd, None)
     if kind == "check_wish":
         res = _fixture("check_wish") or {}
         wish_id = str(payload.get("wish_id", ""))

@@ -23,6 +23,7 @@ SCHEMA_KINDS = {
     "suggest_outfits",
     "rate_outfit",
     "check_wish",
+    "suits_me",
     "find_gaps",
     "run_hunt",
     "price_check",

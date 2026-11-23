@@ -283,10 +283,15 @@ def rate(o: list[Piece], ctx: Context, h: History, analysis: dict[str, Any] | No
         weather_check(o, ctx),
         freshness(o, ctx, h),
     ]
+    return verdict_for(checks, MINOR)
+
+
+def verdict_for(checks: list[Check], minor: frozenset[str]) -> Rating:
+    """Strong when every check with data passes; works when only minor ones miss; else rethink."""
     fails = [c for c in checks if c.ok is False]
     unchecked = [c for c in checks if c.ok is None]
-    if any(c.key not in MINOR for c in fails):
-        core = next(c for c in fails if c.key not in MINOR)
+    if any(c.key not in minor for c in fails):
+        core = next(c for c in fails if c.key not in minor)
         verdict, headline = "rethink", f"Rethink it: {core.detail[0].lower()}{core.detail[1:]}"
     elif fails:
         verdict, headline = (

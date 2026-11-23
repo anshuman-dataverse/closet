@@ -14,6 +14,7 @@ import { centsToInput, formatCents } from "@/lib/domain/money";
 import { overlapNote, similarTo } from "@/lib/domain/similar";
 import { useSignedUrl } from "@/lib/signed-urls";
 import { seenAgo } from "@/lib/worker-status";
+import { RecentChecks, SuitsSheet } from "./SuitsPanel";
 import { WishSheet } from "./WishSheet";
 
 const VERDICT = {
@@ -135,6 +136,7 @@ export function WishlistPanel() {
   const s = useCloset();
   const toast = useToast();
   const [adding, setAdding] = useState(false);
+  const [suits, setSuits] = useState(false);
   const [bought, setBought] = useState<Wish | null>(null);
   const list = s.wishes.filter((w) => w.status === "wanted");
 
@@ -161,10 +163,16 @@ export function WishlistPanel() {
         <p className="muted">
           Things you’re thinking of buying. Check each against what you already own before you spend.
         </p>
-        <button type="button" className="btn primary" onClick={() => setAdding(true)} disabled={s.status !== "ready"}>
-          Add to wishlist
-        </button>
+        <div className="row">
+          <button type="button" className="btn primary" onClick={() => setSuits(true)} disabled={s.status !== "ready"}>
+            Would it suit me?
+          </button>
+          <button type="button" className="btn" onClick={() => setAdding(true)} disabled={s.status !== "ready"}>
+            Add to wishlist
+          </button>
+        </div>
       </div>
+      {s.status === "ready" && <RecentChecks />}
       {s.status !== "ready" ? (
         <LoadGate s={s} />
       ) : list.length ? (
@@ -180,6 +188,7 @@ export function WishlistPanel() {
         </EmptyState>
       )}
       <WishSheet open={adding} onClose={() => setAdding(false)} />
+      <SuitsSheet open={suits} onClose={() => setSuits(false)} />
       <ItemSheet
         open={!!bought}
         itemId={null}

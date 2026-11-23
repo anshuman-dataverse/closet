@@ -501,6 +501,45 @@ export async function checkWish(id: string, today: string, timeoutMs = 30_000): 
   return done && (done.status === "done" || done.status === "failed") ? done : null;
 }
 
+/** "Would it suit me?": a link or screenshot checked as a hidden wishlist row ('considering'). */
+export const SUITS_PLACEHOLDER = "Piece to check";
+
+export type SuitsInput = {
+  id: string;
+  url: string | null;
+  photo_path: string | null;
+  occasion: Occasion | null;
+  color?: string | null;
+};
+
+export async function startSuitsCheck(input: SuitsInput, today: string, timeoutMs = 60_000): Promise<JobRow | null> {
+  const db = supabase();
+  const exists = state.wishes.some((x) => x.id === input.id);
+  const row = { url: input.url, photo_path: input.photo_path, occasion: input.occasion };
+  const q = exists
+    ? db.from("wishlist_items").update(row).eq("id", input.id)
+    : db.from("wishlist_items").insert({ id: input.id, name: SUITS_PLACEHOLDER, status: "considering", ...row });
+  const { data, error } = await q.select(WISH_COLUMNS).single();
+  if (error || !data) fail(error, "Couldn’t start the check. Try again.");
+  const wish = data as unknown as Wish;
+  set({ wishes: exists ? state.wishes.map((x) => (x.id === wish.id ? wish : x)) : [wish, ...state.wishes] });
+  const job = await enqueueJob(db, "suits_me", { wish_id: input.id, date: today, color: input.color ?? null }, 4);
+  if (timeoutMs <= 0) return null;
+  const done = await waitForJob(db, job.id, { timeoutMs });
+  if (done?.status === "done") await refreshWish(input.id);
+  return done && (done.status === "done" || done.status === "failed") ? done : null;
+}
+
+/** Delete a check (and its screenshot). */
+export async function deleteWish(id: string): Promise<void> {
+  const w = state.wishes.find((x) => x.id === id);
+  const db = supabase();
+  const { error } = await db.from("wishlist_items").delete().eq("id", id);
+  if (error) fail(error, "Couldn’t delete that. Try again.");
+  if (w?.photo_path) void removePaths(db, [w.photo_path, w.photo_path.replace(/\.jpg$/, "_thumb.jpg")]).catch(() => {});
+  set({ wishes: state.wishes.filter((x) => x.id !== id) });
+}
+
 // ---------------------------------------------------------------- suggestion events (Phase 6 training data)
 
 export type SuggestionAction = "shown" | "worn" | "saved" | "skipped" | "liked" | "disliked";

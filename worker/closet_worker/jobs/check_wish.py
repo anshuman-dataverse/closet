@@ -142,7 +142,10 @@ def run(
         "embedding_kind": kind,
         "model": e.model_id,
     }
+    old = wish.get("check_result")
+    prev: dict[str, Any] = old if isinstance(old, dict) else {}
+    saved = {**result, "suits": prev["suits"]} if "suits" in prev else result  # keep that check
     ctx.items.update_wish(
-        str(wish["id"]), {"check_result": result, "checked_at": datetime.now(UTC).isoformat()}
+        str(wish["id"]), {"check_result": saved, "checked_at": datetime.now(UTC).isoformat()}
     )
     return result
