@@ -2,8 +2,8 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useRef } from "react";
-import { EmptyState } from "@/components/EmptyState";
 import { GapsPanel } from "./GapsPanel";
+import { HuntsPanel } from "./HuntsPanel";
 import { WishlistPanel } from "./WishlistPanel";
 
 const TABS = [
@@ -61,11 +61,7 @@ export function ShopTabs() {
       </div>
       <div id="shop-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
         {tab === "wishlist" && <WishlistPanel />}
-        {tab === "hunts" && (
-          <EmptyState title="No hunts yet">
-            Try something like “white oxford shirt for the office, $25 to $60”.
-          </EmptyState>
-        )}
+        {tab === "hunts" && <HuntsPanel />}
         {tab === "missing" && <GapsPanel />}
       </div>
     </>

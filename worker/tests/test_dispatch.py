@@ -43,7 +43,7 @@ def test_ping_round_trip() -> None:
 
 def test_unbuilt_kind_fails_clearly() -> None:
     q = MemoryQueue()
-    process(q, job("price_check"), fake=False)
+    process(q, job("train_ranker"), fake=False)  # Phase 6
     assert "isn't built yet" in q.failed["j1"]
 
 

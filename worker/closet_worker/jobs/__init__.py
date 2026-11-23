@@ -15,7 +15,9 @@ from . import (
     check_wish,
     find_gaps,
     ping,
+    price_check,
     read_label,
+    run_hunt,
     suggest_outfits,
     tag_item,
 )
@@ -55,8 +57,8 @@ REGISTRY: dict[str, Spec] = {
     "suggest_outfits": Spec(handler=suggest_outfits.run, timeout_s=60),
     "check_wish": Spec(handler=check_wish.run, timeout_s=180),
     "find_gaps": Spec(handler=find_gaps.run, timeout_s=120),
-    "run_hunt": _todo("run_hunt"),
-    "price_check": _todo("price_check"),
+    "run_hunt": Spec(handler=run_hunt.run, timeout_s=300),
+    "price_check": Spec(handler=price_check.run, timeout_s=300),
     "train_ranker": _todo("train_ranker"),
     "backup": Spec(handler=backup.run, timeout_s=540),
 }

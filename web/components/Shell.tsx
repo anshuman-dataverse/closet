@@ -6,6 +6,8 @@ import { useState } from "react";
 import { ICONS } from "@/components/Icons";
 import { Sheet } from "@/components/Sheet";
 import { KIND_LABEL, useWorkerStatus } from "@/components/WorkerStatus";
+import { useCloset } from "@/lib/closet/store";
+import { priceDrop } from "@/lib/domain/hunts";
 import type { JobKind } from "@/lib/jobs";
 import { seenAgo } from "@/lib/worker-status";
 
@@ -23,6 +25,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const status = useWorkerStatus();
   const [why, setWhy] = useState(false);
+  const drops = useCloset().wishes.filter((w) => priceDrop(w)).length;
+  const badge = (href: string) =>
+    href === "/shop" && drops > 0 ? (
+      <span className="badge" aria-label={`${drops} price ${drops === 1 ? "drop" : "drops"}`}>
+        {drops}
+      </span>
+    ) : null;
 
   return (
     <>
@@ -35,6 +44,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             {TABS.map((t) => (
               <Link key={t.href} href={t.href} aria-current={current(path, t.href)}>
                 {t.label}
+                {badge(t.href)}
               </Link>
             ))}
           </nav>
@@ -64,6 +74,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <Link key={t.href} href={t.href} aria-current={current(path, t.href)}>
             {t.icon}
             <span>{t.label}</span>
+            {badge(t.href)}
           </Link>
         ))}
       </nav>

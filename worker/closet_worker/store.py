@@ -35,6 +35,11 @@ class ItemStore(Protocol):
     def list_suggestion_events(self) -> list[dict[str, Any]]: ...
     def list_storage(self) -> list[tuple[str, int]]: ...
     def count_rows(self, tables: tuple[str, ...]) -> dict[str, int]: ...
+    def get_hunt(self, hunt_id: str) -> dict[str, Any] | None: ...
+    def update_hunt(self, hunt_id: str, fields: dict[str, Any]) -> None: ...
+    def replace_hunt_results(self, hunt_id: str, rows: list[dict[str, Any]]) -> None: ...
+    def list_watched_wishes(self) -> list[dict[str, Any]]: ...
+    def insert_price_check(self, row: dict[str, Any]) -> None: ...
 
 
 class SupabaseItemStore:
@@ -233,3 +238,43 @@ class SupabaseItemStore:
             )
             out[t] = int(res.count or 0)
         return out
+
+    def get_hunt(self, hunt_id: str) -> dict[str, Any] | None:
+        res = (
+            self.db.table("hunts")
+            .select("*")
+            .eq("id", hunt_id)
+            .eq("user_id", self.owner)
+            .limit(1)
+            .execute()
+        )
+        rows = self._rows(res)
+        return rows[0] if rows else None
+
+    def update_hunt(self, hunt_id: str, fields: dict[str, Any]) -> None:
+        self.db.table("hunts").update(fields).eq("id", hunt_id).eq("user_id", self.owner).execute()
+
+    def replace_hunt_results(self, hunt_id: str, rows: list[dict[str, Any]]) -> None:
+        """Idempotent: a rerun replaces this hunt's picks instead of adding more."""
+        self.db.table("hunt_results").delete().eq("hunt_id", hunt_id).eq(
+            "user_id", self.owner
+        ).execute()
+        if rows:
+            self.db.table("hunt_results").insert(
+                [{**r, "hunt_id": hunt_id, "user_id": self.owner} for r in rows]
+            ).execute()
+
+    def list_watched_wishes(self) -> list[dict[str, Any]]:
+        res = (
+            self.db.table("wishlist_items")
+            .select("id, name, url, price_cents, target_price_cents, last_seen_price_cents")
+            .eq("user_id", self.owner)
+            .eq("watch", True)
+            .eq("status", "wanted")
+            .not_.is_("url", "null")
+            .execute()
+        )
+        return self._rows(res)
+
+    def insert_price_check(self, row: dict[str, Any]) -> None:
+        self.db.table("price_checks").insert({**row, "user_id": self.owner}).execute()

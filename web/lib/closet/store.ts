@@ -16,6 +16,7 @@ import {
 } from "@/lib/closet/types";
 import type { Database, Json } from "@/lib/database.types";
 import { todayIn } from "@/lib/domain/dates";
+import type { Hunt, HuntResult, HuntRow } from "@/lib/domain/hunts";
 import { wearStats, type WearStats } from "@/lib/domain/wear";
 import type { Occasion } from "@/lib/occasions";
 import { enqueueJob, type JobRow, waitForJob } from "@/lib/jobs";
@@ -33,6 +34,7 @@ export type ClosetState = {
   logs: WearLog[];
   wishes: Wish[];
   stylePhotos: StylePhoto[];
+  hunts: Hunt[];
 };
 
 const EMPTY: ClosetState = {
@@ -44,6 +46,7 @@ const EMPTY: ClosetState = {
   logs: [],
   wishes: [],
   stylePhotos: [],
+  hunts: [],
 };
 let state: ClosetState = EMPTY;
 const listeners = new Set<() => void>();
@@ -70,7 +73,7 @@ export function loadCloset(): Promise<void> {
         data: { user },
       } = await db.auth.getUser();
       if (!user) throw new Error("signed out");
-      const [p, i, o, oi, w, wi, wl, sp] = await Promise.all([
+      const [p, i, o, oi, w, wi, wl, sp, hu, hr] = await Promise.all([
         db.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
         db.from("items").select("*").order("created_at", { ascending: false }),
         db.from("outfits").select("*").order("created_at", { ascending: true }),
@@ -83,8 +86,10 @@ export function loadCloset(): Promise<void> {
           .neq("status", "removed")
           .order("created_at", { ascending: false }),
         db.from("style_photos").select("*").order("created_at", { ascending: true }),
+        db.from("hunts").select("*").order("created_at", { ascending: false }).limit(30),
+        db.from("hunt_results").select("*").order("rank", { ascending: true }),
       ]);
-      const err = [p, i, o, oi, w, wi, wl, sp].find((r) => r.error)?.error;
+      const err = [p, i, o, oi, w, wi, wl, sp, hu, hr].find((r) => r.error)?.error;
       if (err) throw err;
 
       const pieces = new Map<string, { item_id: string; position: number }[]>();
@@ -106,6 +111,7 @@ export function loadCloset(): Promise<void> {
         logs: (w.data ?? []).map((x) => ({ ...x, itemIds: worn.get(x.id) ?? [] })),
         wishes: (wl.data ?? []) as unknown as Wish[],
         stylePhotos: sp.data ?? [],
+        hunts: withResults(hu.data ?? [], hr.data ?? []),
       });
     } catch {
       set({ status: state.status === "ready" ? "ready" : "error", error: LOAD_ERROR });
@@ -333,6 +339,87 @@ export async function requestLabelRead(itemId: string, labelPath: string, timeou
     return done;
   }
   return null;
+}
+
+// ---------------------------------------------------------------- deal hunts (SPEC 4.4, 5.8)
+
+function withResults(hunts: HuntRow[], results: HuntResult[]): Hunt[] {
+  return hunts.map((h) => ({ ...h, results: results.filter((r) => r.hunt_id === h.id) }));
+}
+
+export type HuntInput = {
+  query: string;
+  occasion: Occasion | null;
+  budget_min_cents: number | null;
+  budget_max_cents: number | null;
+  notes: string | null;
+};
+
+async function refreshHunt(id: string): Promise<void> {
+  const db = supabase();
+  const [h, r] = await Promise.all([
+    db.from("hunts").select("*").eq("id", id).maybeSingle(),
+    db.from("hunt_results").select("*").eq("hunt_id", id).order("rank", { ascending: true }),
+  ]);
+  if (!h.data) return;
+  const next = { ...h.data, results: r.data ?? [] };
+  set({
+    hunts: state.hunts.some((x) => x.id === id)
+      ? state.hunts.map((x) => (x.id === id ? next : x))
+      : [next, ...state.hunts],
+  });
+}
+
+/** Queue the hunt on the Mac and keep the card up to date until it finishes (or 5 minutes). */
+async function runHunt(id: string): Promise<void> {
+  const db = supabase();
+  const job = await enqueueJob(db, "run_hunt", { hunt_id: id }, 3);
+  await refreshHunt(id);
+  const done = await waitForJob(db, job.id, { timeoutMs: 300_000 });
+  await refreshHunt(id);
+  if (done?.status === "failed" && state.hunts.find((h) => h.id === id)?.status !== "failed") {
+    await db
+      .from("hunts")
+      .update({ status: "failed", error: done.error ?? "Your Mac couldn’t run it." })
+      .eq("id", id);
+    await refreshHunt(id);
+  }
+}
+
+export async function startHunt(input: HuntInput): Promise<string> {
+  const { data, error } = await supabase().from("hunts").insert(input).select("*").single();
+  if (error || !data) fail(error, "Couldn’t start the hunt. Try again.");
+  set({ hunts: [{ ...data!, results: [] }, ...state.hunts] });
+  void runHunt(data!.id).catch(() => {});
+  return data!.id;
+}
+
+export async function rerunHunt(id: string): Promise<void> {
+  const db = supabase();
+  const { error } = await db
+    .from("hunts")
+    .update({ status: "queued", error: null, summary: null, started_at: null, finished_at: null })
+    .eq("id", id);
+  if (error) fail(error, "Couldn’t run it again. Try again.");
+  await refreshHunt(id);
+  void runHunt(id).catch(() => {});
+}
+
+/** Delete with Undo: the hunt and its picks are kept in memory to put back. */
+export async function deleteHunt(id: string): Promise<() => Promise<void>> {
+  const h = state.hunts.find((x) => x.id === id);
+  const { error } = await supabase().from("hunts").delete().eq("id", id);
+  if (error) fail(error, "Couldn’t delete the hunt. Try again.");
+  set({ hunts: state.hunts.filter((x) => x.id !== id) });
+  return async () => {
+    if (!h) return;
+    const db = supabase();
+    const { results, ...row } = h;
+    const a = await db.from("hunts").insert(row);
+    if (a.error) fail(a.error, "Couldn’t bring it back.");
+    if (results.length) await db.from("hunt_results").insert(results);
+    await refreshHunt(id);
+  };
 }
 
 // ---------------------------------------------------------------- wishlist (SPEC 4.4)

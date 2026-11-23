@@ -1,1 +1,1 @@
-"""Built in a later phase (see SPEC.md section 12)."""
+"""Deal hunts and price watch (SPEC 5.8, 5.9): search, polite fetching, product-page parsing."""

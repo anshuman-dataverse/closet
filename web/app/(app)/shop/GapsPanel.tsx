@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Chips } from "@/components/Chips";
 import { useToast } from "@/components/Toast";
@@ -28,6 +29,18 @@ export function GapsPanel() {
   const d = useDerived(s);
   const toast = useToast();
   const worker = useWorkerStatus();
+  const router = useRouter();
+  const hunt = (g: Gap) => {
+    const q = new URLSearchParams({
+      tab: "hunts",
+      new: "hunt",
+      what: g.name,
+      occ: res?.occ ?? occ,
+      min: String(g.price_min_cents),
+      max: String(g.price_max_cents),
+    });
+    router.push(`/shop?${q}`, { scroll: false });
+  };
   const [today] = useOccasion();
   const [occ, setOcc] = useState<Occasion>(today);
   const [res, setRes] = useState<{ occ: Occasion; ideas: Gap[] } | null>(null);
@@ -101,7 +114,7 @@ export function GapsPanel() {
               <p className="price">{budgetRange(g.price_min_cents, g.price_max_cents)}</p>
               <p className="muted">{g.reason}</p>
               <div className="row">
-                <button type="button" className="btn sm" disabled title="Deal hunts arrive soon">
+                <button type="button" className="btn sm" onClick={() => hunt(g)}>
                   Start a hunt
                 </button>
                 <button

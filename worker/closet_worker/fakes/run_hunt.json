@@ -1,0 +1,8 @@
+{
+  "summary": "2 picks from Everlane and Gap. Checked 12 product pages. H&M blocked automated reading.",
+  "pages_checked": 12,
+  "picks": [
+    {"rank": 1, "title": "The Slim Oxford Shirt | White", "store": "Everlane", "url": "https://www.everlane.com/products/mens-slim-oxford-white", "image_url": null, "price_cents": 3900, "was_price_cents": 5500, "rating": null, "rating_count": null, "why": "A close match for “white oxford shirt”. White is one of your neutrals. 29% off right now.", "quality": "No ratings on the page.", "size_available": "unknown"},
+    {"rank": 2, "title": "Oxford Shirt", "store": "Gap", "url": "https://www.gap.com/browse/product.do?pid=619568022", "image_url": null, "price_cents": 3500, "was_price_cents": null, "rating": 4.69, "rating_count": 1240, "why": "A close match for “white oxford shirt”.", "quality": "4.7★ from 1,240 reviews.", "size_available": "yes"}
+  ]
+}

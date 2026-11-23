@@ -9,9 +9,11 @@ import { useToast } from "@/components/Toast";
 import { useWorkerStatus } from "@/components/WorkerStatus";
 import { checkWish, setWishStatus, useCloset, useDerived } from "@/lib/closet/store";
 import type { Wish } from "@/lib/closet/types";
+import { priceDrop } from "@/lib/domain/hunts";
 import { centsToInput, formatCents } from "@/lib/domain/money";
 import { overlapNote, similarTo } from "@/lib/domain/similar";
 import { useSignedUrl } from "@/lib/signed-urls";
+import { seenAgo } from "@/lib/worker-status";
 import { WishSheet } from "./WishSheet";
 
 const VERDICT = {
@@ -40,6 +42,7 @@ function WishCard({ w, onBought }: { w: Wish; onBought: (w: Wish) => void }) {
   const v = check && VERDICT[check.verdict] ? VERDICT[check.verdict] : null;
   const local = check?.duplicates?.length ? check.duplicates : similarTo(w, s.items);
   const note = overlapNote(local);
+  const drop = priceDrop(w);
 
   const ask = async () => {
     if (worker.offline) {
@@ -88,6 +91,13 @@ function WishCard({ w, onBought }: { w: Wish; onBought: (w: Wish) => void }) {
           )}
         </div>
       </div>
+      {drop && (
+        <p className="drop" data-testid="price-drop">
+          Price dropped to {formatCents(drop.to)}
+          {drop.from != null && <> from {formatCents(drop.from)}</>}
+          {w.last_price_check_at && <span className="muted"> · checked {seenAgo(w.last_price_check_at)}</span>}
+        </p>
+      )}
       {note && <p className="overlap">{note}</p>}
       {v && check && (
         <div className={`verdict ${v.cls}`}>

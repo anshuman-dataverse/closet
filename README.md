@@ -89,6 +89,13 @@ printf 'SEARXNG_SECRET=%s\n' "$(openssl rand -hex 32)" > .env   # once
 docker compose up -d                                               # http://127.0.0.1:8888 only
 ```
 
+Hunts read public product pages on the stores in `worker/closet_worker/vocab/stores.yaml`, honoring
+each site's robots.txt, at most one request per second per site. In a live test on 2026-11-22,
+11 of 23 stores published readable product data (Gap, Old Navy, Banana Republic, L.L.Bean,
+Everlane, Madewell, Taylor Stitch, Buck Mason, Bonobos, Brooks Brothers, Proper Cloth); the rest
+block automated reading or only load product data with JavaScript. Hunts name those stores in
+their summary. Price watch runs every morning at 09:00 for wishlist items with **Watch price** on.
+
 ## 6. iPhone
 
 1. Open your Vercel URL in Safari and sign in.

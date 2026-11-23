@@ -3,6 +3,9 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
+// Prefill keys (what, occ, min, max) belong to the New hunt sheet and go with it.
+const SHEET_KEYS = ["item", "add", "outfit", "edit", "new", "what", "occ", "min", "max"];
+
 /** Sheets are addressed by query params (e.g. /closet?item=…), so they deep-link and close on Back. */
 export function useSheetParam() {
   const params = useSearchParams();
@@ -11,7 +14,7 @@ export function useSheetParam() {
   const open = useCallback(
     (key: string, value: string) => {
       const q = new URLSearchParams(params.toString());
-      for (const k of ["item", "add", "outfit", "edit", "new"]) q.delete(k);
+      for (const k of SHEET_KEYS) q.delete(k);
       q.set(key, value);
       router.push(`${path}?${q}`, { scroll: false });
     },
@@ -19,7 +22,7 @@ export function useSheetParam() {
   );
   const close = useCallback(() => {
     const q = new URLSearchParams(params.toString());
-    for (const k of ["item", "add", "outfit", "edit", "new"]) q.delete(k);
+    for (const k of SHEET_KEYS) q.delete(k);
     const s = q.toString();
     router.replace(s ? `${path}?${s}` : path, { scroll: false });
   }, [params, path, router]);

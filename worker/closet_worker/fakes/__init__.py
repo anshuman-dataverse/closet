@@ -64,6 +64,23 @@ def run(kind: str, payload: dict[str, Any], ctx: JobContext | None = None) -> di
                 item_id, {"suggestions": sug, "tags_status": sug.get("status", "ready")}
             )
         return {"suggestions": sug, "cutout_path": None, "photo_path": payload.get("photo_path")}
+    if kind == "run_hunt" and ctx and ctx.items:
+        fx = _fixture("run_hunt") or {}
+        hunt_id = str(payload.get("hunt_id", ""))
+        if ctx.items.get_hunt(hunt_id):
+            ctx.items.replace_hunt_results(hunt_id, fx.get("picks", []))
+            ctx.items.update_hunt(
+                hunt_id,
+                {
+                    "status": "done",
+                    "summary": fx.get("summary"),
+                    "pages_checked": fx.get("pages_checked", 0),
+                    "finished_at": datetime.now(UTC).isoformat(),
+                },
+            )
+        return {"picks": len(fx.get("picks", [])), "summary": fx.get("summary")}
+    if kind == "price_check":
+        return {"checked": 0, "priced": 0}  # no network in fake mode
     if kind == "read_label" and ctx and ctx.items:
         return read_label.run(payload, ctx, FixtureLabelReader())
     if kind == "check_wish":

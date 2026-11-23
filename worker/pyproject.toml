@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Closet Mac worker: claims jobs from Supabase and runs the local models."
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "extruct>=0.18.0",
     "httpx>=0.28.1",
     "mediapipe>=1.2.3",
     "numpy>=2.5.5",

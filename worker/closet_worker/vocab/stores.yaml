@@ -1,0 +1,131 @@
+# Stores that deal hunts search (SPEC 5.8). Each product pattern is a regex on the URL path (and
+# query, for Gap brands), learned from real search results on 2026-11-22. `example` is one of
+# those real URLs: tests/test_shopping.py checks every pattern still matches its example and
+# that category pages don't match.
+# Kids', teen and baby pages are skipped for everyone (see `exclude`).
+# `checked`: what a live fetch of `example` found on 2026-11-22 (ok, blocked, robots, no_data:
+# the product data only loads with JavaScript). It only orders searches; hunts keep learning in
+# ~/.closet/store_health.json, which takes over once a store has been tried again.
+
+exclude: '(?i)/(kids|kid|teen|boys?|girls?|baby|toddler)(/|-|$)'
+
+stores:
+  # Everyday basics
+  - name: Uniqlo
+    domains: [www.uniqlo.com]
+    product: '^/us/en/products/E\d+'
+    example: https://www.uniqlo.com/us/en/products/E450179-000/00
+    checked: robots  # live test 2026-11-22
+  - name: Gap
+    domains: [www.gap.com]
+    product: '^/browse/product\.do\?pid=\d+'
+    example: https://www.gap.com/browse/product.do?pid=619568022
+    checked: ok  # live test 2026-11-22
+  - name: Old Navy
+    domains: [oldnavy.gap.com]
+    product: '^/browse/product\.do\?pid=\d+'
+    example: https://oldnavy.gap.com/browse/product.do?pid=886939012
+    checked: ok  # live test 2026-11-22
+  - name: H&M
+    domains: [www2.hm.com]
+    product: '^/en_us/productpage\.\d+\.html'
+    example: https://www2.hm.com/en_us/productpage.1242812001.html
+    checked: blocked  # live test 2026-11-22
+  - name: Target
+    domains: [www.target.com]
+    product: '^/p/[^/]+/-/A-\d+'
+    example: https://www.target.com/p/men-39-s-short-sleeve-t-shirt-original-use-8482-washed-navy-xxl/-/A-95278605
+    checked: no_data  # live test 2026-11-22
+  - name: Lands' End
+    domains: [www.landsend.com]
+    product: '^/products/[^/]+/id_\d+'
+    example: https://www.landsend.com/products/mens-long-sleeve-easy-fit-sail-rigger-oxford-shirt/id_394294
+    checked: blocked  # live test 2026-11-22
+  - name: L.L.Bean
+    domains: [www.llbean.com]
+    product: '^/llb/shop/\d+\?page='
+    example: https://www.llbean.com/llb/shop/34442?page=wrinkle-resistant-classic-oxford-cloth-shirt-traditional-fit
+    checked: ok  # live test 2026-11-22
+  # Mid-range
+  - name: J.Crew
+    domains: [www.jcrew.com]
+    product: '^/p/.+/[A-Z]{2}\d{3,}'
+    example: https://www.jcrew.com/p/mens/categories/clothing/shirts/broken-in-oxford/broken-in-organic-cotton-oxford-shirt/AU763
+    checked: no_data  # live test 2026-11-22
+  - name: Banana Republic
+    domains: [bananarepublic.gap.com]
+    product: '^/browse/product\.do\?pid=\d+'
+    example: https://bananarepublic.gap.com/browse/product.do?pid=761614002
+    checked: ok  # live test 2026-11-22
+  - name: Everlane
+    domains: [www.everlane.com]
+    product: '^/products/[\w-]+'
+    example: https://www.everlane.com/products/mens-slim-oxford-light-blue
+    checked: ok  # live test 2026-11-22
+  - name: Abercrombie & Fitch
+    domains: [www.abercrombie.com]
+    product: '^/shop/us/p/[\w-]+-\d+'
+    example: https://www.abercrombie.com/shop/us/p/signature-icon-oxford-shirt-61816346
+    checked: no_data  # live test 2026-11-22
+  - name: Madewell
+    domains: [www.madewell.com]
+    product: '^/p/[\w-]+/[A-Z0-9]+/?'
+    example: https://www.madewell.com/p/the-easy-shirt-in-poplin/NY392/
+    checked: ok  # live test 2026-11-22
+  - name: Nordstrom
+    domains: [www.nordstrom.com]
+    product: '^/s/[\w-]+/\d+'
+    example: https://www.nordstrom.com/s/oxford-shirt/7999720
+    checked: no_data  # live test 2026-11-22
+  # Menswear focused
+  - name: Taylor Stitch
+    domains: [www.taylorstitch.com]
+    product: '^/products/[\w-]+'
+    example: https://www.taylorstitch.com/products/shore-shirt-in-navy-tencel-2604
+    checked: ok  # live test 2026-11-22
+  - name: Buck Mason
+    domains: [www.buckmason.com]
+    product: '^/products/[\w-]+'
+    example: https://www.buckmason.com/products/natural-draped-twill-one-pocket-shirt-1
+    checked: ok  # live test 2026-11-22
+  - name: Bonobos
+    domains: [bonobos.com, www.bonobos.com]
+    product: '^/products/[\w-]+'
+    example: https://bonobos.com/products/everyday-linen-shirt
+    checked: ok  # live test 2026-11-22
+  - name: Brooks Brothers
+    domains: [www.brooksbrothers.com]
+    product: '^/[\w-]+/[A-Z]{2}\d{4,}\.html'
+    example: https://www.brooksbrothers.com/cotton-non-iron-twill-ainsley-collar-dress-shirt/ME04490.html
+    checked: ok  # live test 2026-11-22
+  - name: Proper Cloth
+    domains: [propercloth.com]
+    product: '^/(dress|casual)-shirts/[\w-]+-\d+\.html'
+    example: https://propercloth.com/dress-shirts/non-iron-stretch-white-twill-261190.html
+    checked: ok  # live test 2026-11-22
+  # Womenswear focused
+  - name: Zara
+    domains: [www.zara.com]
+    product: '^/us/en/[\w-]+-p\d+\.html'
+    example: https://www.zara.com/us/en/cotton-regular-fit-shirt-p04703881.html
+    checked: blocked  # live test 2026-11-22
+  - name: Mango
+    domains: [shop.mango.com]
+    product: '^/us/en/p/(men|women)/.+/\d{8}/'
+    example: https://shop.mango.com/us/en/p/men/shirts/plain/100-cotton-oxford-shirt/37074438/01/00
+    checked: blocked  # live test 2026-11-22
+  - name: Aritzia
+    domains: [www.aritzia.com]
+    product: '^/us/en/product/[\w-]+/\d+\.html'
+    example: https://www.aritzia.com/us/en/product/utility-shirt/96565.html
+    checked: no_data  # live test 2026-11-22
+  - name: Anthropologie
+    domains: [www.anthropologie.com]
+    product: '^/shop/[\w-]+'
+    example: https://www.anthropologie.com/shop/maeve-kate-100-cotton-classic-buttondown-shirt2
+    checked: blocked  # live test 2026-11-22
+  - name: Free People
+    domains: [www.freepeople.com]
+    product: '^/shop/[\w-]+/?'
+    example: https://www.freepeople.com/shop/everyday-linen-shirt/
+    checked: blocked  # live test 2026-11-22

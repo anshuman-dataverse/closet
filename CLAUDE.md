@@ -2,7 +2,7 @@
 
 The spec is **SPEC.md** (read it before planning). The look, copy and interactions are in `design-reference/closet-demo.html`.
 Work phase by phase (SPEC 12). Plan each phase and get an OK first. Ask before adding paid services or deps that need accounts.
-Done: Phases 0–1, 3–4, plus backups from Phase 5. Phase 2 (vision) counts as done once the Colab eval meets ≥90% category / ≥70% type. Next: Phase 5.
+Done: Phases 0–1, 3–5 (free hunts, price watch, backups; GPT hunts not built, the owner chose free only). Phase 2 (vision) counts as done once the Colab eval meets ≥90% category / ≥70% type. Next: Phase 6.
 Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Vercel has no GPUs.
 
 ## Run
@@ -84,6 +84,15 @@ Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Ve
 - Outfit model (SPEC 5.11): `recsys/compat_head.py` (torch-only, also run by `colab/outfit_compat.ipynb`) and `compat.py`
   (safetensors + SHA-256, `COMPAT_MODEL_DIR`). The `compat` term exists only while `gate.json` is open; `closet-worker compat-eval`
   opens it only if rules+model beat rules on ≥30 logged picks. With it closed, scores are unchanged. Never add reason text for it.
+
+## Deal hunts and price watch (Phase 5)
+- `shopping/`: `stores.py` (vocab/stores.yaml: product URL regex per store, each with a real example a test checks, plus a
+  `checked` status from a live test), `fetch.py` (robots.txt honored, 1 req/s per site, 10 s, identifying UA), `parse.py`
+  (extruct JSON-LD/microdata, Open Graph fallback; missing price → skipped, never estimated), `hunt.py` (queries, keep
+  USD + in stock + in budget, rank, ≤2 per store, honest summary naming blocked stores; ~/.closet/store_health.json).
+- Colors in hunt "why" lines only when the product's name states the color; light colors are never read from photos.
+- `price_check` (09:00): a failed check is saved as "Couldn’t check: …"; the web flags drops in `lib/domain/hunts.ts`.
+- As of 2026-11-22 most womenswear stores (Zara, Mango, Anthropologie, Free People) block automated reading.
 
 ## Style profile (Phase 4)
 - `analyze_profile`: MediaPipe Face and Pose (`vision/landmarks.py`; models cached in ~/.cache/closet) → `skin.py`
