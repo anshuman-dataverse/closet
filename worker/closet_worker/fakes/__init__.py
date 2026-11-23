@@ -65,9 +65,10 @@ def run(kind: str, payload: dict[str, Any], ctx: JobContext | None = None) -> di
             )
         return {"suggestions": sug, "cutout_path": None, "photo_path": payload.get("photo_path")}
     if kind == "run_hunt" and ctx and ctx.items:
-        fx = _fixture("run_hunt") or {}
         hunt_id = str(payload.get("hunt_id", ""))
-        if ctx.items.get_hunt(hunt_id):
+        row = ctx.items.get_hunt(hunt_id)
+        fx = _fixture("run_look" if row and row.get("kind") == "look" else "run_hunt") or {}
+        if row:
             ctx.items.replace_hunt_results(hunt_id, fx.get("picks", []))
             ctx.items.update_hunt(
                 hunt_id,

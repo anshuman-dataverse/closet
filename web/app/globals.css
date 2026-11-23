@@ -984,6 +984,13 @@ select {
 .hunt-pick .price .muted {
   font-weight: 500;
 }
+.look {
+  margin-top: 12px;
+}
+.look h4 {
+  margin: 0;
+  font-size: 15px;
+}
 .off {
   color: var(--sale);
   font-weight: 750;

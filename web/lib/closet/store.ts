@@ -361,6 +361,8 @@ export type HuntInput = {
   budget_min_cents: number | null;
   budget_max_cents: number | null;
   notes: string | null;
+  kind?: "item" | "look";
+  look_mode?: "own" | "new" | null;
 };
 
 async function refreshHunt(id: string): Promise<void> {

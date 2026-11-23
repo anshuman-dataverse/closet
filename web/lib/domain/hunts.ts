@@ -18,6 +18,10 @@ export function huntStatus(h: Hunt, macOffline: boolean): string {
   if (h.status === "failed") return h.error ? `Failed: ${h.error}` : "Failed";
   if (h.status === "running") return "Searching…";
   if (h.status === "queued") return macOffline ? "Waiting for your Mac" : "Queued";
+  if (h.kind === "look") {
+    const looks = new Set(h.results.map((r) => r.set_no).filter((n) => n != null)).size;
+    return looks === 0 ? "No complete look" : looks === 1 ? "1 look" : `${looks} looks`;
+  }
   const n = h.results.length;
   return n === 1 ? "1 pick" : `${n} picks`;
 }
@@ -44,4 +48,26 @@ export function priceDrop(w: Wish): { from: number | null; to: number } | null {
   const target = w.target_price_cents != null && now <= w.target_price_cents;
   const fell = w.price_cents != null && w.price_cents > 0 && now <= w.price_cents * 0.85;
   return target || fell ? { from: w.price_cents, to: now } : null;
+}
+
+export type LookSet = { no: number; pieces: HuntResult[]; total: number; toBuy: HuntResult[] };
+
+/** A look's complete sets, in order, each with its pieces in slot order and the cost of what to buy. */
+export function lookSets(results: HuntResult[]): LookSet[] {
+  const by = new Map<number, HuntResult[]>();
+  for (const r of results) if (r.set_no != null) (by.get(r.set_no) ?? by.set(r.set_no, []).get(r.set_no)!).push(r);
+  return [...by.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([no, pieces]) => {
+      const sorted = [...pieces].sort((a, b) => a.rank - b.rank);
+      const toBuy = sorted.filter((r) => r.owned_item_id == null && r.url != null);
+      return { no, pieces: sorted, toBuy, total: toBuy.reduce((t, r) => t + (r.price_cents ?? 0), 0) };
+    });
+}
+
+/** Pieces a look found that no complete set used, grouped by slot (shown when no set is complete). */
+export function foundBySlot(results: HuntResult[]): [string, HuntResult[]][] {
+  const by = new Map<string, HuntResult[]>();
+  for (const r of results) if (r.set_no == null && r.slot) (by.get(r.slot) ?? by.set(r.slot, []).get(r.slot)!).push(r);
+  return [...by.entries()];
 }

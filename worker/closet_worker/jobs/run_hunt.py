@@ -79,14 +79,28 @@ def run(payload: dict[str, Any], ctx: JobContext | None) -> dict[str, Any]:
     from closet_worker.vision.embed import load_embedder
 
     emb = load_embedder(ctx.settings.embed_model, ctx.settings.device)
-    try:
-        out = H.run_hunt(
-            h,
+
+    def hunt(
+        sub: H.Hunt,
+        max_queries: int = H.MAX_QUERIES,
+        max_pages: int = H.MAX_PAGES,
+        top_n: int = H.TOP_N,
+    ) -> H.Outcome:
+        return H.run_hunt(
+            sub,
             lambda q: search(ctx.settings.searxng_url, q),
             fetcher,
             H.clip_image_match(emb, images),
             H.palette_fit(profile.get("analysis"), images),
+            max_queries=max_queries,
+            max_pages=max_pages,
+            top_n=top_n,
         )
+
+    if row.get("kind") == "look":
+        return run_look(ctx, hunt_id, row, h, profile, hunt)
+    try:
+        out = hunt(h)
     except Exception as e:
         ctx.items.update_hunt(
             hunt_id, {"status": "failed", "finished_at": now(), "error": str(e)[:300]}
@@ -104,3 +118,94 @@ def run(payload: dict[str, Any], ctx: JobContext | None) -> dict[str, Any]:
         },
     )
     return {"picks": len(rows), "summary": out.summary, "pages_checked": out.pages_checked}
+
+
+def pick_row(p: H.Pick, query: str, sizes: dict[str, Any], **extra: Any) -> dict[str, Any]:
+    it = p.listing
+    return {
+        "title": it.title[:200],
+        "store": p.store,
+        "url": it.url,
+        "image_url": it.image_url,
+        "price_cents": it.price_cents,
+        "was_price_cents": it.was_price_cents,
+        "rating": round(it.rating, 2) if it.rating is not None else None,
+        "rating_count": it.rating_count,
+        "why": H.why_text(p, H.Hunt(query, None, None)),
+        "quality": H.quality_text(it),
+        "size_available": H.size_available(it, size_for(query, sizes)),
+        **extra,
+    }
+
+
+def run_look(
+    ctx: JobContext,
+    hunt_id: str,
+    row: dict[str, Any],
+    h: H.Hunt,
+    profile: dict[str, Any],
+    hunt: Any,
+) -> dict[str, Any]:
+    """Shop a look: one row per piece of each complete set (owned pieces included)."""
+    from closet_worker.recsys.model import Piece
+    from closet_worker.shopping.look import PER_SLOT, shop_look
+
+    assert ctx.items is not None
+    mode = str(row.get("look_mode") or "new")
+    owned = [Piece.from_row(r) for r in ctx.items.list_items()] if mode == "own" else []
+    sizes = dict(profile.get("sizes") or {})
+    try:
+        out = shop_look(
+            h,
+            mode,
+            profile.get("analysis"),
+            owned,
+            lambda sub: hunt(sub, max_queries=7, max_pages=14, top_n=PER_SLOT),
+        )
+    except Exception as e:
+        ctx.items.update_hunt(
+            hunt_id, {"status": "failed", "finished_at": now(), "error": str(e)[:300]}
+        )
+        raise
+    rows: list[dict[str, Any]] = []
+    rank = 0
+    slot_of = {s.category: s for s in out.slots}
+    for n, ls in enumerate(out.sets, start=1):
+        for cat in [s.category for s in out.slots]:
+            rank += 1
+            sl = slot_of[cat]
+            if cat in ls.owned:
+                piece = ls.owned[cat]
+                rows.append(
+                    {
+                        "rank": rank,
+                        "title": piece.name,
+                        "owned_item_id": piece.id,
+                        "slot": sl.label,
+                        "set_no": n,
+                        "why": "From your closet.",
+                        "size_available": "unknown",
+                    }
+                )
+            else:
+                rows.append(
+                    pick_row(ls.picks[cat], sl.query, sizes, rank=rank, slot=sl.label, set_no=n)
+                )
+    if not out.sets:  # no complete set: still show what was found, slot by slot
+        for cat, picks in out.found.items():
+            for p in picks:
+                rank += 1
+                rows.append(
+                    pick_row(p, slot_of[cat].query, sizes, rank=rank, slot=slot_of[cat].label)
+                )
+    ctx.items.replace_hunt_results(hunt_id, rows)
+    ctx.items.update_hunt(
+        hunt_id,
+        {
+            "status": "done",
+            "finished_at": now(),
+            "summary": out.summary,
+            "pages_checked": out.pages_checked,
+        },
+    )
+    return {"sets": len(out.sets), "summary": out.summary, "pages_checked": out.pages_checked}

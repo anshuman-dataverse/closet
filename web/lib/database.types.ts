@@ -26,15 +26,18 @@ export type Database = {
           hunt_id: string;
           id: string;
           image_url: string | null;
+          owned_item_id: string | null;
           price_cents: number | null;
           quality: string | null;
           rank: number;
           rating: number | null;
           rating_count: number | null;
+          set_no: number | null;
           size_available: string;
+          slot: string | null;
           store: string | null;
           title: string;
-          url: string;
+          url: string | null;
           user_id: string;
           was_price_cents: number | null;
           why: string | null;
@@ -45,15 +48,18 @@ export type Database = {
           hunt_id: string;
           id?: string;
           image_url?: string | null;
+          owned_item_id?: string | null;
           price_cents?: number | null;
           quality?: string | null;
           rank: number;
           rating?: number | null;
           rating_count?: number | null;
+          set_no?: number | null;
           size_available?: string;
+          slot?: string | null;
           store?: string | null;
           title: string;
-          url: string;
+          url?: string | null;
           user_id?: string;
           was_price_cents?: number | null;
           why?: string | null;
@@ -63,15 +69,18 @@ export type Database = {
           hunt_id?: string;
           id?: string;
           image_url?: string | null;
+          owned_item_id?: string | null;
           price_cents?: number | null;
           quality?: string | null;
           rank?: number;
           rating?: number | null;
           rating_count?: number | null;
+          set_no?: number | null;
           size_available?: string;
+          slot?: string | null;
           store?: string | null;
           title?: string;
-          url?: string;
+          url?: string | null;
           user_id?: string;
           was_price_cents?: number | null;
           why?: string | null;
@@ -84,6 +93,20 @@ export type Database = {
             referencedRelation: "hunts";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "hunt_results_owned_item_id_fkey";
+            columns: ["owned_item_id"];
+            isOneToOne: false;
+            referencedRelation: "item_stats";
+            referencedColumns: ["item_id"];
+          },
+          {
+            foreignKeyName: "hunt_results_owned_item_id_fkey";
+            columns: ["owned_item_id"];
+            isOneToOne: false;
+            referencedRelation: "items";
+            referencedColumns: ["id"];
+          },
         ];
       };
       hunts: {
@@ -94,6 +117,8 @@ export type Database = {
           error: string | null;
           finished_at: string | null;
           id: string;
+          kind: string;
+          look_mode: string | null;
           notes: string | null;
           occasion: Database["public"]["Enums"]["occasion"] | null;
           pages_checked: number;
@@ -113,6 +138,8 @@ export type Database = {
           error?: string | null;
           finished_at?: string | null;
           id?: string;
+          kind?: string;
+          look_mode?: string | null;
           notes?: string | null;
           occasion?: Database["public"]["Enums"]["occasion"] | null;
           pages_checked?: number;
@@ -131,6 +158,8 @@ export type Database = {
           error?: string | null;
           finished_at?: string | null;
           id?: string;
+          kind?: string;
+          look_mode?: string | null;
           notes?: string | null;
           occasion?: Database["public"]["Enums"]["occasion"] | null;
           pages_checked?: number;

@@ -81,3 +81,35 @@ test("a watched wish that dropped in price shows a badge and the drop", async ({
     "Price dropped to $49 from $60",
   );
 });
+
+test("shop a look: a complete set with its total, added to the wishlist in one tap", async ({ page, signIn }) => {
+  test.setTimeout(90_000);
+  worker = startFakeWorker();
+  await waitForHeartbeat();
+  await signIn("/shop?tab=hunts");
+  await page.getByRole("button", { name: "Shop a look" }).click();
+  const sheet = page.getByRole("dialog", { name: "Shop a look" });
+  await sheet.getByRole("group", { name: "Occasion" }).getByRole("button", { name: "College" }).click();
+  await sheet.getByLabel("Total budget ($)").fill("260");
+  await sheet.getByRole("button", { name: "Shop the look" }).click();
+  await expect(sheet).toBeHidden();
+
+  const card = page.getByRole("listitem", { name: "Hunt: College look" });
+  await expect(card).toContainText("1 complete look within $260.", { timeout: 30_000 });
+  await expect(card.getByTestId("hunt-status")).toHaveText("1 look");
+  const look = card.getByRole("region", { name: "Look 1" });
+  await expect(look.getByRole("heading")).toHaveText("Look 1 · $255.80");
+  for (const slot of ["Top", "Layer", "Bottoms", "Shoes"]) await expect(look).toContainText(slot);
+  const row = await admin.from("hunts").select("kind, look_mode, budget_max_cents").eq("user_id", OWNER.id).single();
+  expect(row.data).toEqual({ kind: "look", look_mode: "new", budget_max_cents: 26000 });
+
+  await look.getByRole("button", { name: "Add all to wishlist" }).click();
+  await expect(look.getByRole("button", { name: "Look is on your wishlist" })).toBeDisabled();
+  const wishes = await admin.from("wishlist_items").select("name").eq("user_id", OWNER.id);
+  expect(wishes.data?.map((w) => w.name).sort()).toEqual([
+    "Italian Leather Sneaker",
+    "Italian Merino Wool-Blend Crew-Neck Sweater",
+    "Oxford Button-Down Shirt",
+    "Straight Italian-Stretch Chino",
+  ]);
+});

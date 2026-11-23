@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import time
 from collections import Counter
 from collections.abc import Callable
@@ -52,6 +53,10 @@ class Hunt:
     wears: str | None = None  # menswear | womenswear | both
     favorites: list[str] = field(default_factory=list)
     best_colors: list[str] = field(default_factory=list)
+    # Look slots only: the product name must contain one of these words, state no other color,
+    # and (for plain pieces) no pattern.
+    must_have: tuple[str, ...] = ()
+    color: str | None = None
 
 
 def audience(wears: str | None) -> str:
@@ -113,8 +118,53 @@ def recently_blocked(health: dict[str, dict[str, str]], store: str, now: datetim
     return h["status"] if now - at < SKIP_BLOCKED_FOR else None
 
 
+KIDS = re.compile(
+    r"\b(baby|babies|kids?|toddlers?|infants?|boys?|girls?|teens?|youth|junior)\b", re.I
+)
+PATTERN = re.compile(
+    r"\b(plaid|check(ed)?|gingham|stripe[ds]?|print(ed)?|floral|graphic|logo|camo|tie-?dye)\b", re.I
+)
+
+
+WOMENS = re.compile(r"\b(women'?s?|womens|ladies|maternity)\b", re.I)
+MENS = re.compile(r"(?<!wo)\b(men'?s?|mens)\b", re.I)
+
+
+def for_wears(item: Listing, wears: str | None) -> bool:
+    """Menswear hunts skip women's products and the other way round, by the page's own
+    audience data or the product name. "Both" (or not set) keeps everything."""
+    if wears == "menswear":
+        return item.gender != "female" and not WOMENS.search(item.title)
+    if wears == "womenswear":
+        return item.gender != "male" and not MENS.search(item.title)
+    return True
+
+
+def stated_color(item: Listing) -> str | None:
+    """The color the product's name or its own data states, if any."""
+    return color_in(item.title) or (color_in(item.color) if item.color else None)
+
+
+def matches_slot(item: Listing, h: Hunt) -> bool:
+    """Look pieces: the right item, in the planned color as stated by the store (an unstated
+    color isn't assumed), and plain when a plain piece was planned."""
+    title = item.title.lower()
+    if h.must_have and not any(w in title for w in h.must_have):
+        return False
+    if h.color:
+        if stated_color(item) != h.color:
+            return False
+        if PATTERN.search(title) or (item.color and PATTERN.search(item.color)):
+            return False
+    return True
+
+
 def keep(item: Listing, h: Hunt) -> bool:
     if item.price_cents is None or item.currency != "USD" or item.in_stock is not True:
+        return False
+    if KIDS.search(item.title) or any(KIDS.search(c) for c in item.crumbs):
+        return False  # kids' things show up under adult searches
+    if not for_wears(item, h.wears) or not matches_slot(item, h):
         return False
     if h.budget_min_cents is not None and item.price_cents < h.budget_min_cents:
         return False
@@ -223,6 +273,9 @@ def run_hunt(
     health_path: Path = HEALTH_PATH,
     now: datetime | None = None,
     pause: Callable[[float], None] = time.sleep,
+    max_queries: int = MAX_QUERIES,
+    max_pages: int = MAX_PAGES,
+    top_n: int = TOP_N,
 ) -> Outcome:
     sl = stores or load_stores()
     now = now or datetime.now(UTC)
@@ -240,7 +293,9 @@ def run_hunt(
     }
 
     urls: list[tuple[str, Store]] = []
-    plan = queries(h, order[: MAX_QUERIES - 3])
+    # Color variants take 2 searches only when the search doesn't already name a color.
+    reserve = 1 + (0 if color_in(h.query) else 2)
+    plan = queries(h, order[: max(1, max_queries - reserve)])[:max_queries]
     failed = 0
     for i, q in enumerate(plan):
         if i:
@@ -264,7 +319,7 @@ def run_hunt(
             picked_urls.append((u, st))
     listings: list[tuple[Listing, Store]] = []
     pages = 0
-    for u, st in picked_urls[:MAX_PAGES]:
+    for u, st in picked_urls[:max_pages]:
         if st.name in skipped:
             continue
         page = fetcher.get(u)
@@ -314,7 +369,7 @@ def run_hunt(
             seen_titles.add(key)
             from_store[p.store] += 1
             top.append(p)
-        if len(top) == TOP_N:
+        if len(top) == top_n:
             break
     if plan and failed == len(plan):
         return Outcome([], 0, skipped, 0, SEARCH_DOWN)

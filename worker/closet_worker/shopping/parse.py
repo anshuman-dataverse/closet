@@ -28,6 +28,11 @@ class Listing:
     rating_count: int | None = None
     sizes: dict[str, bool] = field(default_factory=dict)  # size label → in stock
     source: str = "jsonld"  # jsonld | microdata | opengraph
+    color: str | None = None  # the color the page states (schema.org `color`)
+    gender: str | None = None  # male | female | unisex, when the page states it
+    crumbs: list[str] = field(
+        default_factory=list
+    )  # the page's breadcrumb trail, e.g. Men › Shirts
 
 
 def cents(v: Any) -> int | None:
@@ -109,6 +114,17 @@ def _list_price(offer: dict[str, Any]) -> int | None:
     return None
 
 
+def _gender(node: dict[str, Any]) -> str | None:
+    aud = node.get("audience")
+    raw = (aud.get("suggestedGender") if isinstance(aud, dict) else None) or node.get("gender")
+    g = str(_first(raw) or "").lower().rsplit("/", 1)[-1]
+    if g in ("male", "men", "mens", "man"):
+        return "male"
+    if g in ("female", "women", "womens", "woman"):
+        return "female"
+    return "unisex" if g == "unisex" else None
+
+
 def from_product(node: dict[str, Any], url: str, source: str) -> Listing | None:
     title = _text(node.get("name"))
     if not title:
@@ -160,6 +176,9 @@ def from_product(node: dict[str, Any], url: str, source: str) -> Listing | None:
         rating_count=rc,
         sizes=sizes,
         source=source,
+        color=_text(node.get("color"))
+        or next((_text(v.get("color")) for v in variants if v.get("color")), None),
+        gender=_gender(node),
     )
 
 
@@ -172,6 +191,33 @@ def _og(data: dict[str, Any]) -> dict[str, str]:
             if isinstance(k, str) and not k.startswith("@"):
                 out.setdefault(k, str(_first(v)))
     return out
+
+
+def _crumbs(data: dict[str, Any]) -> list[str]:
+    out: list[str] = []
+    for syntax in ("json-ld", "microdata"):
+        for node in _walk(data.get(syntax) or []):
+            if _type_is(node, "BreadcrumbList"):
+                for e in node.get("itemListElement") or []:
+                    if isinstance(e, dict):
+                        name = _text(e.get("name")) or _text(
+                            (e.get("item") or {}).get("name")
+                            if isinstance(e.get("item"), dict)
+                            else None
+                        )
+                        if name:
+                            out.append(name)
+    return out
+
+
+def _gender_from(crumbs: list[str]) -> str | None:
+    for c in crumbs:
+        w = c.strip().lower().replace("’", "'")
+        if w in ("women", "womens", "women's", "ladies"):
+            return "female"
+        if w in ("men", "mens", "men's"):
+            return "male"
+    return None
 
 
 def parse_listing(html: str, url: str) -> Listing | None:
@@ -193,6 +239,8 @@ def parse_listing(html: str, url: str) -> Listing | None:
             if _type_is(node, "Product", "ProductGroup", "IndividualProduct"):
                 got = from_product(node, url, "jsonld" if syntax == "json-ld" else "microdata")
                 if got is not None and got.price_cents is not None:
+                    got.crumbs = _crumbs(data)
+                    got.gender = got.gender or _gender_from(got.crumbs)
                     return got
     og = _og(data)
     title = og.get("og:title")

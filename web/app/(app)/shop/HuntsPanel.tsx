@@ -9,7 +9,16 @@ import { Sheet } from "@/components/Sheet";
 import { useToast } from "@/components/Toast";
 import { useWorkerStatus } from "@/components/WorkerStatus";
 import { deleteHunt, rerunHunt, saveWish, startHunt, useCloset } from "@/lib/closet/store";
-import { type Hunt, type HuntResult, huntStatus, normalizeBudget, percentOff, sizeNote } from "@/lib/domain/hunts";
+import {
+  foundBySlot,
+  type Hunt,
+  type HuntResult,
+  huntStatus,
+  lookSets,
+  normalizeBudget,
+  percentOff,
+  sizeNote,
+} from "@/lib/domain/hunts";
 import { budgetRange, centsToInput, formatCents, parseDollars } from "@/lib/domain/money";
 import { type Occasion, OCCASIONS } from "@/lib/occasions";
 import { useSheetParam } from "@/lib/use-sheet-param";
@@ -20,7 +29,7 @@ export const FREE_NOTE = "Free search reads public product pages. Some stores bl
 
 type Draft = { what: string; occasion: Occasion | ""; min: string; max: string; notes: string };
 
-function Pick({ r, hunt }: { r: HuntResult; hunt: Hunt }) {
+function Pick({ r, hunt, slot }: { r: HuntResult; hunt: Hunt; slot?: string | null }) {
   const s = useCloset();
   const toast = useToast();
   const onList = s.wishes.some((w) => w.url === r.url);
@@ -46,7 +55,8 @@ function Pick({ r, hunt }: { r: HuntResult; hunt: Hunt }) {
     <li className="hunt-pick" aria-label={r.title}>
       {r.image_url && <img className="wish-img" src={r.image_url} alt="" loading="lazy" referrerPolicy="no-referrer" />}
       <div className="hunt-pick-body">
-        <a className="link hunt-pick-title" href={r.url} target="_blank" rel="noopener noreferrer">
+        {slot && <p className="muted small">{slot}</p>}
+        <a className="link hunt-pick-title" href={r.url ?? undefined} target="_blank" rel="noopener noreferrer">
           {r.title}
         </a>
         <p className="price">
@@ -63,11 +73,89 @@ function Pick({ r, hunt }: { r: HuntResult; hunt: Hunt }) {
         <p className="muted small">
           {[r.quality, sizeNote(r.size_available), `Checked ${seenAgo(r.checked_at)}`].filter(Boolean).join(" · ")}
         </p>
-        <button type="button" className="btn sm" onClick={add} disabled={onList}>
-          {onList ? "On your wishlist" : "Add to wishlist"}
-        </button>
+        {r.url && (
+          <button type="button" className="btn sm" onClick={add} disabled={onList}>
+            {onList ? "On your wishlist" : "Add to wishlist"}
+          </button>
+        )}
       </div>
     </li>
+  );
+}
+
+function LookResults({ h }: { h: Hunt }) {
+  const s = useCloset();
+  const toast = useToast();
+  const sets = lookSets(h.results);
+  const found = sets.length ? [] : foundBySlot(h.results);
+  const addAll = async (pieces: HuntResult[]) => {
+    try {
+      for (const r of pieces) {
+        if (s.wishes.some((w) => w.url === r.url)) continue;
+        await saveWish({
+          id: crypto.randomUUID(),
+          name: r.title.slice(0, 120),
+          url: r.url,
+          store: r.store,
+          image_url: r.image_url,
+          price_cents: r.price_cents,
+          occasion: h.occasion,
+          status: "wanted",
+        });
+      }
+      toast("Look added to your wishlist");
+    } catch (e) {
+      toast((e as Error).message);
+    }
+  };
+  return (
+    <>
+      {sets.map((set) => (
+        <section key={set.no} className="look" aria-label={`Look ${set.no}`}>
+          <h4>
+            Look {set.no} · {formatCents(set.total)}
+            {set.toBuy.length < set.pieces.length ? " to buy" : ""}
+          </h4>
+          <ul className="hunt-picks">
+            {set.pieces.map((r) =>
+              r.owned_item_id ? (
+                <li key={r.id} className="hunt-pick" aria-label={r.title}>
+                  <div className="hunt-pick-body">
+                    <p className="muted small">{r.slot}</p>
+                    <p className="hunt-pick-title">{r.title}</p>
+                    <p className="muted small">From your closet</p>
+                  </div>
+                </li>
+              ) : (
+                <Pick key={r.id} r={r} hunt={h} slot={r.slot} />
+              ),
+            )}
+          </ul>
+          {set.toBuy.length > 0 && (
+            <button
+              type="button"
+              className="btn sm primary"
+              onClick={() => void addAll(set.toBuy)}
+              disabled={set.toBuy.every((r) => s.wishes.some((w) => w.url === r.url))}
+            >
+              {set.toBuy.every((r) => s.wishes.some((w) => w.url === r.url))
+                ? "Look is on your wishlist"
+                : "Add all to wishlist"}
+            </button>
+          )}
+        </section>
+      ))}
+      {found.map(([slot, rs]) => (
+        <section key={slot} className="look" aria-label={`Found: ${slot}`}>
+          <h4>{slot}: found</h4>
+          <ul className="hunt-picks">
+            {rs.map((r) => (
+              <Pick key={r.id} r={r} hunt={h} />
+            ))}
+          </ul>
+        </section>
+      ))}
+    </>
   );
 }
 
@@ -106,7 +194,8 @@ function HuntCard({ h }: { h: Hunt }) {
         {status}
       </p>
       {h.summary && <p className="overlap">{h.summary}</p>}
-      {h.results.length > 0 && (
+      {h.kind === "look" ? <LookResults h={h} /> : null}
+      {h.kind !== "look" && h.results.length > 0 && (
         <ul className="hunt-picks" aria-label="Picks">
           {h.results.map((r) => (
             <Pick key={r.id} r={r} hunt={h} />
@@ -233,6 +322,101 @@ function HuntSheet({ open, onClose, initial }: { open: boolean; onClose: () => v
   );
 }
 
+type LookDraft = { occasion: Occasion; max: string; mode: "new" | "own" };
+
+function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const toast = useToast();
+  const [f, setF] = useState<LookDraft>({ occasion: "office", max: "", mode: "new" });
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [openedFor, setOpenedFor] = useState(false);
+  if (open !== openedFor) {
+    setOpenedFor(open);
+    if (open) {
+      setErr("");
+      setBusy(false);
+    }
+  }
+  const go = async () => {
+    const max = f.max.trim() ? parseDollars(f.max) : null;
+    if (f.max.trim() && max === null) return setErr("Enter the total budget as a number, like 250.");
+    setBusy(true);
+    try {
+      const occ = OCCASIONS.find((o) => o.id === f.occasion)?.label ?? f.occasion;
+      await startHunt({
+        query: `${occ} look`,
+        occasion: f.occasion,
+        budget_min_cents: null,
+        budget_max_cents: max,
+        notes: null,
+        kind: "look",
+        look_mode: f.mode,
+      });
+      toast("Shopping the look on your Mac");
+      onClose();
+    } catch (e) {
+      setErr((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <Sheet
+      open={open}
+      onClose={onClose}
+      title="Shop a look"
+      actions={
+        <button type="button" className="btn primary" onClick={go} disabled={busy}>
+          {busy ? "Starting…" : "Shop the look"}
+        </button>
+      }
+    >
+      <fieldset className="field">
+        <legend>Occasion</legend>
+        <Chips
+          label="Occasion"
+          wrap
+          options={OCCASIONS}
+          value={f.occasion}
+          onChange={(o) => setF((x) => ({ ...x, occasion: o }))}
+        />
+      </fieldset>
+      <label className="field">
+        <span>Total budget ($)</span>
+        <input
+          type="text"
+          inputMode="decimal"
+          value={f.max}
+          onChange={(e) => setF((x) => ({ ...x, max: e.target.value }))}
+          placeholder="250"
+        />
+      </label>
+      <fieldset className="field">
+        <legend>Pieces</legend>
+        <Chips
+          label="Pieces"
+          wrap
+          options={[
+            { id: "new" as const, label: "All new" },
+            { id: "own" as const, label: "Use what I own" },
+          ]}
+          value={f.mode}
+          onChange={(m) => setF((x) => ({ ...x, mode: m }))}
+        />
+      </fieldset>
+      <p className="hint">
+        Your Mac plans every piece (top, layer, trousers, shoes, and a belt for the office) in colors that go together
+        and suit you, then shops each one. A look is shown only when every piece is found within your total.
+      </p>
+      {err && (
+        <p className="err" role="alert">
+          {err}
+        </p>
+      )}
+    </Sheet>
+  );
+}
+
 export function HuntsPanel() {
   const s = useCloset();
   const { params, open, close } = useSheetParam();
@@ -251,6 +435,9 @@ export function HuntsPanel() {
         <button type="button" className="btn primary" onClick={() => open("new", "hunt")}>
           New hunt
         </button>
+        <button type="button" className="btn" onClick={() => open("new", "look")}>
+          Shop a look
+        </button>
       </div>
       <p className="muted small">
         {PRICES_CHANGE} {FREE_NOTE}
@@ -267,6 +454,7 @@ export function HuntsPanel() {
         </ul>
       )}
       <HuntSheet open={sheetOpen} onClose={close} initial={initial} />
+      <LookSheet open={params.get("new") === "look"} onClose={close} />
     </>
   );
 }

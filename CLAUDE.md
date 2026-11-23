@@ -93,6 +93,13 @@ Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Ve
 - Colors in hunt "why" lines only when the product's name states the color; light colors are never read from photos.
 - `price_check` (09:00): a failed check is saved as "Couldn’t check: …"; the web flags drops in `lib/domain/hunts.ts`.
 - As of 2026-11-22 most womenswear stores (Zara, Mango, Anthropologie, Free People) block automated reading.
+- Shop a look (`shopping/look.py`, hunts.kind='look'): plan slots per occasion (PREFERRED types, palette colors, layer ≠
+  top/bottom color), hunt each slot (must_have nouns, store-stated color, no pattern/kids/other gender via name, JSON-LD
+  audience or breadcrumbs), assemble complete sets ≤ total budget; never show a set with a missing slot.
+- SearXNG needs several engines (bing, brave, yahoo enabled in infra/searxng/settings.yml): DuckDuckGo CAPTCHAs and
+  Google CSE rate-limits.
+- Ideas pass a quality bar (`recsys/engine.py failed_checks`) or aren't shown; fit balance is a scoring term.
+- Studio images (`vision/studio.py`, items.studio_path): clothing model (u2net_cloth_seg) ∩ edge model (isnet).
 
 ## Style profile (Phase 4)
 - `analyze_profile`: MediaPipe Face and Pose (`vision/landmarks.py`; models cached in ~/.cache/closet) → `skin.py`

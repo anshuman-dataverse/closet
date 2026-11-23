@@ -1,0 +1,10 @@
+{
+  "summary": "1 complete look within $260.",
+  "pages_checked": 47,
+  "picks": [
+    {"rank": 1, "slot": "Top", "set_no": 1, "title": "Oxford Button-Down Shirt", "store": "Gap", "url": "https://www.gap.com/browse/product.do?pid=619568022", "image_url": null, "price_cents": 2300, "was_price_cents": null, "rating": 4.69, "rating_count": 1240, "why": "A close match for “light blue oxford shirt”.", "quality": "4.7★ from 1,240 reviews.", "size_available": "unknown"},
+    {"rank": 2, "slot": "Layer", "set_no": 1, "title": "Italian Merino Wool-Blend Crew-Neck Sweater", "store": "Banana Republic", "url": "https://bananarepublic.gap.com/browse/product.do?pid=1", "image_url": null, "price_cents": 7800, "was_price_cents": null, "rating": null, "rating_count": null, "why": "A close match for “charcoal crew neck sweater”.", "quality": "No ratings on the page.", "size_available": "unknown"},
+    {"rank": 3, "slot": "Bottoms", "set_no": 1, "title": "Straight Italian-Stretch Chino", "store": "Banana Republic", "url": "https://bananarepublic.gap.com/browse/product.do?pid=2", "image_url": null, "price_cents": 6000, "was_price_cents": null, "rating": null, "rating_count": null, "why": "A close match for “navy chinos”.", "quality": "No ratings on the page.", "size_available": "unknown"},
+    {"rank": 4, "slot": "Shoes", "set_no": 1, "title": "Italian Leather Sneaker", "store": "Banana Republic", "url": "https://bananarepublic.gap.com/browse/product.do?pid=3", "image_url": null, "price_cents": 9480, "was_price_cents": null, "rating": null, "rating_count": null, "why": "A close match for “white sneakers”.", "quality": "No ratings on the page.", "size_available": "unknown"}
+  ]
+}

@@ -20,3 +20,17 @@ search:
 
 ui:
   query_in_title: false
+
+# More web engines, so hunts keep working when one throttles (DuckDuckGo CAPTCHAs and Google CSE
+# "too many requests" were seen on 2026-11-23). All free, no accounts.
+engines:
+  - name: bing
+    disabled: false
+  - name: brave
+    disabled: false
+  - name: mojeek
+    disabled: false
+  - name: startpage
+    disabled: false
+  - name: yahoo
+    disabled: false
