@@ -89,7 +89,13 @@ export function SpendView() {
       </>
     );
   const budget = s.profile?.monthly_budget_cents ?? 0;
-  const sum = spendSummary(s.items, d.stats, d.today, budget);
+  // Sample pieces never count as spend.
+  const sum = spendSummary(
+    s.items.filter((i) => !i.is_sample),
+    d.stats,
+    d.today,
+    budget,
+  );
   if (!sum.hasPrices)
     return (
       <>

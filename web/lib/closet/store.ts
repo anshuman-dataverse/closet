@@ -197,6 +197,28 @@ export async function setItemsStatus(ids: readonly string[], status: ItemStatus)
 }
 
 /** Deletes the piece, its files, and removes it from outfits (cascade). */
+/** Sample pieces (Settings): inserted together, removed together. */
+export async function addSamples(): Promise<number> {
+  const { sampleRows } = await import("@/lib/domain/samples");
+  const { data, error } = await supabase().from("items").insert(sampleRows()).select("*");
+  if (error || !data) fail(error, "Couldn’t add the sample pieces. Try again.");
+  set({ items: [...data!, ...state.items] });
+  return data!.length;
+}
+
+export async function removeSamples(): Promise<number> {
+  const ids = state.items.filter((i) => i.is_sample).map((i) => i.id);
+  if (!ids.length) return 0;
+  const { error } = await supabase().from("items").delete().in("id", ids);
+  if (error) fail(error, "Couldn’t remove the sample pieces. Try again.");
+  set({
+    items: state.items.filter((i) => !i.is_sample),
+    outfits: state.outfits.map((o) => ({ ...o, itemIds: o.itemIds.filter((x) => !ids.includes(x)) })),
+    logs: state.logs.map((l) => ({ ...l, itemIds: l.itemIds.filter((x) => !ids.includes(x)) })),
+  });
+  return ids.length;
+}
+
 export const labelThumb = (p: string | null | undefined) => (p ? p.replace(/\.jpg$/, "_thumb.jpg") : null);
 
 export async function deleteItem(id: string): Promise<void> {

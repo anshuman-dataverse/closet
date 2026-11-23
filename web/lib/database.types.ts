@@ -225,6 +225,7 @@ export type Database = {
           fit: string | null;
           formality: number | null;
           id: string;
+          is_sample: boolean;
           label_path: string | null;
           name: string;
           notes: string | null;
@@ -257,6 +258,7 @@ export type Database = {
           fit?: string | null;
           formality?: number | null;
           id?: string;
+          is_sample?: boolean;
           label_path?: string | null;
           name: string;
           notes?: string | null;
@@ -288,6 +290,7 @@ export type Database = {
           fit?: string | null;
           formality?: number | null;
           id?: string;
+          is_sample?: boolean;
           label_path?: string | null;
           name?: string;
           notes?: string | null;

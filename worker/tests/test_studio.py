@@ -44,3 +44,18 @@ def test_no_cut_out_means_no_studio() -> None:
     rgb, _ = scene()
     assert make_studio(rgb, np.zeros((800, 600), bool)) is None
     assert make_studio(rgb, np.ones((800, 600), bool)) is None
+
+
+def test_tops_get_a_hanger_and_shoes_dont() -> None:
+    rgb, mask = scene()
+    hook_zone = (slice(30, 140), slice(560, 640))  # above the piece, at its center
+
+    def metal_pixels(category: str | None) -> int:
+        st = make_studio(rgb, mask, category)
+        assert st is not None
+        img = np.asarray(Image.open(io.BytesIO(st.full))).astype(int)[hook_zone]
+        grey = (abs(img[..., 0] - img[..., 1]) < 8) & (img[..., 0] < 200) & (img[..., 0] > 100)
+        return int(grey.sum())
+
+    assert metal_pixels("Tops") > 50
+    assert metal_pixels("Shoes") == 0 and metal_pixels(None) == 0

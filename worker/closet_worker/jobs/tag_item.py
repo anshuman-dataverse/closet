@@ -59,10 +59,10 @@ def studio_thumb(studio_path: str) -> str:
     return studio_path.removesuffix(".jpg") + "_thumb.jpg"
 
 
-def save_studio(ctx: JobContext, photo: str, cut: Any) -> str | None:
+def save_studio(ctx: JobContext, photo: str, cut: Any, category: str | None = None) -> str | None:
     """Upload the studio image and its thumbnail; None when there's no usable cut-out."""
     assert ctx.items is not None
-    st = make_studio(cut.rgb, cut.mask)
+    st = make_studio(cut.rgb, cut.mask, category)
     if st is None:
         return None
     path = studio_path_for(photo)
@@ -91,12 +91,13 @@ def run(
     cut = v.cutter.cut(img)
     cut_path = cutout_path_for(photo)
     ctx.items.upload(cut_path, cut.webp, "image/webp")
-    studio = save_studio(ctx, photo, cut)
+    studio: str | None = None  # made after tagging, once the category is known
 
     sug, vec = tag(cut.crop, cut.rgb, cut.mask, v.emb, v.bank, v.palette)
     ctx.items.upsert_embedding(item_id, v.emb.model_id, [float(x) for x in vec])
 
     sug_json = sug.to_json()
+    studio = save_studio(ctx, photo, cut, str(item.get("category") or sug.category))
     heads = heads_for(ctx, v.emb.model_id)
     if heads is not None and sug.status != "not_clothing":
         apply_heads(sug_json, vec, heads, v.palette.names)

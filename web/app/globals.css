@@ -1000,6 +1000,16 @@ select {
   font-weight: 650;
   color: var(--good);
 }
+.sample-tag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--ink-2);
+  vertical-align: middle;
+}
 .badge {
   display: inline-grid;
   place-items: center;

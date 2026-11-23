@@ -267,12 +267,12 @@ def _studio_backfill(ctx: JobContext) -> None:
     from .vision.cutout import Cutter
 
     assert ctx.items is not None
-    todo = [i for i in ctx.items.list_items() if i.get("photo_path") and not i.get("studio_path")]
+    todo = [i for i in ctx.items.list_items() if i.get("photo_path")]  # also redoes old ones
     cutter = Cutter()
     done = 0
     for it in todo:
         img = Image.open(io.BytesIO(ctx.items.download(str(it["photo_path"])))).convert("RGB")
-        path = save_studio(ctx, str(it["photo_path"]), cutter.cut(img))
+        path = save_studio(ctx, str(it["photo_path"]), cutter.cut(img), it.get("category"))
         if path:
             ctx.items.update_item(str(it["id"]), {"studio_path": path})
             done += 1

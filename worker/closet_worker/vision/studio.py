@@ -68,7 +68,61 @@ def main_piece(mask: NDArray[np.bool_]) -> NDArray[np.bool_]:
     return mask & near_full
 
 
-def make_studio(rgb: NDArray[np.uint8], mask: NDArray[np.bool_]) -> Studio | None:
+WOOD = (176, 138, 94)
+WOOD_EDGE = (128, 96, 62)
+METAL = (150, 150, 150)
+HANGER_CATEGORIES = frozenset({"Tops", "Layers"})
+
+
+def draw_hanger(canvas: Image.Image, piece_alpha: Image.Image, left: int, top: int) -> None:
+    """A plain wooden hanger at the garment's shoulders, drawn before the garment is pasted so
+    the collar sits in front of it. Width follows the shoulders (the widest row near the top)."""
+    from PIL import ImageDraw
+
+    a = np.asarray(piece_alpha) > 127
+    rows = [r for r in range(min(len(a), max(4, len(a) // 5))) if a[r].any()]
+    if not rows:
+        return
+    widths = [(int(np.flatnonzero(a[r])[-1] - np.flatnonzero(a[r])[0]), r) for r in rows]
+    w, r = max(widths)
+    neck = [np.flatnonzero(a[k]) for k in rows[: max(2, len(a) // 30)]]
+    cx = left + round(
+        float(np.mean([(n[0] + n[-1]) / 2 for n in neck if len(n)]))
+    )  # over the collar
+    y = top + r + max(4, round(w * 0.03))
+    half = round(w * 0.46)
+    thick = max(6, round(w * 0.035))
+    d = ImageDraw.Draw(canvas)
+    neck_y = top + int(rows[0]) - round(w * 0.05)
+    d.polygon(  # the hanger's body: two sloping arms meeting at the neck
+        [
+            (cx - half, y),
+            (cx, neck_y),
+            (cx + half, y),
+            (cx + half, y + thick),
+            (cx, neck_y + thick),
+            (cx - half, y + thick),
+        ],
+        fill=WOOD,
+        outline=WOOD_EDGE,
+    )
+    d.line(
+        [(cx - half, y + thick), (cx + half, y + thick)], fill=WOOD_EDGE, width=max(2, thick // 3)
+    )
+    hook_r = max(10, round(w * 0.05))
+    d.arc(
+        [cx - hook_r, neck_y - 2 * hook_r - thick, cx + hook_r, neck_y - thick],
+        start=180,
+        end=360 + 60,
+        fill=METAL,
+        width=max(3, thick // 2),
+    )
+    d.line([(cx, neck_y - thick), (cx, neck_y + thick // 2)], fill=METAL, width=max(3, thick // 2))
+
+
+def make_studio(
+    rgb: NDArray[np.uint8], mask: NDArray[np.bool_], category: str | None = None
+) -> Studio | None:
     """None when there's no usable cut-out (then the app keeps showing the photo)."""
     if mask.mean() < MIN_MASK_SHARE or mask.all():
         return None
@@ -96,6 +150,8 @@ def make_studio(rgb: NDArray[np.uint8], mask: NDArray[np.bool_]) -> Studio | Non
     shadow = shadow.filter(ImageFilter.GaussianBlur(SIZE * 0.02))
     shade = Image.new("RGB", (SIZE, SIZE), (90, 86, 80))
     canvas = Image.composite(shade, canvas, shadow.point(lambda v: int(v * SHADOW_OPACITY)))
+    if category in HANGER_CATEGORIES:
+        draw_hanger(canvas, alpha, left, top)
     canvas.paste(piece, (left, top), alpha)
 
     def jpeg(img: Image.Image) -> bytes:

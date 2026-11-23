@@ -166,7 +166,10 @@ export function ClosetView() {
                     <span className="tile-ph">
                       <PieceCell item={i} bare />
                     </span>
-                    <span className="tile-name">{i.name}</span>
+                    <span className="tile-name">
+                      {i.name}
+                      {i.is_sample && <span className="sample-tag">Sample</span>}
+                    </span>
                     <span className="tile-sub">{sub}</span>
                   </button>
                 </li>

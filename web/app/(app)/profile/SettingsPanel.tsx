@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Chips } from "@/components/Chips";
 import { useToast } from "@/components/Toast";
-import { deleteAllData, requestAnalysis, saveProfile, useCloset } from "@/lib/closet/store";
+import { addSamples, deleteAllData, removeSamples, requestAnalysis, saveProfile, useCloset } from "@/lib/closet/store";
 import type { Profile } from "@/lib/closet/types";
 import { centsToInput, parseDollars } from "@/lib/domain/money";
 import { isWears, WEARS } from "@/lib/domain/fit";
@@ -217,6 +217,9 @@ function SettingsForm({ profile }: { profile: Profile }) {
         </select>
       </label>
 
+      <h3>Sample pieces</h3>
+      <SamplesRow />
+
       <h3>Money</h3>
       <div className="field-row">
         <label className="field">
@@ -357,5 +360,49 @@ function SettingsForm({ profile }: { profile: Profile }) {
         </button>
       </div>
     </section>
+  );
+}
+
+function SamplesRow() {
+  const s = useCloset();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const n = s.items.filter((i) => i.is_sample).length;
+  const run = async (fn: () => Promise<number>, done: (k: number) => string) => {
+    setBusy(true);
+    try {
+      toast(done(await fn()));
+    } catch (e) {
+      toast((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="field">
+      <p className="hint">
+        Try ideas, looks and What’s missing with a sample closet. Sample pieces show a “Sample” badge and never count as
+        spend.
+      </p>
+      {n ? (
+        <button
+          type="button"
+          className="btn"
+          disabled={busy}
+          onClick={() => void run(removeSamples, (k) => `Removed ${k} sample pieces`)}
+        >
+          Remove sample pieces ({n})
+        </button>
+      ) : (
+        <button
+          type="button"
+          className="btn"
+          disabled={busy}
+          onClick={() => void run(addSamples, (k) => `Added ${k} sample pieces`)}
+        >
+          Add sample pieces
+        </button>
+      )}
+    </div>
   );
 }
