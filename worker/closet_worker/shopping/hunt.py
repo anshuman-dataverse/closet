@@ -31,7 +31,23 @@ MAX_PAGES = 25
 TOP_N = 5
 SKIP_BLOCKED_FOR = timedelta(days=7)
 HEALTH_PATH = Path("~/.closet/store_health.json").expanduser()
-W = {"match": 0.45, "palette": 0.20, "discount": 0.15, "rating": 0.10, "favorite": 0.10}
+# What suits you counts most: your colors, your fit, your size; then the photo match, deals and
+# reviews. Each part is 0 when there's nothing to go on, so nothing unknown is rewarded.
+W = {
+    "match": 0.30,
+    "palette": 0.25,
+    "fit": 0.12,
+    "size": 0.10,
+    "discount": 0.10,
+    "rating": 0.08,
+    "favorite": 0.05,
+}
+# Your fit preference (Settings) → fit words a product may state.
+FIT_PREF_WORDS = {
+    "slim": ("slim", "skinny", "tailored", "fitted"),
+    "regular": ("regular", "classic", "straight", "standard"),
+    "relaxed": ("relaxed", "loose", "easy fit", "oversized", "boxy"),
+}
 SEARCH_DOWN = (
     "Search didn’t answer (SearXNG on your Mac), so nothing was checked. "
     "Try again in a few minutes."
@@ -57,6 +73,11 @@ class Hunt:
     # and (for plain pieces) no pattern.
     must_have: tuple[str, ...] = ()
     color: str | None = None
+    # About you (from your profile): sold-out sizes and "use carefully" colors are dropped.
+    size: str | None = None
+    fit_pref: str | None = None
+    careful_colors: tuple[str, ...] = ()
+    near_face: bool = True  # the hunted piece is worn near the face (tops, layers)
 
 
 def audience(wears: str | None) -> str:
@@ -166,9 +187,21 @@ def keep(item: Listing, h: Hunt) -> bool:
         return False  # kids' things show up under adult searches
     if not for_wears(item, h.wears) or not matches_slot(item, h):
         return False
+    if h.near_face and h.careful_colors and stated_color(item) in h.careful_colors:
+        return False  # one of your "use carefully" colors, worn by your face
+    if size_available(item, h.size) == "no":
+        return False  # your size is sold out
     if h.budget_min_cents is not None and item.price_cents < h.budget_min_cents:
         return False
     return h.budget_max_cents is None or item.price_cents <= h.budget_max_cents
+
+
+def fit_match(item: Listing, fit_pref: str | None) -> float:
+    """1 when the product states your preferred fit, else 0 (unstated fits aren't guessed)."""
+    if not fit_pref:
+        return 0.0
+    text = f"{item.title} {' '.join(item.crumbs)}".lower()
+    return 1.0 if any(w in text for w in FIT_PREF_WORDS.get(fit_pref, (fit_pref,))) else 0.0
 
 
 def discount(item: Listing) -> float:
@@ -195,11 +228,16 @@ class Pick:
 
 
 def why_text(p: Pick, h: Hunt) -> str:
+    """Why it suits you first (only what's true for this item), then the deal."""
     bits = []
-    if p.parts["match"] >= 0.6:
-        bits.append(f"A close match for “{h.query.strip()}”.")
     if p.palette_note:
         bits.append(p.palette_note)
+    if p.parts.get("fit") and h.fit_pref:
+        bits.append(f"It’s cut {h.fit_pref}, your preferred fit.")
+    if p.parts.get("size"):
+        bits.append("Your size is in stock.")
+    if p.parts["match"] >= 0.6:
+        bits.append(f"A close match for “{h.query.strip()}”.")
     d = discount(p.listing)
     if d >= 0.1:
         bits.append(f"{round(d * 100)}% off right now.")
@@ -352,6 +390,8 @@ def run_hunt(
         parts = {
             "match": m,
             "palette": pal,
+            "fit": fit_match(item, h.fit_pref),
+            "size": 1.0 if size_available(item, h.size) == "yes" else 0.0,
             "discount": discount(item),
             "rating": rating_score(item),
             "favorite": 1.0 if st.name in favorites else 0.0,

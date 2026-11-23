@@ -338,8 +338,25 @@ def summarize(
 Hunter = Callable[[Hunt], Outcome]
 
 
+def slot_size(category: str, sizes: dict[str, Any]) -> str | None:
+    """Your size for a slot, if you've set it (tops and layers: top; bottoms: waist x inseam)."""
+    if category in ("Tops", "Layers"):
+        return sizes.get("top") or None
+    if category == "Bottoms":
+        w, i = sizes.get("waist"), sizes.get("inseam")
+        return f"{w}x{i}" if w and i else (w or None)
+    if category == "Shoes":
+        return sizes.get("shoe") or None
+    return None
+
+
 def shop_look(
-    h: Hunt, mode: str, analysis: dict[str, Any] | None, owned: list[Piece], hunt: Hunter
+    h: Hunt,
+    mode: str,
+    analysis: dict[str, Any] | None,
+    owned: list[Piece],
+    hunt: Hunter,
+    sizes: dict[str, Any] | None = None,
 ) -> LookOutcome:
     slots = plan(h.occasion or "office", analysis, owned, mode)
     caps = budgets(slots, h.budget_max_cents)
@@ -359,6 +376,10 @@ def shop_look(
             h.best_colors,
             must_have=NOUNS.get(s.staple.type, (s.staple.type.split()[-1],)),
             color=None if s.staple.type in IMPLIED_COLOR else s.color,
+            size=slot_size(s.category, sizes or {}),
+            fit_pref=h.fit_pref,
+            careful_colors=h.careful_colors,
+            near_face=s.category in ("Tops", "Layers"),
         )
         out = hunt(sub)
         found[s.category] = out.picks

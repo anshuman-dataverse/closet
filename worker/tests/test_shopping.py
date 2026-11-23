@@ -400,3 +400,55 @@ def test_texts() -> None:
         H.color_in("The Must-Have Oxford Shirt | White") == "white"
         and H.color_in("Oxford Shirt") is None
     )
+
+
+def test_suits_you_drops_careful_colors_near_face_and_sold_out_sizes() -> None:
+    h = H.Hunt("oxford shirt", None, None, size="M", careful_colors=("orange",))
+    shirt = "https://x.example/p"
+    assert not H.keep(listing(shirt, "Orange oxford shirt", 4000, color="Orange"), h)
+    assert H.keep(listing(shirt, "Navy oxford shirt", 4000, color="Navy"), h)
+    # Away from the face (trousers, shoes), a careful color is fine.
+    far = H.Hunt("chinos", None, None, careful_colors=("orange",), near_face=False)
+    assert H.keep(listing(shirt, "Orange chinos", 4000, color="Orange"), far)
+    # Your size sold out: dropped. Size not listed on the page: kept, never guessed.
+    assert not H.keep(listing(shirt, "Navy oxford shirt", 4000, sizes={"M": False, "L": True}), h)
+    assert H.keep(listing(shirt, "Navy oxford shirt", 4000, sizes={"L": True}), h)
+    assert H.keep(listing(shirt, "Navy oxford shirt", 4000), h)
+
+
+def test_fit_match_only_counts_stated_fits() -> None:
+    assert H.fit_match(listing("u", "Slim-fit oxford shirt", 1), "slim") == 1.0
+    assert H.fit_match(listing("u", "Oxford shirt", 1, crumbs=["Men", "Slim fit"]), "slim") == 1.0
+    assert H.fit_match(listing("u", "Oxford shirt", 1), "slim") == 0.0
+    assert H.fit_match(listing("u", "Slim-fit oxford shirt", 1), None) == 0.0
+
+
+def test_why_text_puts_what_suits_you_first() -> None:
+    p = H.Pick(
+        listing("u", "Slim oxford", 4000, was_price_cents=5000),
+        "Gap",
+        1.0,
+        {"match": 0.8, "favorite": 0.0, "fit": 1.0, "size": 1.0},
+        palette_note="Navy is one of your best colors.",
+    )
+    text = H.why_text(p, H.Hunt("oxford shirt", None, None, fit_pref="slim", size="M"))
+    assert text == (
+        "Navy is one of your best colors. It’s cut slim, your preferred fit. "
+        "Your size is in stock. A close match for “oxford shirt”. 20% off right now."
+    )
+    # Without a fit preference or size, those lines never appear.
+    p.parts.update(fit=0.0, size=0.0)
+    assert "fit" not in H.why_text(p, H.Hunt("oxford shirt", None, None))
+
+
+def test_look_slot_sizes() -> None:
+    from closet_worker.shopping.look import slot_size
+
+    sizes = {"top": "M", "waist": "32", "inseam": "30", "shoe": "9"}
+    assert slot_size("Tops", sizes) == "M"
+    assert slot_size("Layers", sizes) == "M"
+    assert slot_size("Bottoms", sizes) == "32x30"
+    assert slot_size("Bottoms", {"waist": "32"}) == "32"
+    assert slot_size("Shoes", sizes) == "9"
+    assert slot_size("Accessories", sizes) is None
+    assert slot_size("Tops", {}) is None

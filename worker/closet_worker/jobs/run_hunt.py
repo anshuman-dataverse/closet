@@ -27,6 +27,24 @@ def hunt_from(row: dict[str, Any], profile: dict[str, Any]) -> H.Hunt:
         wears=profile.get("wears"),
         favorites=list(profile.get("favorite_stores") or []),
         best_colors=[str(c["name"]).lower() for c in analysis.get("best", [])][:3],
+        size=size_for(str(row["query"]), dict(profile.get("sizes") or {})),
+        fit_pref=profile.get("fit_pref") or None,
+        careful_colors=tuple(str(c["name"]).lower() for c in analysis.get("careful", [])),
+        near_face=not any(
+            w in str(row["query"]).lower()
+            for w in (
+                "jean",
+                "chino",
+                "trouser",
+                "pant",
+                "short",
+                "shoe",
+                "sneaker",
+                "boot",
+                "loafer",
+                "belt",
+            )
+        ),
     )
 
 
@@ -41,7 +59,10 @@ def size_for(category_hint: str, sizes: dict[str, Any]) -> str | None:
     return sizes.get("top") or None
 
 
-def rows_for(out: H.Outcome, query: str, sizes: dict[str, Any]) -> list[dict[str, Any]]:
+def rows_for(
+    out: H.Outcome, query: str, sizes: dict[str, Any], h: H.Hunt | None = None
+) -> list[dict[str, Any]]:
+    h = h or H.Hunt(query, None, None)
     rows = []
     for rank, p in enumerate(out.picks, start=1):
         it = p.listing
@@ -56,7 +77,7 @@ def rows_for(out: H.Outcome, query: str, sizes: dict[str, Any]) -> list[dict[str
                 "was_price_cents": it.was_price_cents,
                 "rating": round(it.rating, 2) if it.rating is not None else None,
                 "rating_count": it.rating_count,
-                "why": H.why_text(p, H.Hunt(query, None, None)),
+                "why": H.why_text(p, h),
                 "quality": H.quality_text(it),
                 "size_available": H.size_available(it, size_for(query, sizes)),
             }
@@ -106,7 +127,7 @@ def run(payload: dict[str, Any], ctx: JobContext | None) -> dict[str, Any]:
             hunt_id, {"status": "failed", "finished_at": now(), "error": str(e)[:300]}
         )
         raise
-    rows = rows_for(out, h.query, dict(profile.get("sizes") or {}))
+    rows = rows_for(out, h.query, dict(profile.get("sizes") or {}), h)
     ctx.items.replace_hunt_results(hunt_id, rows)
     ctx.items.update_hunt(
         hunt_id,
@@ -161,6 +182,7 @@ def run_look(
             profile.get("analysis"),
             owned,
             lambda sub: hunt(sub, max_queries=7, max_pages=14, top_n=PER_SLOT),
+            sizes,
         )
     except Exception as e:
         ctx.items.update_hunt(
