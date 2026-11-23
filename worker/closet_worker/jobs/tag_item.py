@@ -15,6 +15,7 @@ from closet_worker.vision.embed import Embedder, load_embedder
 from closet_worker.vision.fit import gate_key, guess_fit, read_gate
 from closet_worker.vision.heads import Heads, HeadsError
 from closet_worker.vision.heads import load as load_heads
+from closet_worker.vision.studio import make_studio
 from closet_worker.vision.tagger import TextBank, tag
 from closet_worker.vocab import load_vocab
 
@@ -50,6 +51,26 @@ def cutout_path_for(photo_path: str) -> str:
     return re.sub(r"\.jpe?g$", "", photo_path) + "_cutout.webp"
 
 
+def studio_path_for(photo_path: str) -> str:
+    return re.sub(r"\.jpe?g$", "", photo_path) + "_studio.jpg"
+
+
+def studio_thumb(studio_path: str) -> str:
+    return studio_path.removesuffix(".jpg") + "_thumb.jpg"
+
+
+def save_studio(ctx: JobContext, photo: str, cut: Any) -> str | None:
+    """Upload the studio image and its thumbnail; None when there's no usable cut-out."""
+    assert ctx.items is not None
+    st = make_studio(cut.rgb, cut.mask)
+    if st is None:
+        return None
+    path = studio_path_for(photo)
+    ctx.items.upload(path, st.full, "image/jpeg")
+    ctx.items.upload(studio_thumb(path), st.thumb, "image/jpeg")
+    return path
+
+
 def run(
     payload: dict[str, Any], ctx: JobContext | None, vision: Vision | None = None
 ) -> dict[str, Any]:
@@ -70,6 +91,7 @@ def run(
     cut = v.cutter.cut(img)
     cut_path = cutout_path_for(photo)
     ctx.items.upload(cut_path, cut.webp, "image/webp")
+    studio = save_studio(ctx, photo, cut)
 
     sug, vec = tag(cut.crop, cut.rgb, cut.mask, v.emb, v.bank, v.palette)
     ctx.items.upsert_embedding(item_id, v.emb.model_id, [float(x) for x in vec])
@@ -88,8 +110,14 @@ def run(
     fields: dict[str, Any] = {"suggestions": sug_json, "tags_status": sug.status}
     if photo == item.get("photo_path"):  # the saved photo: the cutout belongs to the item now
         fields["cutout_path"] = cut_path
+        fields["studio_path"] = studio
     ctx.items.update_item(item_id, fields)
-    return {"suggestions": sug_json, "cutout_path": cut_path, "photo_path": photo}
+    return {
+        "suggestions": sug_json,
+        "cutout_path": cut_path,
+        "studio_path": studio,
+        "photo_path": photo,
+    }
 
 
 def suggested_fit(

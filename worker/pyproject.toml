@@ -64,7 +64,7 @@ strict = true
 packages = ["closet_worker"]
 
 [[tool.mypy.overrides]]
-module = ["supabase.*", "postgrest.*", "rembg.*", "sklearn.*", "open_clip.*", "skimage.*", "mediapipe.*", "Vision.*", "Foundation.*"]
+module = ["supabase.*", "postgrest.*", "rembg.*", "sklearn.*", "open_clip.*", "skimage.*", "scipy.*", "mediapipe.*", "Vision.*", "Foundation.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

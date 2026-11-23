@@ -205,7 +205,15 @@ export async function deleteItem(id: string): Promise<void> {
   if (!it) return;
   const { error } = await db.from("items").delete().eq("id", id);
   if (error) fail(error, "Couldn’t delete that piece. Try again.");
-  const files = [it.photo_path, it.thumb_path, it.cutout_path, it.label_path, labelThumb(it.label_path)];
+  const files = [
+    it.photo_path,
+    it.thumb_path,
+    it.cutout_path,
+    it.studio_path,
+    labelThumb(it.studio_path),
+    it.label_path,
+    labelThumb(it.label_path),
+  ];
   dropSignedUrls(files);
   void removePaths(db, files);
   set({

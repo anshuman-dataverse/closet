@@ -78,13 +78,22 @@ def test_writes_suggestions_cutout_and_embedding(ctx: JobContext) -> None:
     cut = f"{OWNER}/items/{ITEM}/abc_cutout.webp"
     assert item["cutout_path"] == cut and Image.open(io.BytesIO(store.files[cut])).mode == "RGBA"
     assert store.embeddings[ITEM][0] == "stub" and len(store.embeddings[ITEM][1]) == 32
+    studio = f"{OWNER}/items/{ITEM}/abc_studio.jpg"
+    assert item["studio_path"] == studio and out["studio_path"] == studio
+    full = Image.open(io.BytesIO(store.files[studio]))
+    thumb = Image.open(io.BytesIO(store.files[f"{OWNER}/items/{ITEM}/abc_studio_thumb.jpg"]))
+    assert full.size == (1200, 1200) and thumb.size == (480, 480) and full.mode == "RGB"
+    bg = full.getpixel((5, 5))
+    assert all(abs(a - b) <= 2 for a, b in zip(bg, (244, 243, 240), strict=True))  # JPEG ±2
 
 
 def test_is_idempotent(ctx: JobContext) -> None:
     a = tag_item.run({"item_id": ITEM}, ctx, vision())
     b = tag_item.run({"item_id": ITEM}, ctx, vision())
     store: MemoryStore = ctx.items  # type: ignore[assignment]
-    assert a == b and len(store.files) == 2 and len(store.embeddings) == 1
+    assert (
+        a == b and len(store.files) == 4 and len(store.embeddings) == 1
+    )  # photo, cut-out, studio ×2
 
 
 def test_unsaved_photo_does_not_replace_the_items_cutout(ctx: JobContext) -> None:
@@ -94,6 +103,7 @@ def test_unsaved_photo_does_not_replace_the_items_cutout(ctx: JobContext) -> Non
     out = tag_item.run({"item_id": ITEM, "photo_path": new}, ctx, vision())
     assert out["cutout_path"].endswith("new_cutout.webp")
     assert "cutout_path" not in store.items[ITEM] and store.items[ITEM]["suggestions"]
+    assert "studio_path" not in store.items[ITEM] and out["studio_path"].endswith("new_studio.jpg")
 
 
 @pytest.mark.parametrize(

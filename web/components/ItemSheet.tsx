@@ -109,7 +109,7 @@ type Draft = {
   saved: "none" | "draft" | "done"; // add mode: is there a draft row, and has it been saved for real?
   merged: boolean; // suggestions were reviewed in the form
   sugHex: { name: string; hex: string } | null;
-  cutout: { photo: string; path: string } | null; // cutout made for a new, unsaved photo
+  cutout: { photo: string; path: string; studio: string | null } | null; // made for a new, unsaved photo
 };
 
 export type Prefill = { form: Partial<Form>; photo?: { photo_path: string; thumb_path: string | null } };
@@ -154,7 +154,7 @@ export function ItemSheet({
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [reading, setReading] = useState(false);
-  const [view, setView] = useState<"photo" | "cutout">("cutout");
+  const [view, setView] = useState<"photo" | "studio">("studio");
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const labelFileRef = useRef<HTMLInputElement>(null);
@@ -181,7 +181,7 @@ export function ItemSheet({
       setErr("");
       setBusy(false);
       setReading(false);
-      setView("cutout");
+      setView("studio");
     }
   }
   useEffect(() => {
@@ -237,7 +237,12 @@ export function ItemSheet({
       if (session.current !== mine) return;
       if (!job) return setHint("Still reading. The details will show on this piece when your Mac finishes.");
       if (job.status === "failed") return setHint("Your Mac couldn’t read this photo. Fill in the details yourself.");
-      const result = (job.result ?? {}) as { suggestions?: unknown; cutout_path?: string | null; photo_path?: string };
+      const result = (job.result ?? {}) as {
+        suggestions?: unknown;
+        cutout_path?: string | null;
+        studio_path?: string | null;
+        photo_path?: string;
+      };
       const sug = parseSuggestion(result.suggestions);
       if (!sug) return setHint("");
       setDr((x) => {
@@ -251,7 +256,10 @@ export function ItemSheet({
           merged: true,
           sugHex:
             filled.includes("color_name") && sug.color_hex ? { name: sug.color_name, hex: sug.color_hex } : x.sugHex,
-          cutout: photoPath && result.cutout_path ? { photo: photoPath, path: result.cutout_path } : x.cutout,
+          cutout:
+            photoPath && result.cutout_path
+              ? { photo: photoPath, path: result.cutout_path, studio: result.studio_path ?? null }
+              : x.cutout,
         };
       });
       setHint(statusMessage(sug.status));
@@ -322,8 +330,9 @@ export function ItemSheet({
             occasions: dr.form.occasions,
             ...paths,
             cutout_path: null,
+            studio_path: null,
           },
-          old ? [old.photo_path, old.thumb_path, old.cutout_path] : [],
+          old ? [old.photo_path, old.thumb_path, old.cutout_path, old.studio_path, labelThumb(old.studio_path)] : [],
         );
         setDr((x) => ({ ...x, saved: x.saved === "none" ? "draft" : x.saved }));
         await readPhoto(dr.id, undefined, mine);
@@ -411,7 +420,7 @@ export function ItemSheet({
       const photo = upload ? await upload.promise : null;
       const keepHex = safeHex(item?.color_hex) && form.color_name === (item?.color_name ?? "") ? item!.color_hex : null;
       const colorHex = dr.sugHex && form.color_name === dr.sugHex.name ? dr.sugHex.hex : keepHex;
-      const newPhotoCutout = photo && dr.cutout?.photo === photo.photo_path ? dr.cutout.path : null;
+      const newCut = photo && dr.cutout?.photo === photo.photo_path ? dr.cutout : null;
       const input: ItemInput & { id: string } = {
         id: dr.id,
         name: name.slice(0, 80),
@@ -431,10 +440,15 @@ export function ItemSheet({
         store: form.store.trim() || null,
         notes: form.notes.trim() || null,
         label_path: label?.path ?? item?.label_path ?? null,
-        ...(dr.mode === "edit" && photo ? { ...photo, cutout_path: newPhotoCutout } : {}),
+        ...(dr.mode === "edit" && photo
+          ? { ...photo, cutout_path: newCut?.path ?? null, studio_path: newCut?.studio ?? null }
+          : {}),
         ...(dr.merged ? { suggestions: null } : {}),
       };
-      const replaced = dr.mode === "edit" && photo && item ? [item.photo_path, item.thumb_path, item.cutout_path] : [];
+      const replaced =
+        dr.mode === "edit" && photo && item
+          ? [item.photo_path, item.thumb_path, item.cutout_path, item.studio_path, labelThumb(item.studio_path)]
+          : [];
       if (dr.mode === "edit" && label && item?.label_path) replaced.push(item.label_path, labelThumb(item.label_path));
       const saved = await saveItem(input, replaced);
       setUpload(null);
@@ -641,11 +655,11 @@ export function ItemSheet({
               Fill in from photo
             </button>
           )}
-          {editing && item!.cutout_path && !preview && (
+          {editing && (item!.studio_path || item!.cutout_path) && !preview && (
             <Chips
               label="Show"
               options={[
-                { id: "cutout" as const, label: "Cutout" },
+                { id: "studio" as const, label: "Studio" },
                 { id: "photo" as const, label: "Photo" },
               ]}
               value={view}

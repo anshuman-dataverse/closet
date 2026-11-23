@@ -6,6 +6,8 @@ import type { Item } from "@/lib/closet/types";
 import { isDark, swatchFor } from "@/lib/domain/colors";
 import { useSignedUrl } from "@/lib/signed-urls";
 
+export const studioThumb = (p: string | null | undefined) => (p ? p.replace(/\.jpg$/, "_thumb.jpg") : null);
+
 const Hanger = () => (
   <svg className="ph-ico" viewBox="0 0 24 24" aria-hidden="true">
     <path d="M10 6.2a2 2 0 1 1 3 1.7c-.6.4-1 .9-1 1.6v.7" />
@@ -14,22 +16,25 @@ const Hanger = () => (
 );
 
 /**
- * A piece's picture: the photo (or cutout, once the Mac makes one) or its color swatch.
+ * A piece's picture: the studio image (once the Mac makes one), else the cut-out, else the photo,
+ * else its color swatch. Tiles use the studio thumbnail; large views use the full studio image.
  * `bare` is for tiles where the name is printed below: empty alt and a hanger icon instead of the name.
  */
 export function PieceCell({
   item,
   bare = false,
   large = false,
-  prefer = "cutout",
+  prefer = "studio",
 }: {
   item: Item;
   bare?: boolean;
   large?: boolean;
-  prefer?: "cutout" | "photo";
+  prefer?: "studio" | "photo";
 }) {
-  const cut = prefer === "cutout" ? item.cutout_path : null;
-  const path = cut ?? (large ? item.photo_path : item.thumb_path) ?? item.photo_path;
+  const studio =
+    prefer === "studio" && item.studio_path ? (large ? item.studio_path : studioThumb(item.studio_path)) : null;
+  const cut = prefer === "studio" ? item.cutout_path : null;
+  const path = studio ?? cut ?? (large ? item.photo_path : item.thumb_path) ?? item.photo_path;
   const url = useSignedUrl(path);
   const sw = swatchFor(item);
   const style = (sw ? { "--sw": sw } : undefined) as CSSProperties | undefined;

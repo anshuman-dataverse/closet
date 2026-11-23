@@ -173,7 +173,7 @@ def cli() -> None:
         "command",
         nargs="?",
         default="run",
-        choices=["run", "export-eval", "compat-eval", "import", "backup", "restore"],
+        choices=["run", "export-eval", "compat-eval", "import", "backup", "restore", "studio"],
     )
     p.add_argument("--fake", action="store_true", help="return fixtures instead of running models")
     p.add_argument("--once", action="store_true", help="drain the queue once, then exit")
@@ -208,6 +208,9 @@ def cli() -> None:
         print(f"Wrote {zip_path}. Check labels.csv, then upload the zip to Colab.")
         return
 
+    if args.command == "studio":
+        _studio_backfill(JobContext(settings=settings, items=items))
+        return
     if args.command == "backup":
         from .jobs import backup
 
@@ -252,6 +255,31 @@ def _compat_eval(settings: Settings, items: SupabaseItemStore) -> None:
         scorer,
     )
     print(summary(r, write_gate(settings.compat_model_dir, r)))
+
+
+def _studio_backfill(ctx: JobContext) -> None:
+    """Make studio images for pieces that have a photo but no studio image yet."""
+    import io
+
+    from PIL import Image
+
+    from .jobs.tag_item import save_studio
+    from .vision.cutout import Cutter
+
+    assert ctx.items is not None
+    todo = [i for i in ctx.items.list_items() if i.get("photo_path") and not i.get("studio_path")]
+    cutter = Cutter()
+    done = 0
+    for it in todo:
+        img = Image.open(io.BytesIO(ctx.items.download(str(it["photo_path"])))).convert("RGB")
+        path = save_studio(ctx, str(it["photo_path"]), cutter.cut(img))
+        if path:
+            ctx.items.update_item(str(it["id"]), {"studio_path": path})
+            done += 1
+        print(
+            f"{it['name']}: {'studio image made' if path else 'no usable cut-out, kept the photo'}"
+        )
+    print(f"{done} of {len(todo)} pieces now have a studio image.")
 
 
 def _restore(settings: Settings, folder: str | None, yes: bool) -> None:

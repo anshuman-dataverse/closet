@@ -207,6 +207,7 @@ export type Database = {
           size: string | null;
           status: Database["public"]["Enums"]["item_status"];
           store: string | null;
+          studio_path: string | null;
           suggestions: Json | null;
           tags_status: string;
           thumb_path: string | null;
@@ -238,6 +239,7 @@ export type Database = {
           size?: string | null;
           status?: Database["public"]["Enums"]["item_status"];
           store?: string | null;
+          studio_path?: string | null;
           suggestions?: Json | null;
           tags_status?: string;
           thumb_path?: string | null;
@@ -268,6 +270,7 @@ export type Database = {
           size?: string | null;
           status?: Database["public"]["Enums"]["item_status"];
           store?: string | null;
+          studio_path?: string | null;
           suggestions?: Json | null;
           tags_status?: string;
           thumb_path?: string | null;

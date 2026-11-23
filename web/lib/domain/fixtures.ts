@@ -24,6 +24,7 @@ export function item(p: Partial<Item> & { id: string }): Item {
     photo_path: null,
     thumb_path: null,
     cutout_path: null,
+    studio_path: null,
     label_path: null,
     fit: null,
     suggestions: null,
