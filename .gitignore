@@ -38,3 +38,9 @@ Photos-*/
 
 # Colab result zips (import with closet-worker import)
 colab/outputs/
+
+# Personal photos dropped in the repo root (never commit face or body photos)
+/*.jpg
+/*.jpeg
+/*.png
+/*.heic
