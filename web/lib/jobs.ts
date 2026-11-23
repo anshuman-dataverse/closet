@@ -11,6 +11,7 @@ export type JobKind =
   | "embed_wish"
   | "analyze_profile"
   | "suggest_outfits"
+  | "rate_outfit"
   | "check_wish"
   | "find_gaps"
   | "run_hunt"

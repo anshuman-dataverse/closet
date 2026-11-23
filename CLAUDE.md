@@ -99,7 +99,10 @@ Phase 7 wishlist, added by the owner: virtual try-on on the Mac (free, slow). Ve
 - SearXNG needs several engines (bing, brave, yahoo enabled in infra/searxng/settings.yml): DuckDuckGo CAPTCHAs and
   Google CSE rate-limits.
 - Ideas pass a quality bar (`recsys/engine.py failed_checks`) or aren't shown; fit balance is a scoring term.
-- Studio images (`vision/studio.py`, items.studio_path): clothing model (u2net_cloth_seg) ∩ edge model (isnet).
+- Studio images (`vision/studio.py`, items.studio_path): clothing model (u2net_cloth_seg) ∩ edge model (isnet); a drawn
+  hanger for Tops/Layers. Sample pieces: items.is_sample (Settings), excluded from Spend.
+- Check my outfit: `rate_outfit` job (`recsys/rate.py`): every check with a reason, verdict in words (strong/works/rethink),
+  checks without data say what would let them run. Opened from the outfit builder (Check it).
 
 ## Style profile (Phase 4)
 - `analyze_profile`: MediaPipe Face and Pose (`vision/landmarks.py`; models cached in ~/.cache/closet) → `skin.py`

@@ -57,6 +57,7 @@ ignore = ["RUF001", "RUF002", "RUF003"]
 "closet_worker/vision/body.py" = ["E501"]
 "closet_worker/vision/style.py" = ["E501"]
 "closet_worker/vision/skin.py" = ["E501"]
+"closet_worker/recsys/rate.py" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"

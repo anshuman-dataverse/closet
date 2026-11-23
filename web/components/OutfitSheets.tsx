@@ -8,12 +8,15 @@ import { Flatlay, PieceCell } from "@/components/Piece";
 import { Sheet } from "@/components/Sheet";
 import { useToast } from "@/components/Toast";
 import { useWearActions } from "@/components/useWearActions";
+import { useWorkerStatus } from "@/components/WorkerStatus";
 import { deleteOutfit, saveOutfit, useCloset, useDerived } from "@/lib/closet/store";
 import type { Item } from "@/lib/closet/types";
 import { shortDate } from "@/lib/domain/dates";
 import { CATEGORY_ORDER, orderPieces, outfitName, outfitPieces, validateOutfit } from "@/lib/domain/outfit";
 import { sortLogsNewest } from "@/lib/domain/wear";
+import { enqueueJob, waitForJob } from "@/lib/jobs";
 import { type Occasion, OCCASIONS } from "@/lib/occasions";
+import { supabase } from "@/lib/supabase/client";
 import { useOccasion } from "@/lib/use-occasion";
 
 const OCC_LABEL = Object.fromEntries(OCCASIONS.map((o) => [o.id, o.label])) as Record<Occasion, string>;
@@ -41,11 +44,16 @@ export function OutfitBuilderSheet({
   const [name, setName] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [rating, setRating] = useState<Rating | null>(null);
+  const [checking, setChecking] = useState("");
+  const worker = useWorkerStatus();
   const [openedFor, setOpenedFor] = useState<string | undefined>(undefined);
   const key = open ? (outfitId ?? "new") : undefined;
   if (key !== openedFor) {
     setOpenedFor(key);
     if (open) {
+      setRating(null);
+      setChecking("");
       setSel(existing ? [...existing.itemIds] : []);
       setOccs(existing ? [...existing.occasions] : [today]);
       setName(existing?.name ?? "");
@@ -80,6 +88,35 @@ export function OutfitBuilderSheet({
     } catch (e) {
       setErr((e as Error).message);
       setBusy(false);
+    }
+  };
+
+  const check = async () => {
+    if (sel.length < 2) return setErr("Pick at least two pieces to check.");
+    if (worker.offline) return setErr("Your Mac is offline. Checking runs on your Mac, so try again when it’s back.");
+    setErr("");
+    setRating(null);
+    setChecking("Your Mac is checking it…");
+    try {
+      const db = supabase();
+      const job = await enqueueJob(
+        db,
+        "rate_outfit",
+        { item_ids: chosen.map((i) => i.id), occasion: occs[0] ?? today, date: d.today },
+        6,
+      );
+      const done = await waitForJob(db, job.id, { timeoutMs: 20_000 });
+      if (done?.status === "done") {
+        setRating(parseRating(done.result));
+        setChecking("");
+      } else
+        setChecking(
+          done?.status === "failed"
+            ? (done.error ?? "Your Mac couldn’t check it.")
+            : "Still checking. Try again in a moment.",
+        );
+    } catch {
+      setChecking("Couldn’t ask your Mac. Check your connection and try again.");
     }
   };
 
@@ -124,6 +161,9 @@ export function OutfitBuilderSheet({
           <span className="muted small" aria-live="polite">
             {sel.length} {sel.length === 1 ? "piece" : "pieces"}
           </span>
+          <button type="button" className="btn" disabled={!!checking && !rating} onClick={() => void check()}>
+            Check it
+          </button>
           <button type="button" className="btn primary" disabled={busy} onClick={save}>
             {busy ? "Saving…" : existing ? "Save changes" : "Save outfit"}
           </button>
@@ -166,6 +206,12 @@ export function OutfitBuilderSheet({
         <legend>Good for</legend>
         <Chips label="Good for" wrap options={OCCASIONS} value={occs} onChange={(o) => setOccs((x) => toggle(x, o))} />
       </fieldset>
+      {checking && (
+        <p className="muted thinking" role="status">
+          {checking}
+        </p>
+      )}
+      {rating && <RatingBox r={rating} />}
       <p className="err" role="alert">
         {err}
       </p>
@@ -291,5 +337,39 @@ export function OutfitDetailSheet({
         <p className="muted">Not worn yet.</p>
       )}
     </Sheet>
+  );
+}
+
+type RatingCheck = { key: string; label: string; ok: boolean | null; detail: string };
+type Rating = { verdict: "strong" | "works" | "rethink"; headline: string; checks: RatingCheck[] };
+
+function parseRating(raw: unknown): Rating | null {
+  const r = raw as Partial<Rating> | null;
+  if (!r || !r.verdict || !Array.isArray(r.checks)) return null;
+  return { verdict: r.verdict, headline: String(r.headline ?? ""), checks: r.checks };
+}
+
+const MARK = { true: "✓", false: "✕", null: "–" } as const;
+
+/** The verdict in words and every check with its reason (no made-up percentages). */
+function RatingBox({ r }: { r: Rating }) {
+  const cls = r.verdict === "strong" ? "good" : r.verdict === "works" ? "wait" : "bad";
+  return (
+    <section className={`verdict ${cls}`} aria-label="Outfit check" data-testid="outfit-check">
+      <p>
+        <span className="v-word">
+          {r.verdict === "strong" ? "Strong" : r.verdict === "works" ? "It works" : "Rethink it"}
+        </span>
+      </p>
+      <p className="small">{r.headline}</p>
+      <ul className="checks">
+        {r.checks.map((c) => (
+          <li key={c.key} className={c.ok === false ? "fail" : c.ok === null ? "skip" : "pass"}>
+            <span aria-hidden="true">{MARK[String(c.ok) as "true" | "false" | "null"]}</span>{" "}
+            <strong>{c.label}:</strong> {c.detail}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

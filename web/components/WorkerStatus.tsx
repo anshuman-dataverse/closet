@@ -12,6 +12,7 @@ export const KIND_LABEL: Record<JobKind, string> = {
   embed_wish: "Reading a wishlist photo",
   analyze_profile: "Analyzing your style photos",
   suggest_outfits: "Outfit ideas",
+  rate_outfit: "Checking an outfit",
   check_wish: "“Do I need this?” check",
   find_gaps: "What’s missing",
   run_hunt: "Deal hunt",

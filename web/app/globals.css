@@ -984,6 +984,20 @@ select {
 .hunt-pick .price .muted {
   font-weight: 500;
 }
+.checks {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+.checks .fail strong {
+  color: var(--sale);
+}
+.checks .skip {
+  color: var(--ink-2);
+}
 .look {
   margin-top: 12px;
 }

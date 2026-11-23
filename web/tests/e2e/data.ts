@@ -59,6 +59,10 @@ type SeedItem = {
   name: string;
   category: "Tops" | "Bottoms" | "Layers" | "Shoes" | "Accessories" | "Sets & suits";
   color_hex?: string;
+  type?: string;
+  color_name?: string;
+  formality?: number;
+  fit?: string | null;
   occasions?: ("office" | "college" | "party" | "home")[];
   price_cents?: number | null;
   bought_on?: string | null;

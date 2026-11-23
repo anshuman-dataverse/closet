@@ -56,9 +56,14 @@ export function OutfitsView() {
         {all.length} {all.length === 1 ? "outfit" : "outfits"}
       </p>
       {enough && (
-        <button type="button" className="btn primary" onClick={() => open("new", "1")}>
-          Build an outfit
-        </button>
+        <div className="row">
+          <button type="button" className="btn primary" onClick={() => open("new", "1")}>
+            Build an outfit
+          </button>
+          <button type="button" className="btn" onClick={() => open("new", "1")}>
+            Check an outfit
+          </button>
+        </div>
       )}
     </div>
   );

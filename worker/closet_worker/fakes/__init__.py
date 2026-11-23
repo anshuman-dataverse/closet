@@ -11,7 +11,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from closet_worker.jobs import analyze_profile, find_gaps, ping, read_label, suggest_outfits
+from closet_worker.jobs import (
+    analyze_profile,
+    find_gaps,
+    ping,
+    rate_outfit,
+    read_label,
+    suggest_outfits,
+)
 from closet_worker.jobs.context import JobContext
 from closet_worker.vision.label import Line
 from closet_worker.vision.style import build
@@ -54,6 +61,8 @@ def run(kind: str, payload: dict[str, Any], ctx: JobContext | None = None) -> di
             {"analysis": analysis, "analyzed_at": datetime.now(UTC).isoformat()}
         )
         return {"effective": analysis["effective"], "face_shape": analysis["face"].get("shape")}
+    if kind == "rate_outfit" and ctx and ctx.items:
+        return rate_outfit.run(payload, ctx)  # rules only: run the real thing
     if kind == "find_gaps" and ctx and ctx.items:
         return find_gaps.run(payload, ctx)
     if kind == "tag_item":
