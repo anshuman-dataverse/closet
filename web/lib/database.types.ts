@@ -567,6 +567,7 @@ export type Database = {
           city_name: string | null;
           contrast_override: string | null;
           created_at: string;
+          depth_override: string | null;
           favorite_stores: string[];
           fit_pref: string;
           height_cm: number | null;
@@ -589,6 +590,7 @@ export type Database = {
           city_name?: string | null;
           contrast_override?: string | null;
           created_at?: string;
+          depth_override?: string | null;
           favorite_stores?: string[];
           fit_pref?: string;
           height_cm?: number | null;
@@ -610,6 +612,7 @@ export type Database = {
           city_name?: string | null;
           contrast_override?: string | null;
           created_at?: string;
+          depth_override?: string | null;
           favorite_stores?: string[];
           fit_pref?: string;
           height_cm?: number | null;

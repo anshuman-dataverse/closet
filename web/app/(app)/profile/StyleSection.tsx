@@ -52,7 +52,7 @@ function WhatSuitsYou({ a }: { a: Analysis }) {
   const [busy, setBusy] = useState(false);
   const p = s.profile;
 
-  const change = async (field: "undertone_override" | "contrast_override", value: string) => {
+  const change = async (field: "undertone_override" | "contrast_override" | "depth_override", value: string) => {
     setBusy(true);
     try {
       await saveProfile({ [field]: value || null });
@@ -162,6 +162,21 @@ function WhatSuitsYou({ a }: { a: Analysis }) {
           >
             <option value="">From photos ({a.computed.undertone})</option>
             {["warm", "cool", "neutral", "olive"].map((v) => (
+              <option key={v} value={v}>
+                {v[0]!.toUpperCase() + v.slice(1)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="field">
+          <span>Depth</span>
+          <select
+            value={p?.depth_override ?? ""}
+            disabled={busy}
+            onChange={(e) => void change("depth_override", e.target.value)}
+          >
+            <option value="">From photos ({a.computed.depth})</option>
+            {["light", "medium", "deep"].map((v) => (
               <option key={v} value={v}>
                 {v[0]!.toUpperCase() + v.slice(1)}
               </option>

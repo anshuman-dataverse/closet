@@ -14,7 +14,7 @@ export type Measurements = {
   lighting_note: string | null;
   [k: string]: unknown;
 };
-export type Overrides = { undertone?: string | null; contrast?: string | null };
+export type Overrides = { undertone?: string | null; contrast?: string | null; depth?: string | null };
 
 const cap = (s: string) => s.slice(0, 1).toUpperCase() + s.slice(1);
 const capFirst = (s: string) => s.slice(0, 1).toUpperCase() + s.slice(1).toLowerCase(); // Python str.capitalize
@@ -35,8 +35,13 @@ export function borderlineNotes(m: Measurements, o: Overrides): string[] {
     else if (Math.abs(m.hue - u.warm_min_hue) <= edge)
       out.push("Your undertone read sits between neutral and warm. If warm feels truer, change it below.");
   }
+  const spread = Number(m.hue_spread ?? 0);
+  if (!o.undertone && spread > (T.photos_disagree_hue ?? 12))
+    out.push(
+      `Your face photos disagree by ${spread.toFixed(0)}° on undertone, so the light changed between them. Retake them in the same daylight, facing the window.`,
+    );
   const d = T.depth;
-  if (Math.min(Math.abs(m.ita - d.light_min_ita), Math.abs(m.ita - d.deep_max_ita)) <= edge)
+  if (!o.depth && Math.min(Math.abs(m.ita - d.light_min_ita), Math.abs(m.ita - d.deep_max_ita)) <= edge)
     out.push("Your depth read is close to the next band, so the palette may shift slightly between photos.");
   const votes = [...new Set(m.face_shape_votes.filter((v): v is string => !!v))].sort();
   if (votes.length > 1) out.push(`Your face shape reads between ${votes.join(" and ")}; tips for both can work.`);
@@ -58,7 +63,7 @@ export function buildAnalysis(m: Measurements, o: Overrides = {}) {
   };
   const effective = {
     undertone: o.undertone || computed.undertone,
-    depth: computed.depth,
+    depth: o.depth || computed.depth,
     contrast: o.contrast || computed.contrast,
   };
   const pal = PALETTES[`${effective.undertone}/${effective.depth}/${effective.contrast}`]!;

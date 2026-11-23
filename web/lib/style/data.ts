@@ -8,6 +8,8 @@ export type Thresholds = {
   lighting: { dark_face_L: number; cast_a: number; warm_cast_b: number; cool_cast_b: number; blown_share: number };
   face_shape: Record<string, number>;
   body: Record<string, number>;
+  skin_sample: { max_delta_e: number; min_skin_share: number; paper_L: number; paper_chroma: number; dark_L: number };
+  photos_disagree_hue: number;
   borderline: number;
 };
 export type PaletteEntry = { best: string[]; neutrals: string[]; careful: { name: string; why: string }[] };

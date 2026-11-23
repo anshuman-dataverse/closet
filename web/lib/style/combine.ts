@@ -56,6 +56,12 @@ export function combine(reads: FaceRead[], body: BodyRatios | null): Combined {
       hue: Math.round(hue * 100) / 100,
       ita: Math.round(itaDeg(lab) * 100) / 100,
       photos_used: good.length,
+      hue_spread:
+        good.length > 1
+          ? Math.round(
+              (Math.max(...good.map((r) => hueDeg(r.lab))) - Math.min(...good.map((r) => hueDeg(r.lab)))) * 10,
+            ) / 10
+          : 0,
       calibrated_photos: calibrated,
       lighting_note: good[0]?.lighting ?? null,
       face_ratios: reads.length ? reads.reduce((a, b) => (a.ratios.yaw <= b.ratios.yaw ? a : b)).ratios : null,

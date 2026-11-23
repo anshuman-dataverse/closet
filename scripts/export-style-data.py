@@ -54,9 +54,9 @@ def golden() -> dict[str, object]:
               {"shoulder_hip": 1.7, "leg_torso": 1.45}]
     m = {"skin_lab": [59.77, 12.77, 10.28], "hair_L": 33.11, "hue": 38.83, "ita": 43.57,
          "face_shape": "round", "face_shape_votes": ["round", "round", "oval"], "body_ratios": None,
-         "lighting_note": None}
+         "lighting_note": None, "hue_spread": 14.0}
     builds = []
-    for over in ({}, {"undertone": "neutral"}, {"undertone": "warm", "contrast": "high"}):
+    for over in ({}, {"undertone": "neutral"}, {"undertone": "warm", "contrast": "high"}, {"depth": "deep"}):
         a = build(m, over)
         builds.append({"overrides": over, "out": {k: a[k] for k in (
             "computed", "effective", "summary", "best", "neutrals", "careful", "fit_notes",

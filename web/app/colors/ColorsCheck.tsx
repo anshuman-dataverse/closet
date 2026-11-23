@@ -141,6 +141,7 @@ export function ColorsCheck() {
         analyzed_at: new Date().toISOString(),
         undertone_override: null,
         contrast_override: null,
+        depth_override: null,
       })
       .eq("user_id", data.user.id);
     setSaved(error ? "Couldn’t save. Try again." : "Saved to your Style profile.");

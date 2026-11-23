@@ -32,4 +32,11 @@ body:                   # Pose "hips" are hip joints (narrower than the visible 
   long_legs: 1.70       # leg / torso length (depends on camera height: keep the notes mild)
   short_legs: 1.25
   min_visibility: 0.5
+skin_sample:            # skin is read from several spots; a spot that doesn't look like the rest is dropped
+  max_delta_e: 12       # ΔE*76 from the spots' median beyond this: a cap, glasses, paper, beard or shadow
+  min_skin_share: 0.6   # share of a spot's pixels that must be plausible skin (not paper-white, not black)
+  paper_L: 70           # brighter than this and nearly colorless (below paper_chroma) → paper or glare
+  paper_chroma: 12
+  dark_L: 12            # darker than this → hair, beard or a frame
+photos_disagree_hue: 12 # undertone hue range across your face photos beyond this → the light changed
 borderline: 3           # within this many degrees (hue) or points (contrast) of a cutoff → say so

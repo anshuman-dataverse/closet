@@ -332,7 +332,8 @@
     "oval"
    ],
    "body_ratios": null,
-   "lighting_note": null
+   "lighting_note": null,
+   "hue_spread": 14.0
   },
   "cases": [
    {
@@ -448,6 +449,7 @@
       ]
      },
      "borderline": [
+      "Your face photos disagree by 14° on undertone, so the light changed between them. Retake them in the same daylight, facing the window.",
       "Your depth read is close to the next band, so the palette may shift slightly between photos.",
       "Your face shape reads between oval and round; tips for both can work.",
       "Your contrast read is close to the next band. Change it below if it feels off."
@@ -696,6 +698,132 @@
      "borderline": [
       "Your depth read is close to the next band, so the palette may shift slightly between photos.",
       "Your face shape reads between oval and round; tips for both can work."
+     ]
+    }
+   },
+   {
+    "overrides": {
+     "depth": "deep"
+    },
+    "out": {
+     "computed": {
+      "undertone": "cool",
+      "depth": "light",
+      "contrast": "medium"
+     },
+     "effective": {
+      "undertone": "cool",
+      "depth": "deep",
+      "contrast": "medium"
+     },
+     "summary": "Cool undertone, deep depth and medium contrast. Purple, red and white sit well near your face; charcoal, navy and grey are easy neutrals.",
+     "best": [
+      {
+       "name": "Purple",
+       "hex": "#6a4b99"
+      },
+      {
+       "name": "Red",
+       "hex": "#b2261e"
+      },
+      {
+       "name": "White",
+       "hex": "#f6f6f3"
+      },
+      {
+       "name": "Navy",
+       "hex": "#1f2a48"
+      },
+      {
+       "name": "Burgundy",
+       "hex": "#6d1f30"
+      },
+      {
+       "name": "Teal",
+       "hex": "#2c7a7a"
+      },
+      {
+       "name": "Sky blue",
+       "hex": "#86b4df"
+      },
+      {
+       "name": "Pink",
+       "hex": "#e6a2b6"
+      }
+     ],
+     "neutrals": [
+      {
+       "name": "Charcoal",
+       "hex": "#3c3f47"
+      },
+      {
+       "name": "Navy",
+       "hex": "#1f2a48"
+      },
+      {
+       "name": "Grey",
+       "hex": "#8a8f98"
+      },
+      {
+       "name": "White",
+       "hex": "#f6f6f3"
+      }
+     ],
+     "careful": [
+      {
+       "name": "Orange",
+       "hex": "#d8722a",
+       "why": "Warm oranges can clash with a cool undertone."
+      },
+      {
+       "name": "Mustard",
+       "hex": "#c79a2d",
+       "why": "Yellow-based shades can look muddy next to cool skin."
+      },
+      {
+       "name": "Camel",
+       "hex": "#c0955f",
+       "why": "Warm beiges near the face can look flat; keep them on trousers."
+      },
+      {
+       "name": "Beige",
+       "hex": "#d6c3a1",
+       "why": "Very pale beige near the face can look ashy; go deeper or brighter."
+      }
+     ],
+     "fit_notes": [
+      {
+       "area": "Shirts",
+       "advice": "Shoulder seam right on the shoulder point; sleeves ending at the wrist bone."
+      },
+      {
+       "area": "Photo",
+       "advice": "Add a front photo that shows you head to ankles for more fit notes."
+      }
+     ],
+     "occasion_tips": {
+      "office": "Charcoal or navy layers over crisp shirts, with purple as the accent.",
+      "college": "Overshirts and knits in purple or red with dark denim or charcoal trousers.",
+      "party": "Deeper navy or burgundy with one statement piece; charcoal keeps the rest calm.",
+      "home": "Soft knits in charcoal and navy."
+     },
+     "face": {
+      "shape": "round",
+      "why": "Angles and a little height add structure to softer curves.",
+      "frames": [
+       "Rectangular or angular frames",
+       "Wayfarer-style sunglasses",
+       "Frames slightly wider than the cheekbones"
+      ],
+      "hair": [
+       "Some height on top with shorter sides (a quiff or textured top)",
+       "A side part or an off-center sweep"
+      ]
+     },
+     "borderline": [
+      "Your face photos disagree by 14° on undertone, so the light changed between them. Retake them in the same daylight, facing the window.",
+      "Your face shape reads between oval and round; tips for both can work.",
+      "Your contrast read is close to the next band. Change it below if it feels off."
      ]
     }
    }

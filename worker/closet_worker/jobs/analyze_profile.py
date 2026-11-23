@@ -33,6 +33,7 @@ class FaceRead:
     read: skin.SkinRead
     ratios: dict[str, float]
     light: str | None
+    calibrated: bool = False  # a white paper in the photo removed the light's color cast
 
 
 def face_shape_vote(reads: list[FaceRead]) -> str | None:
@@ -52,20 +53,25 @@ def measure(
 ) -> dict[str, Any]:
     """Combine every face photo that's well lit (all of them if none is); vote on face shape."""
     from closet_worker.vision.landmarks import face_points, pose_points
+    from closet_worker.vision.paper import apply_gains, face_box, find_paper
 
     reads: list[FaceRead] = []
     for rgb in faces:
         pts = face_points(rgb)
         if pts is None:
             continue
-        read = skin.read_skin(rgb, pts)
-        reads.append(FaceRead(read, fs.ratios(pts), skin.lighting_note(rgb, read.face_pixels)))
+        found = find_paper(rgb, face_box(pts)).paper
+        fixed = apply_gains(rgb, found.gains) if found else rgb
+        read = skin.read_skin(fixed, pts)
+        light = skin.lighting_note(fixed, read.face_pixels, calibrated=found is not None)
+        reads.append(FaceRead(read, fs.ratios(pts), light, found is not None))
     if not reads:
         raise BadJob("No face found in your close-up. Use a clear, front-facing photo in daylight.")
     good = [x for x in reads if x.light is None] or reads
     med = np.median([x.read.lab for x in good], axis=0)
     lab = (float(med[0]), float(med[1]), float(med[2]))
     hair = [x.read.hair_L for x in good if x.read.hair_L is not None]
+    hues = [skin.hue_deg(x.read.lab) for x in good]
     straight = min(reads, key=lambda x: x.ratios["yaw"])
     pose = pose_points(front_rgb) if front_rgb is not None else None
     return {
@@ -74,6 +80,9 @@ def measure(
         "hue": round(skin.hue_deg(lab), 2),
         "ita": round(skin.ita_deg(lab), 2),
         "photos_used": len(good),
+        "photos_calibrated": sum(1 for x in good if x.calibrated),
+        # How far apart your photos read (undertone hue, degrees): a big gap = the light changed.
+        "hue_spread": round(max(hues) - min(hues), 1) if len(hues) > 1 else 0.0,
         # Set only when every face photo had a lighting problem; otherwise those were just skipped.
         "lighting_note": good[0].light,
         "face_ratios": {k: round(v, 3) for k, v in straight.ratios.items()},
@@ -90,6 +99,7 @@ def run(payload: dict[str, Any], ctx: JobContext | None) -> dict[str, Any]:
     overrides = {
         "undertone": profile.get("undertone_override"),
         "contrast": profile.get("contrast_override"),
+        "depth": profile.get("depth_override"),
     }
     if payload.get("recompute"):
         prev = profile.get("analysis") or {}

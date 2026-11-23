@@ -64,9 +64,18 @@ def borderline_notes(m: dict[str, Any], t: dict[str, Any], o: dict[str, str | No
             out.append(
                 "Your undertone read sits between neutral and warm. If warm feels truer, change it below."
             )
+    spread = float(m.get("hue_spread") or 0)
+    if not o.get("undertone") and spread > float(t.get("photos_disagree_hue", 12)):
+        out.append(
+            f"Your face photos disagree by {spread:.0f}° on undertone, so the light changed between "
+            "them. Retake them in the same daylight, facing the window."
+        )
     d = t["depth"]
     ita = float(m.get("ita", 0))
-    if min(abs(ita - d["light_min_ita"]), abs(ita - d["deep_max_ita"])) <= edge:
+    if (
+        not o.get("depth")
+        and min(abs(ita - d["light_min_ita"]), abs(ita - d["deep_max_ita"])) <= edge
+    ):
         out.append(
             "Your depth read is close to the next band, so the palette may shift slightly between photos."
         )
@@ -98,7 +107,7 @@ def build(
     }
     eff = {
         "undertone": o.get("undertone") or computed["undertone"],
-        "depth": computed["depth"],
+        "depth": o.get("depth") or computed["depth"],
         "contrast": o.get("contrast") or computed["contrast"],
     }
     pal = palettes()[f"{eff['undertone']}/{eff['depth']}/{eff['contrast']}"]

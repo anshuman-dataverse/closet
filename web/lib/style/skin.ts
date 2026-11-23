@@ -12,6 +12,20 @@ export const CHEEK_L = 50,
   RIGHT = 454,
   NOSE = 1;
 
+// Every spot skin is read from (cheeks, under the eyes, cheekbones, lower cheeks, mid-forehead). Spots that
+// don't look like the rest (a cap's shadow, glasses, paper, a beard) are dropped. Same list as skin.py.
+export const SPOTS: Record<string, number> = {
+  cheek_l: 50,
+  cheek_r: 280,
+  under_eye_l: 101,
+  under_eye_r: 330,
+  cheekbone_l: 117,
+  cheekbone_r: 346,
+  low_cheek_l: 205,
+  low_cheek_r: 425,
+  forehead: 151,
+};
+
 const dist = (a: Point, b: Point) => Math.hypot(a[0] - b[0], a[1] - b[1]);
 export const faceWidth = (pts: Point[]) => dist(pts[LEFT]!, pts[RIGHT]!);
 
@@ -28,12 +42,51 @@ function disk(img: Pixels, c: Point, r: number, out: number[][]) {
       }
 }
 
-export type SkinRead = { lab: Lab; hairL: number | null; facePixels: number[][] };
+export type SkinRead = { lab: Lab; hairL: number | null; facePixels: number[][]; dropped: string[] };
+
+/** Skin pixels from the spots that agree with each other, and the names of those dropped. */
+export function sampleSpots(img: Pixels, pts: Point[]): { px: number[][]; dropped: string[] } {
+  const st = T.skin_sample;
+  const r = Math.max(3, 0.04 * faceWidth(pts));
+  const meds = new Map<string, Lab>();
+  const pix = new Map<string, number[][]>();
+  for (const [name, i] of Object.entries(SPOTS)) {
+    const px: number[][] = [];
+    disk(img, pts[i]!, r, px);
+    if (!px.length) continue;
+    const ok: number[][] = [];
+    const okLab: Lab[] = [];
+    for (const p of px) {
+      const l = srgbToLab(p[0]!, p[1]!, p[2]!);
+      const paper = l[0] > st.paper_L && Math.hypot(l[1], l[2]) < st.paper_chroma;
+      if (!paper && l[0] >= st.dark_L) {
+        ok.push(p);
+        okLab.push(l);
+      }
+    }
+    if (ok.length / px.length < st.min_skin_share) continue;
+    meds.set(name, [0, 1, 2].map((k) => median(okLab.map((l) => l[k]!))) as Lab);
+    pix.set(name, ok);
+  }
+  if (!meds.size) {
+    const px: number[][] = [];
+    for (const i of [CHEEK_L, CHEEK_R, FOREHEAD]) disk(img, pts[i]!, r, px);
+    return { px, dropped: Object.keys(SPOTS) };
+  }
+  const all = [...meds.values()];
+  const centre = [0, 1, 2].map((k) => median(all.map((m) => m[k]!)));
+  let keep = [...meds.entries()]
+    .filter(([, m]) => Math.hypot(m[0] - centre[0]!, m[1] - centre[1]!, m[2] - centre[2]!) <= st.max_delta_e)
+    .map(([n]) => n);
+  if (keep.length < 2) keep = [...meds.keys()];
+  return {
+    px: keep.flatMap((n) => pix.get(n)!),
+    dropped: Object.keys(SPOTS).filter((n) => !keep.includes(n)),
+  };
+}
 
 export function readSkin(img: Pixels, pts: Point[]): SkinRead {
-  const r = Math.max(3, 0.04 * faceWidth(pts));
-  const px: number[][] = [];
-  for (const i of [CHEEK_L, CHEEK_R, FOREHEAD]) disk(img, pts[i]!, r, px);
+  const { px, dropped } = sampleSpots(img, pts);
   const labs = px.map(([R, G, B]) => srgbToLab(R!, G!, B!));
   const lab: Lab = [median(labs.map((l) => l[0])), median(labs.map((l) => l[1])), median(labs.map((l) => l[2]))];
   const top = pts[TOP]!,
@@ -51,7 +104,7 @@ export function readSkin(img: Pixels, pts: Point[]): SkinRead {
       const i = (y * img.width + x) * 4;
       hair.push(srgbToLab(img.data[i]!, img.data[i + 1]!, img.data[i + 2]!)[0]);
     }
-  return { lab, hairL: hair.length >= 20 ? median(hair) : null, facePixels: px };
+  return { lab, hairL: hair.length >= 20 ? median(hair) : null, facePixels: px, dropped };
 }
 
 export function undertone(lab: Lab): string {

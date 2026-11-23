@@ -56,6 +56,7 @@ def run(kind: str, payload: dict[str, Any], ctx: JobContext | None = None) -> di
         overrides = {
             "undertone": p.get("undertone_override"),
             "contrast": p.get("contrast_override"),
+            "depth": p.get("depth_override"),
         }
         analysis = build(_fixture("analyze_profile") or {}, overrides)
         ctx.items.update_profile(
