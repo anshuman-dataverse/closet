@@ -66,12 +66,18 @@ test("settings: save sizes and budget, find a city, delete everything", async ({
   const settings = page.getByRole("region", { name: "Settings" });
   await settings.getByLabel("Waist").fill("32");
   await settings.getByLabel("Fit preference").selectOption("slim");
+  await settings.getByLabel("Height").fill(`5'9"`);
   await settings.getByLabel("Monthly clothing budget ($)").fill("200");
   await settings.getByLabel("Favorite stores").fill("Uniqlo, J.Crew, Uniqlo");
   await settings.getByRole("button", { name: "Save settings" }).click();
   await expect(page.locator(".toast")).toContainText("Settings saved");
   const { data: p } = await admin.from("profiles").select("*").eq("user_id", OWNER.id).single();
-  expect(p).toMatchObject({ fit_pref: "slim", monthly_budget_cents: 20000, favorite_stores: ["Uniqlo", "J.Crew"] });
+  expect(p).toMatchObject({
+    fit_pref: "slim",
+    height_cm: 175,
+    monthly_budget_cents: 20000,
+    favorite_stores: ["Uniqlo", "J.Crew"],
+  });
   expect(p!.sizes).toMatchObject({ waist: "32" });
 
   await settings.getByLabel("Home city").fill("Boston");

@@ -98,3 +98,65 @@ def fit_notes(r: dict[str, float] | None, t: dict[str, Any] | None = None) -> li
         }
     )
     return notes
+
+
+def height_notes(height_cm: int | None, leg_torso: float | None = None) -> list[dict[str, str]]:
+    """Length notes from your height (and leg-to-torso ratio when a full-body photo gave one).
+    Common tailoring guidance about lengths and proportions; no judgments about the body."""
+    if not height_cm:
+        return [
+            {
+                "area": "Lengths",
+                "advice": "Add your height in Settings for notes on jacket and hem lengths.",
+            }
+        ]
+    notes: list[dict[str, str]] = []
+    if height_cm < 170:
+        notes.append(
+            {
+                "area": "Lengths",
+                "advice": "Tops that end at mid-hip and jackets that just cover the seat keep proportions clean; hem trousers with little or no break.",
+            }
+        )
+        notes.append(
+            {
+                "area": "Outfits",
+                "advice": "Tonal outfits (top and trousers in close shades) give one long line; keep patterns small to medium.",
+            }
+        )
+    elif height_cm > 185:
+        notes.append(
+            {
+                "area": "Lengths",
+                "advice": "Longer coats and jackets sit in proportion; a single soft break at the shoe; check that sleeves and tops are long enough.",
+            }
+        )
+        notes.append(
+            {
+                "area": "Outfits",
+                "advice": "Bolder patterns and layered looks carry well; contrast between top and trousers breaks up the line nicely.",
+            }
+        )
+    else:
+        notes.append(
+            {
+                "area": "Lengths",
+                "advice": "Standard lengths fit: a slight break at the shoe and jackets that cover the seat.",
+            }
+        )
+    if leg_torso is not None and height_cm:
+        if leg_torso < 1.25:
+            notes.append(
+                {
+                    "area": "Rise",
+                    "advice": "A mid or high rise and tucked or half-tucked tops lengthen the leg line.",
+                }
+            )
+        elif leg_torso > 1.7:
+            notes.append(
+                {
+                    "area": "Rise",
+                    "advice": "Mid-rise trousers and untucked tops that end at the hip keep top and bottom in balance.",
+                }
+            )
+    return notes

@@ -316,3 +316,17 @@ def test_find_gaps_uses_your_palette(settings) -> None:  # type: ignore[no-untyp
         allowed = best if i["category"] in ("Tops", "Layers", "Sets & suits") else neutrals
         assert i["color_name"] in allowed
     assert math.isfinite(sum(i["unlocks"] for i in ideas_))
+
+
+def test_height_notes_are_practical_and_neutral() -> None:
+    from closet_worker.vision.body import height_notes
+
+    for h in (None, 160, 175, 190):
+        for lt in (None, 1.1, 1.5, 1.9):
+            notes = height_notes(h, lt)
+            assert notes and all(n["area"] and n["advice"].endswith(".") for n in notes)
+            for n in notes:
+                assert not BANNED.search(n["advice"]), n["advice"]
+    assert height_notes(None)[0]["advice"].startswith("Add your height")
+    assert any(n["area"] == "Rise" for n in height_notes(175, 1.1))
+    assert not any(n["area"] == "Rise" for n in height_notes(175, 1.5))

@@ -13,6 +13,7 @@ from PIL import Image
 
 from closet_worker.vision import face_shape as fs
 from closet_worker.vision import skin
+from closet_worker.vision.body import height_notes
 from closet_worker.vision.body import ratios as body_ratios
 from closet_worker.vision.style import build
 
@@ -105,5 +106,10 @@ def run(payload: dict[str, Any], ctx: JobContext | None) -> dict[str, Any]:
             [_rgb(ctx, str(p["photo_path"])) for p in faces], _rgb(ctx, str(front["photo_path"]))
         )
         analysis = build(m, overrides)
+    ratios = (analysis.get("measurements") or {}).get("body_ratios") or {}
+    analysis["fit_notes"] = [
+        *analysis.get("fit_notes", []),
+        *height_notes(profile.get("height_cm"), ratios.get("leg_torso")),
+    ]
     ctx.items.update_profile({"analysis": analysis, "analyzed_at": datetime.now(UTC).isoformat()})
     return {"effective": analysis["effective"], "face_shape": analysis["face"].get("shape")}

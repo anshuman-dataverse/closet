@@ -43,6 +43,7 @@ export async function resetOwnerData() {
       sizes: {},
       fit_pref: "",
       wears: null,
+      height_cm: null,
       favorite_stores: [],
       city_name: null,
       latitude: null,

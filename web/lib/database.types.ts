@@ -534,6 +534,7 @@ export type Database = {
           created_at: string;
           favorite_stores: string[];
           fit_pref: string;
+          height_cm: number | null;
           latitude: number | null;
           longitude: number | null;
           monthly_budget_cents: number;
@@ -555,6 +556,7 @@ export type Database = {
           created_at?: string;
           favorite_stores?: string[];
           fit_pref?: string;
+          height_cm?: number | null;
           latitude?: number | null;
           longitude?: number | null;
           monthly_budget_cents?: number;
@@ -575,6 +577,7 @@ export type Database = {
           created_at?: string;
           favorite_stores?: string[];
           fit_pref?: string;
+          height_cm?: number | null;
           latitude?: number | null;
           longitude?: number | null;
           monthly_budget_cents?: number;

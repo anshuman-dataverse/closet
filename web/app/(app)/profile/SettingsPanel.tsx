@@ -4,10 +4,11 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Chips } from "@/components/Chips";
 import { useToast } from "@/components/Toast";
-import { deleteAllData, saveProfile, useCloset } from "@/lib/closet/store";
+import { deleteAllData, requestAnalysis, saveProfile, useCloset } from "@/lib/closet/store";
 import type { Profile } from "@/lib/closet/types";
 import { centsToInput, parseDollars } from "@/lib/domain/money";
 import { isWears, WEARS } from "@/lib/domain/fit";
+import { formatHeight, parseHeight } from "@/lib/domain/height";
 import { findPlaces, type Place } from "@/lib/geocode";
 
 type Sizes = { top?: string; waist?: string; inseam?: string; shoe?: string };
@@ -29,6 +30,7 @@ function formFrom(p: Profile) {
     shoe: sz.shoe ?? "",
     fit: p.fit_pref,
     wears: p.wears ?? "",
+    height: formatHeight(p.height_cm, p.temp_unit as "F" | "C"),
     budget: centsToInput(p.monthly_budget_cents),
     cap: centsToInput(p.paid_monthly_cap_cents),
     stores: p.favorite_stores.join(", "),
@@ -65,6 +67,8 @@ function SettingsForm({ profile }: { profile: Profile }) {
     const budget = f.budget.trim() ? parseDollars(f.budget) : 0;
     const cap = f.cap.trim() ? parseDollars(f.cap) : 0;
     if (budget === null || cap === null) return setErr("Enter amounts as numbers, like 150.");
+    const height = f.height.trim() ? parseHeight(f.height) : null;
+    if (f.height.trim() && height === null) return setErr(`Enter height like 5'9" or 175 cm.`);
     setBusy(true);
     setErr("");
     try {
@@ -72,6 +76,7 @@ function SettingsForm({ profile }: { profile: Profile }) {
         sizes: { top: f.top.trim(), waist: f.waist.trim(), inseam: f.inseam.trim(), shoe: f.shoe.trim() },
         fit_pref: f.fit,
         wears: isWears(f.wears) ? f.wears : null,
+        height_cm: height,
         monthly_budget_cents: budget,
         paid_monthly_cap_cents: cap,
         favorite_stores: [
@@ -86,6 +91,8 @@ function SettingsForm({ profile }: { profile: Profile }) {
         temp_unit: f.unit,
       });
       toast("Settings saved");
+      // New height: refresh the profile's length notes (palette and text only, on the Mac).
+      if (height !== profile.height_cm && profile.analysis) void requestAnalysis(true, 0).catch(() => {});
     } catch (e) {
       setErr((e as Error).message);
     } finally {
@@ -176,6 +183,18 @@ function SettingsForm({ profile }: { profile: Profile }) {
           />
         </label>
       </div>
+      <label className="field">
+        <span>Height</span>
+        <input
+          type="text"
+          value={f.height}
+          onChange={(e) => set("height", e.target.value)}
+          placeholder={f.unit === "C" ? "175 cm" : `5'9"`}
+          maxLength={12}
+          autoComplete="off"
+        />
+        <span className="hint">For jacket and hem length notes in your style profile.</span>
+      </label>
       <label className="field">
         <span>Clothes I mostly wear</span>
         <select value={f.wears} onChange={(e) => set("wears", e.target.value)} data-testid="wears">
