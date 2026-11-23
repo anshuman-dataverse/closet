@@ -31,7 +31,15 @@ test("a deal hunt runs on the Mac, shows picks, adds one to the wishlist, and de
   await sheet.getByLabel("Budget from ($)").fill("60"); // reversed on purpose: swapped
   await sheet.getByLabel("Budget to ($)").fill("25");
   await sheet.getByRole("button", { name: "Start hunt" }).click();
+  await expect(sheet.getByRole("alert")).toHaveText("Choose Menswear, Womenswear or Both."); // asked once
+  await sheet
+    .getByRole("group", { name: "Clothes I mostly wear" })
+    .getByRole("button", { name: "Menswear", exact: true })
+    .click();
+  await sheet.getByRole("button", { name: "Start hunt" }).click();
   await expect(sheet).toBeHidden();
+  const prof = await admin.from("profiles").select("wears").eq("user_id", OWNER.id).single();
+  expect(prof.data?.wears).toBe("menswear");
 
   const card = page.getByRole("listitem", { name: "Hunt: white oxford shirt" });
   await expect(card.getByTestId("hunt-status")).toHaveText("2 picks", { timeout: 30_000 });
@@ -91,6 +99,10 @@ test("shop a look: a complete set with its total, added to the wishlist in one t
   const sheet = page.getByRole("dialog", { name: "Shop a look" });
   await sheet.getByRole("group", { name: "Occasion" }).getByRole("button", { name: "College" }).click();
   await sheet.getByLabel("Total budget ($)").fill("260");
+  await sheet
+    .getByRole("group", { name: "Clothes I mostly wear" })
+    .getByRole("button", { name: "Menswear", exact: true })
+    .click();
   await sheet.getByRole("button", { name: "Shop the look" }).click();
   await expect(sheet).toBeHidden();
 

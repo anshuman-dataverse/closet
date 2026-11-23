@@ -8,7 +8,8 @@ import { LoadGate } from "@/components/Loading";
 import { Sheet } from "@/components/Sheet";
 import { useToast } from "@/components/Toast";
 import { useWorkerStatus } from "@/components/WorkerStatus";
-import { deleteHunt, rerunHunt, saveWish, startHunt, useCloset } from "@/lib/closet/store";
+import { deleteHunt, rerunHunt, saveProfile, saveWish, startHunt, useCloset } from "@/lib/closet/store";
+import { isWears, type Wears, WEARS } from "@/lib/domain/fit";
 import {
   foundBySlot,
   type Hunt,
@@ -26,6 +27,33 @@ import { seenAgo } from "@/lib/worker-status";
 
 export const PRICES_CHANGE = "Prices change. Check the store page before buying.";
 export const FREE_NOTE = "Free search reads public product pages. Some stores block it, so results vary.";
+
+/** Hunts need to know whose clothes to search for. Asked once, saved to Settings. */
+function WearsAsk({ value, onChange }: { value: Wears | ""; onChange: (w: Wears) => void }) {
+  const s = useCloset();
+  if (isWears(s.profile?.wears)) return null;
+  return (
+    <fieldset className="field">
+      <legend>Clothes I mostly wear</legend>
+      <Chips
+        label="Clothes I mostly wear"
+        wrap
+        options={WEARS}
+        value={value || ([] as readonly Wears[])}
+        onChange={onChange}
+      />
+      <span className="hint">So hunts skip the other section’s products. Saved to Settings.</span>
+    </fieldset>
+  );
+}
+
+/** Saves the answer if it was just given; returns an error message when it's still missing. */
+async function ensureWears(current: string | null | undefined, picked: Wears | ""): Promise<string> {
+  if (isWears(current)) return "";
+  if (!picked) return "Choose Menswear, Womenswear or Both.";
+  await saveProfile({ wears: picked });
+  return "";
+}
 
 type Draft = { what: string; occasion: Occasion | ""; min: string; max: string; notes: string };
 
@@ -216,6 +244,8 @@ function HuntCard({ h }: { h: Hunt }) {
 
 function HuntSheet({ open, onClose, initial }: { open: boolean; onClose: () => void; initial: Draft }) {
   const toast = useToast();
+  const cl = useCloset();
+  const [wears, setWears] = useState<Wears | "">("");
   const [f, setF] = useState<Draft>(initial);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -239,6 +269,11 @@ function HuntSheet({ open, onClose, initial }: { open: boolean; onClose: () => v
     const b = normalizeBudget(lo, hi);
     setBusy(true);
     try {
+      const w = await ensureWears(cl.profile?.wears, wears);
+      if (w) {
+        setBusy(false);
+        return setErr(w);
+      }
       await startHunt({
         query: what.slice(0, 200),
         occasion: f.occasion || null,
@@ -308,6 +343,7 @@ function HuntSheet({ open, onClose, initial }: { open: boolean; onClose: () => v
           />
         </label>
       </div>
+      <WearsAsk value={wears} onChange={setWears} />
       <label className="field">
         <span>Notes</span>
         <input type="text" value={f.notes} onChange={(e) => set("notes", e.target.value)} maxLength={200} />
@@ -326,6 +362,8 @@ type LookDraft = { occasion: Occasion; max: string; mode: "new" | "own" };
 
 function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const toast = useToast();
+  const cl = useCloset();
+  const [wears, setWears] = useState<Wears | "">("");
   const [f, setF] = useState<LookDraft>({ occasion: "office", max: "", mode: "new" });
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
@@ -342,6 +380,11 @@ function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
     if (f.max.trim() && max === null) return setErr("Enter the total budget as a number, like 250.");
     setBusy(true);
     try {
+      const w = await ensureWears(cl.profile?.wears, wears);
+      if (w) {
+        setBusy(false);
+        return setErr(w);
+      }
       const occ = OCCASIONS.find((o) => o.id === f.occasion)?.label ?? f.occasion;
       await startHunt({
         query: `${occ} look`,
@@ -391,6 +434,7 @@ function LookSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
           placeholder="250"
         />
       </label>
+      <WearsAsk value={wears} onChange={setWears} />
       <fieldset className="field">
         <legend>Pieces</legend>
         <Chips
